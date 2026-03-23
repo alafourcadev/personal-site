@@ -1,0 +1,320 @@
+---
+import { cosasItems, testimonials } from '../data/content';
+import Icon from './Icon.astro';
+import TestimonialCard from './TestimonialCard.astro';
+
+const socialLinks = [
+  { icon: 'twitter', label: 'Twitter/X', href: 'https://x.com/alafourcadev' },
+  {
+    icon: 'linkedin',
+    label: 'LinkedIn',
+    href: 'https://www.linkedin.com/in/alafourcadedespaigne/',
+  },
+  { icon: 'github', label: 'GitHub', href: 'https://github.com/alafourcadev' },
+  {
+    icon: 'instagram',
+    label: 'Instagram',
+    href: 'https://instagram.com',
+  },
+  { icon: 'mail', label: 'alafourca.dev', href: 'mailto:ale@alafourca.dev' },
+];
+
+const bioParagraphs = [
+  'Soy Ingeniero de Software. Cubano de raíz, paraguayo de corazón. Durante más de 10 años — y en 8 países distintos — me tocó diseñar, construir, escalar y sostener los sistemas detrás de operaciones que no pueden fallar. No porque sea el más brillante de la sala — sino porque nunca dejé de prepararme para estar ahí.',
+  'Creo que en esta industria sobra hype y faltan voces honestas. Que los que más experiencia tenemos somos los que menos compartimos. Y que eso tiene que cambiar.',
+  'Por eso creé Ingeniería sin filtros: un espacio donde comparto todo lo que aprendí — lo bueno, lo difícil y lo que nadie te cuenta — para que la próxima generación de developers no tenga que descubrirlo sola.',
+  'Fuera del código, soy padre. Y si algo te enseña la paternidad, es que nada que valga la pena viene con manual de instrucciones — igual que el software.',
+];
+
+const caminoParagraphs = [
+  'Mi camino en la tecnología no empezó con un plan perfecto.',
+  'Como muchos, empecé con curiosidad. Quería entender cómo funcionaban las cosas por dentro. No la interfaz bonita, no el botón que el usuario ve — lo que pasa después del clic. La lógica. La arquitectura. El sistema.',
+  'Siendo cubano-paraguayo, aprendí algo que me sirvió más que cualquier curso: a adaptarme. A reinventarme. A construir con lo que hay y no esperar condiciones perfectas. Esa mentalidad me acompañó toda mi carrera.',
+  'Con el tiempo, la curiosidad se convirtió en profesión. Trabajé en equipos chicos donde hacías de todo y en equipos grandes donde la especialización era clave. Diseñé APIs, modelé bases de datos, peleé con sistemas legacy, migré monolitos a microservicios (y aprendí que no siempre era buena idea), y sobre todo, aprendí a tomar decisiones técnicas que van más allá del código.',
+  "No todo fue en línea recta. Hubo momentos en que sentí que no sabía lo suficiente. Momentos en que veía a otros avanzar y pensaba '¿qué me falta?'. Hoy sé que eso tiene nombre: síndrome del impostor. Y lejos de ser una debilidad, se convirtió en lo que me mantiene aprendiendo.",
+  "Después de más de una década, un día me hice una pregunta simple: '¿Por qué los que más sabemos somos los que menos compartimos?' Los seniors escriben código, no artículos. Los que enseñan muchas veces no tienen años de experiencia real. Y los juniors se quedan sin referentes auténticos.",
+  'Hoy, la industria está viviendo su mayor transformación con la inteligencia artificial. Y como siempre en mi carrera, elegí no mirar desde afuera. Estoy aprendiendo, experimentando y construyendo con IA — no porque sea tendencia, sino porque entender estas herramientas es lo que separa a los ingenieros que van a liderar el próximo capítulo de los que se van a quedar repitiendo el anterior.',
+  'Ingeniería sin filtros nació de todo eso. No es un curso. No es una marca corporativa. Es mi forma de devolver lo que esta industria me dio.',
+];
+
+const algoParagraphs = [
+  'Crecí admirando a Kobe Bryant. No solo por el básquet — por la mentalidad. La Mamba Mentality es algo que aplico todos los días sin darme cuenta: obsesión por mejorar, no buscar atajos, y entender que el talento sin disciplina no alcanza.',
+  "En ingeniería es igual. No existe el atajo. No existe el framework mágico — ni el modelo de IA — que te salve de entender los fundamentos. Existe el trabajo constante, la curiosidad de preguntarte '¿por qué funciona así?' y la humildad de saber que siempre hay algo nuevo por aprender.",
+  "Pero si algo descubrí en todos estos años, es que ser buen ingeniero no es solo escribir buen código. Es hacer que los que trabajan con vos también crezcan. Es tener la humildad de decir 'no sé' y las ganas de decir 'pero lo averiguamos juntos'.",
+  'Si algo de lo que escribo acá le ahorra a alguien un error, una frustración, o simplemente le hace sentir que no está solo en esto — entonces todo esto valió la pena.',
+];
+---
+
+<!-- Hero -->
+<section
+  class="section-animate flex flex-col lg:flex-row gap-10 lg:gap-20 px-6 lg:px-[120px] pt-8 pb-2 lg:pt-12 lg:pb-4"
+>
+  <div class="flex flex-col gap-6 flex-1 min-w-0 max-w-[680px]">
+    <h1
+      class="font-heading text-3xl md:text-4xl lg:text-[44px] font-extrabold text-txt-primary leading-[1.1] tracking-tight"
+    >
+      Hola <span class="inline-block animate-wave">👋</span>, soy Alejandro Lafourcade.
+    </h1>
+    {
+      bioParagraphs.map((p, i) => (
+        <p
+          class="text-lg text-txt-secondary leading-[1.8] tracking-[-0.2px] paragraph-animate"
+          style={`animation-delay: ${i * 100 + 200}ms`}
+        >
+          {p}
+        </p>
+      ))
+    }
+  </div>
+  <div class="flex flex-col gap-6 shrink-0 lg:w-80">
+    <div
+      class="profile-image-container w-full h-[400px] rounded-2xl border border-border-subtle overflow-hidden bg-bg-surface relative group"
+    >
+      <img
+        src="/profile.jpg"
+        alt="Alejandro Lafourcade"
+        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        loading="eager"
+      />
+      <div
+        class="absolute inset-0 bg-gradient-to-t from-bg-deep/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+      >
+      </div>
+    </div>
+    <div class="flex flex-col gap-3">
+      {
+        socialLinks.map(({ icon, label, href }, i) => (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-link flex items-center gap-2.5 text-txt-secondary hover:text-accent transition-all duration-300 group"
+            style={`animation-delay: ${i * 50 + 400}ms`}
+          >
+            <span class="p-1.5 rounded-lg bg-bg-surface group-hover:bg-accent/10 transition-colors duration-300">
+              <Icon name={icon} size={18} />
+            </span>
+            <span class="text-[15px] group-hover:translate-x-1 transition-transform duration-300">
+              {label}
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Mi Camino -->
+<section
+  class="section-animate px-6 lg:px-[120px] pt-4 pb-10 lg:pt-6 lg:pb-[60px] flex flex-col gap-8"
+>
+  <h2
+    class="font-heading text-3xl lg:text-4xl font-bold text-txt-primary tracking-[-0.8px] flex items-center gap-3"
+  >
+    <span class="text-accent">•</span>
+    Mi Camino
+  </h2>
+  {
+    caminoParagraphs.map((p, i) => (
+      <p
+        class="text-[17px] text-txt-secondary leading-[1.8] tracking-[-0.2px] max-w-[680px] paragraph-animate"
+        style={`animation-delay: ${i * 80}ms`}
+      >
+        {p}
+      </p>
+    ))
+  }
+</section>
+
+<!-- Algo que siempre me acompañó -->
+<section class="section-animate px-6 lg:px-[120px] py-20 flex flex-col gap-8">
+  <h2
+    class="font-heading text-3xl lg:text-4xl font-bold text-txt-primary tracking-[-0.8px] flex items-center gap-3"
+  >
+    <span class="text-accent">•</span>
+    Algo que siempre me acompañó
+  </h2>
+  {
+    algoParagraphs.map((p, i) => (
+      <p
+        class="text-[17px] text-txt-secondary leading-[1.8] tracking-[-0.2px] max-w-[680px] paragraph-animate"
+        style={`animation-delay: ${i * 80}ms`}
+      >
+        {p}
+      </p>
+    ))
+  }
+</section>
+
+<!-- Algunas cosas sobre mí -->
+<section class="section-animate px-6 lg:px-[120px] py-20 flex flex-col gap-9">
+  <h2
+    class="font-heading text-3xl lg:text-4xl font-bold text-txt-primary tracking-[-0.8px] flex items-center gap-3"
+  >
+    <span class="text-accent">•</span>
+    Algunas cosas sobre mí
+  </h2>
+  <div class="flex flex-col gap-4 max-w-[680px]">
+    {
+      cosasItems.map((item, i) => (
+        <div
+          class="cosa-item flex items-center gap-3 bg-bg-surface rounded-lg p-4 border border-transparent hover:border-accent/30 hover:bg-bg-surface-hover transition-all duration-300 cursor-default"
+          style={`animation-delay: ${i * 60}ms`}
+        >
+          <span class="text-accent text-lg font-bold shrink-0 transition-transform duration-300 group-hover:scale-110">
+            →
+          </span>
+          <span class="text-base text-txt-primary tracking-[-0.2px]">
+            {item}
+          </span>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section
+  class="section-animate px-6 lg:px-[120px] py-[100px] flex flex-col gap-12"
+>
+  <div class="flex flex-col gap-3">
+    <h2
+      class="font-heading text-3xl lg:text-[38px] font-bold text-txt-primary tracking-[-1px]"
+    >
+      No me creas a mí.
+    </h2>
+    <p class="text-lg text-txt-secondary tracking-[-0.2px]">
+      Preguntale a los que me conocen.
+    </p>
+  </div>
+  <div class="flex flex-col gap-5">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      {
+        testimonials.slice(0, 3).map((t, i) => (
+          <div class="testimonial-card" style={`animation-delay: ${i * 100}ms`}>
+            <TestimonialCard quote={t.quote} attribution={t.attribution} />
+          </div>
+        ))
+      }
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      {
+        testimonials.slice(3).map((t, i) => (
+          <div
+            class="testimonial-card"
+            style={`animation-delay: ${(i + 3) * 100}ms`}
+          >
+            <TestimonialCard quote={t.quote} attribution={t.attribution} />
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Wave animation for emoji */
+  @keyframes wave {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(20deg);
+    }
+    75% {
+      transform: rotate(-15deg);
+    }
+  }
+
+  .animate-wave {
+    animation: wave 2s ease-in-out infinite;
+    transform-origin: 70% 70%;
+  }
+
+  /* Section fade-in on scroll */
+  .section-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: sectionFadeIn 0.8s ease-out forwards;
+  }
+
+  @keyframes sectionFadeIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Paragraph stagger */
+  .paragraph-animate {
+    opacity: 0;
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Social links */
+  .social-link {
+    opacity: 0;
+    animation: slideIn 0.4s ease-out forwards;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Cosa items */
+  .cosa-item {
+    opacity: 0;
+    animation: fadeScale 0.4s ease-out forwards;
+  }
+
+  @keyframes fadeScale {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Testimonial cards */
+  .testimonial-card {
+    opacity: 0;
+    animation: cardReveal 0.5s ease-out forwards;
+  }
+
+  @keyframes cardReveal {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Profile image glow on hover */
+  .profile-image-container {
+    transition: box-shadow 0.3s ease;
+  }
+
+  .profile-image-container:hover {
+    box-shadow: 0 0 40px rgba(52, 211, 153, 0.15);
+  }
+</style>

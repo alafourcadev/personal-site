@@ -1,0 +1,69 @@
+---
+// Fixed typewriter logo in top-left corner with infinite loop
+---
+
+<a href="/" class="fixed top-4 left-6 z-50 flex items-center gap-1.5 group">
+    <span class="font-mono text-xl font-bold text-accent"> &gt;_ </span>
+    <span
+        class="logo-text font-mono text-base font-semibold text-slate-700 dark:text-slate-100 overflow-hidden whitespace-nowrap transition-colors duration-300"
+    >
+        alafourca.dev
+    </span>
+</a>
+
+<style>
+    .logo-text {
+        width: 0;
+        border-right: 2px solid transparent;
+        animation:
+            typewriter 2s steps(14) forwards,
+            blink-caret 0.6s step-end infinite,
+            delete-text 1s steps(14) forwards 5s,
+            typewriter 2s steps(14) forwards 6.5s;
+        animation-iteration-count: 1, infinite, 1, 1;
+    }
+
+    @keyframes typewriter {
+        0% {
+            width: 0;
+        }
+        100% {
+            width: 100%;
+        }
+    }
+
+    @keyframes delete-text {
+        0% {
+            width: 100%;
+        }
+        100% {
+            width: 0;
+        }
+    }
+
+    @keyframes blink-caret {
+        0%,
+        100% {
+            border-right-color: transparent;
+        }
+        50% {
+            border-right-color: #34d399;
+        }
+    }
+</style>
+
+<script>
+    // Restart the typewriter animation every 8 seconds
+    const logoText = document.querySelector(".logo-text") as HTMLElement;
+
+    function restartAnimation() {
+        if (logoText) {
+            logoText.style.animation = "none";
+            logoText.offsetHeight; // Trigger reflow
+            logoText.style.animation = "";
+        }
+    }
+
+    // Restart every 8 seconds (matches full animation cycle)
+    setInterval(restartAnimation, 8000);
+</script>

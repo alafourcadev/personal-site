@@ -1,0 +1,30 @@
+---
+const navLinks = [
+  { label: 'Home', href: '/' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Sobre Mí', href: '/sobre-mi' },
+  { label: 'Mi Setup', href: '/uses' },
+];
+---
+
+<footer class="border-t border-border-subtle mt-16">
+  <div
+    class="px-6 lg:px-[120px] py-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+  >
+    <nav class="flex items-center gap-6 flex-wrap">
+      {
+        navLinks.map((l) => (
+          <a
+            href={l.href}
+            class="text-sm text-txt-secondary hover:text-accent transition-colors duration-200"
+          >
+            {l.label}
+          </a>
+        ))
+      }
+    </nav>
+    <p class="text-sm text-txt-muted">
+      &copy; {new Date().getFullYear()} Alejandro Lafourcade. Todos los derechos reservados.
+    </p>
+  </div>
+</footer>

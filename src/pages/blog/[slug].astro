@@ -1,0 +1,270 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Icon from "../../components/Icon.astro";
+import BlogCard from "../../components/BlogCard.astro";
+import { getCollection } from "astro:content";
+import type { GetStaticPaths } from "astro";
+
+export const getStaticPaths = (async () => {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}) satisfies GetStaticPaths;
+
+const { post } = Astro.props;
+const { Content, headings } = await post.render();
+
+// Get related posts (exclude current, take 3)
+const allPosts = await getCollection("blog", ({ data }) => !data.draft);
+const relatedPosts = allPosts
+  .filter((p) => p.slug !== post.slug)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
+
+// Format date helper
+function formatDate(date: Date): string {
+  return date.toLocaleDateString("es-ES", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+// Build TOC from headings
+const tocItems = headings
+  .filter((h) => h.depth === 2)
+  .map((h) => ({ label: h.text, id: h.slug }));
+---
+
+<BaseLayout
+  title={`${post.data.title} — Ingeniería sin filtros`}
+  navVariant="blog"
+  footerVariant="simple"
+>
+  <!-- Article Header -->
+  <section
+    class="flex flex-col items-center gap-6 px-6 lg:px-[200px] py-[60px]"
+  >
+    <div class="flex items-center gap-2">
+      <a href="/blog" class="text-sm text-accent hover:underline">Blog</a>
+      <Icon name="chevron-right" size={14} class="text-slate-500" />
+      <span class="text-sm text-slate-500">{post.data.tags[0]}</span>
+    </div>
+    <div class="flex items-center gap-2">
+      {
+        post.data.tags.map((tag) => (
+          <span class="text-xs font-medium text-tag-text bg-tag-bg rounded px-3 py-1">
+            {tag}
+          </span>
+        ))
+      }
+    </div>
+    <h1
+      class="text-2xl lg:text-[40px] font-bold text-slate-100 text-center leading-[1.3] tracking-[-0.5px] max-w-[900px]"
+    >
+      {post.data.title}
+    </h1>
+    <div class="flex flex-wrap items-center justify-center gap-5 text-sm">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-full bg-accent"></div>
+        <span class="text-slate-100 font-medium">Alejandro Lafourcade</span>
+      </div>
+      <span class="w-1 h-1 rounded-full bg-slate-500"></span>
+      <span class="text-slate-400">{formatDate(post.data.date)}</span>
+      <span class="w-1 h-1 rounded-full bg-slate-500"></span>
+      <span class="text-slate-400">{post.data.readTime}</span>
+    </div>
+  </section>
+
+  <!-- Cover Image -->
+  <section class="px-6 lg:px-20">
+    <div
+      class="w-full h-64 lg:h-[400px] rounded-2xl overflow-hidden bg-[#1e293b]"
+    >
+      <img
+        src={post.data.image}
+        alt="Cover"
+        class="w-full h-full object-cover"
+        loading="eager"
+      />
+    </div>
+  </section>
+
+  <!-- Content Area -->
+  <section class="flex gap-12 px-6 lg:px-20 py-12">
+    <!-- TOC Sidebar -->
+    {
+      tocItems.length > 0 && (
+        <aside class="hidden lg:flex flex-col gap-4 w-[260px] shrink-0 sticky top-24 self-start">
+          <h3 class="font-mono text-[11px] font-bold text-slate-500 tracking-[1px] uppercase">
+            Contenido
+          </h3>
+          <div class="h-px bg-[#334155]" />
+          <nav class="flex flex-col">
+            {tocItems.map((item, i) => (
+              <a
+                href={`#${item.id}`}
+                class:list={[
+                  "text-sm py-2.5 pl-3 border-l-2 transition-colors",
+                  i === 0
+                    ? "border-accent text-accent font-medium"
+                    : "border-transparent text-slate-400 hover:text-slate-200",
+                ]}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </aside>
+      )
+    }
+
+    <!-- Article -->
+    <article class="flex-1 min-w-0 prose-custom">
+      <Content />
+
+      <!-- Article Footer -->
+      <div class="h-px bg-[#334155] mt-10"></div>
+      <div class="flex flex-col gap-6 mt-6">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-sm font-semibold text-slate-100">Tags:</span>
+          {
+            post.data.tags.map((tag) => (
+              <span class="text-xs font-medium text-tag-text bg-tag-bg rounded-md px-3 py-[5px]">
+                {tag}
+              </span>
+            ))
+          }
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="text-sm font-medium text-slate-100"
+            >Compartir artículo:</span
+          >
+          {
+            ["twitter", "linkedin", "link"].map((icon) => (
+              <button class="w-9 h-9 rounded-lg bg-[#1e293b] border border-[#334155] flex items-center justify-center text-slate-500 hover:text-slate-200 hover:border-slate-500 transition-colors">
+                <Icon name={icon} size={16} />
+              </button>
+            ))
+          }
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- Related Posts -->
+  <section
+    class="border-t border-[#334155] px-6 lg:px-20 py-[60px] flex flex-col gap-8"
+  >
+    <div class="flex flex-col gap-2">
+      <span class="font-mono text-sm font-medium text-accent"
+        >// related_posts</span
+      >
+      <h2 class="text-[28px] font-bold text-slate-100">También te puede interesar</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {
+        relatedPosts.map((p) => (
+          <BlogCard
+            slug={p.slug}
+            title={p.data.title}
+            description={p.data.description}
+            tags={p.data.tags}
+            date={formatDate(p.data.date)}
+            readTime={p.data.readTime}
+            image={p.data.image}
+          />
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<style is:global>
+  /* Markdown prose styling */
+  .prose-custom {
+    @apply text-base leading-[1.8];
+  }
+
+  .prose-custom h2 {
+    @apply text-2xl font-bold text-slate-100 mt-10 mb-4;
+  }
+
+  .prose-custom h3 {
+    @apply text-xl font-bold text-slate-100 mt-8 mb-3;
+  }
+
+  .prose-custom h4 {
+    @apply text-lg font-semibold text-slate-100 mt-6 mb-2;
+  }
+
+  .prose-custom p {
+    @apply text-base text-slate-400 leading-[1.8] mb-5;
+  }
+
+  .prose-custom a {
+    @apply text-accent hover:underline;
+  }
+
+  .prose-custom strong {
+    @apply text-slate-200 font-semibold;
+  }
+
+  .prose-custom em {
+    @apply text-slate-300 italic;
+  }
+
+  .prose-custom ul {
+    @apply list-disc list-inside text-slate-400 mb-5 space-y-1.5;
+  }
+
+  .prose-custom ol {
+    @apply list-decimal list-inside text-slate-400 mb-5 space-y-1.5;
+  }
+
+  .prose-custom li {
+    @apply text-base leading-[1.7];
+  }
+
+  .prose-custom blockquote {
+    @apply border-l-[3px] border-accent pl-5 py-3 my-6 bg-accent/5 rounded-r-lg;
+  }
+
+  .prose-custom blockquote p {
+    @apply text-slate-200 text-sm leading-[1.6] mb-0;
+  }
+
+  .prose-custom code {
+    @apply font-mono text-[13px] text-accent bg-[#1e293b] rounded px-1.5 py-0.5;
+  }
+
+  .prose-custom pre {
+    @apply rounded-xl border border-[#334155] overflow-hidden bg-[#0d1117] p-5 my-6 overflow-x-auto;
+  }
+
+  .prose-custom pre code {
+    @apply bg-transparent p-0 text-[13px] leading-[1.7] text-slate-300;
+  }
+
+  .prose-custom hr {
+    @apply border-[#334155] my-8;
+  }
+
+  .prose-custom table {
+    @apply w-full border-collapse my-6 text-sm;
+  }
+
+  .prose-custom thead th {
+    @apply text-left text-slate-200 font-semibold border-b border-[#334155] py-2.5 px-3;
+  }
+
+  .prose-custom tbody td {
+    @apply text-slate-400 border-b border-[#334155]/50 py-2.5 px-3;
+  }
+
+  .prose-custom img {
+    @apply rounded-xl my-6;
+  }
+</style>

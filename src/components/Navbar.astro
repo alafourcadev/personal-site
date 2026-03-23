@@ -1,0 +1,183 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  variant?: 'home' | 'blog';
+}
+
+const { variant = 'home' } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+const homeLinks = [
+  { label: 'Home', href: '/' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Sobre Mí', href: '/sobre-mi' },
+  { label: 'Mi Setup', href: '/uses' },
+];
+
+const blogLinks = [
+  { label: 'Home', href: '/' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Sobre Mí', href: '/sobre-mi' },
+  { label: 'Mi Setup', href: '/uses' },
+];
+
+const links = variant === 'blog' ? blogLinks : homeLinks;
+
+function isActive(href: string): boolean {
+  if (href.startsWith('#')) return false;
+  if (href === '/') return currentPath === '/';
+  if (href === '/blog') return currentPath.startsWith('/blog');
+  if (href === '/sobre-mi') return currentPath === '/sobre-mi';
+  if (href === '/uses') return currentPath === '/uses';
+  return currentPath === href;
+}
+---
+
+<nav
+  class="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center gap-5 h-[44px] px-5 bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-xl border border-slate-200 dark:border-[#334155] rounded-full shadow-lg shadow-black/10 dark:shadow-black/25 transition-colors duration-300"
+>
+  <!-- Desktop links -->
+  <div class="hidden md:flex items-center gap-5">
+    {
+      links.map((link, index) => (
+        <a
+          href={link.href}
+          class:list={[
+            'nav-link relative text-[13px] transition-all duration-300 hover:text-accent',
+            isActive(link.href)
+              ? 'text-accent font-medium'
+              : 'text-slate-500 dark:text-slate-400',
+          ]}
+          style={`animation-delay: ${index * 100}ms`}
+        >
+          {link.label}
+          <span
+            class:list={[
+              'absolute -bottom-1 left-0 h-0.5 bg-accent transition-all duration-300',
+              isActive(link.href) ? 'w-full' : 'w-0 group-hover:w-full',
+            ]}
+          />
+        </a>
+      ))
+    }
+    <span class="text-slate-300 dark:text-[#334155]">|</span>
+    <button
+      id="theme-toggle"
+      class="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:rotate-12 transition-all duration-300"
+      aria-label="Toggle theme"
+    >
+      <Icon name="moon" size={16} class="moon-icon" />
+      <Icon name="sun" size={16} class="sun-icon hidden" />
+    </button>
+    <a
+      href="mailto:ale@alafourca.dev?subject=Consultoría%20Técnica"
+      class="ml-1 px-4 py-1.5 text-[12px] font-bold bg-accent text-bg-deep rounded-full hover:shadow-lg hover:shadow-accent/25 hover:-translate-y-0.5 transition-all duration-300"
+    >
+      Hablemos
+    </a>
+  </div>
+
+  <!-- Mobile menu toggle -->
+  <button
+    id="menu-toggle"
+    class="md:hidden text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+    aria-label="Toggle menu"
+  >
+    <Icon name="menu" size={20} class="menu-icon" />
+    <Icon name="x" size={20} class="close-icon hidden" />
+  </button>
+</nav>
+
+<!-- Mobile menu -->
+<div
+  id="mobile-menu"
+  class="hidden md:hidden fixed top-[72px] left-0 right-0 z-40 bg-[#0f172a]/95 backdrop-blur-xl border-b border-[#334155] p-6 flex flex-col gap-4"
+>
+  {
+    links.map((link, index) => (
+      <a
+        href={link.href}
+        class:list={[
+          'text-[15px] py-2 transition-all duration-300 pl-3 border-l-2',
+          isActive(link.href)
+            ? 'text-accent font-medium border-accent'
+            : 'text-slate-400 border-transparent hover:border-slate-500 hover:text-slate-200',
+        ]}
+        style={`animation-delay: ${index * 50}ms`}
+      >
+        {link.label}
+      </a>
+    ))
+  }
+  <a
+    href="#subscribe"
+    class="flex items-center justify-center px-5 py-2.5 border-2 border-accent text-accent text-sm font-semibold rounded-lg hover:bg-accent hover:text-[#0f172a] transition-all duration-300 mt-2"
+  >
+    Suscribirse
+  </a>
+</div>
+
+<script>
+  const btn = document.getElementById('menu-toggle');
+  const menu = document.getElementById('mobile-menu');
+  const menuIcon = btn?.querySelector('.menu-icon') as HTMLElement | null;
+  const closeIcon = btn?.querySelector('.close-icon') as HTMLElement | null;
+
+  btn?.addEventListener('click', () => {
+    menu?.classList.toggle('hidden');
+    menuIcon?.classList.toggle('hidden');
+    closeIcon?.classList.toggle('hidden');
+  });
+
+  // Theme toggle functionality
+  const themeToggle = document.getElementById('theme-toggle');
+  const moonIcon = themeToggle?.querySelector(
+    '.moon-icon',
+  ) as HTMLElement | null;
+  const sunIcon = themeToggle?.querySelector('.sun-icon') as HTMLElement | null;
+
+  function updateThemeIcons() {
+    const isDark = document.documentElement.classList.contains('dark');
+    if (isDark) {
+      moonIcon?.classList.add('hidden');
+      sunIcon?.classList.remove('hidden');
+    } else {
+      moonIcon?.classList.remove('hidden');
+      sunIcon?.classList.add('hidden');
+    }
+  }
+
+  // Initialize icons on page load
+  updateThemeIcons();
+
+  themeToggle?.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    updateThemeIcons();
+  });
+</script>
+
+<style>
+  /* Nav links hover underline effect */
+  .nav-link:hover span {
+    width: 100%;
+  }
+
+  /* Staggered fade-in for nav links */
+  .nav-link {
+    opacity: 0;
+    animation: slideIn 0.4s ease-out forwards;
+  }
+
+  @keyframes slideIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

@@ -1,0 +1,140 @@
+---
+const workstationItems = [
+  {
+    name: 'MacBook Pro 16" — Apple M3 Pro / 36GB RAM',
+    href: 'https://www.apple.com/macbook-pro/',
+    description:
+      'Mi máquina principal para todo: desarrollo, contenido, arquitectura. El chip M3 Pro con 36GB de RAM mueve sin despeinarse múltiples instancias de IntelliJ, Docker, bases de datos y lo que le ponga encima. Silenciosa, rápida y con una batería que dura todo el día. Si trabajás en backend pesado, esta máquina no te va a fallar.',
+  },
+  {
+    name: '2x Xiaomi 4K Monitor A27Ui — 27" IPS 4K UHD',
+    href: 'https://www.mi.com/global/product/xiaomi-4k-monitor-a27ui/',
+    description:
+      'Dos monitores idénticos con resolución 4K real, panel IPS con precisión de color ΔE<1 y certificación TÜV de luz azul baja. Lo que más me gusta: el puerto USB-C con carga reversa — un solo cable para video y carga. Perfectos para tener código a la izquierda y documentación/terminal a la derecha sin perder un detalle.',
+  },
+  {
+    name: 'AULA F99 Pro — Teclado Mecánico',
+    href: 'https://www.amazon.com/AULA-F99-Pro-Mechanical-Swappable/dp/B0DKNDPKV3/',
+    description:
+      'Teclado mecánico con layout 96%, estructura gasket-mount y switches hot-swappable pre-lubricados. Triple conectividad: Bluetooth 5.1, 2.4GHz wireless y USB-C. La batería de 8000mAh dura semanas. Con RGB personalizable y keycaps PBT que no se desgastan. Una bestia silenciosa para sesiones largas de código.',
+  },
+  {
+    name: 'Logitech MX Master 3S',
+    href: 'https://www.logitech.com/en-us/products/mice/mx-master-3s.910-006557.html',
+    description:
+      'El mouse que todo developer debería tener. Sensor de 8000 DPI que trackea hasta en vidrio, scroll electromagnético MagSpeed que es 90% más silencioso, y una ergonomía que se siente como extensión de la mano. Se conecta a 3 dispositivos simultáneos y con Logi Flow paso archivos entre máquinas sin pensarlo.',
+  },
+  {
+    name: 'iVANKY FusionDock 1 — Docking Station 12-in-2',
+    href: 'https://www.amazon.com/MacBook-Docking-Station-Adapter-Display/dp/B08PP8HYR9/',
+    description:
+      '12 puertos en un solo dock: dual HDMI 4K@60Hz, 4x USB 3.0, Ethernet Gigabit, lector SD/TF y carga de 96W para el MacBook. Convierte la laptop en una estación de trabajo completa con un solo conector. Compacta, sólida y sin complicaciones.',
+  },
+];
+---
+
+<!-- Header -->
+<section class="section-animate px-6 lg:px-[120px] pt-12 pb-6 lg:pt-16 lg:pb-8">
+  <div class="max-w-3xl">
+    <h1
+      class="font-heading text-3xl md:text-4xl lg:text-[42px] font-extrabold text-txt-primary leading-[1.15] tracking-tight mb-4"
+    >
+      Mi Setup
+    </h1>
+    <p class="text-lg text-txt-secondary leading-relaxed">
+      Hardware y software que uso, gadgets que me encantan y herramientas que
+      recomiendo. Inspirado en <a
+        href="https://uses.tech/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-accent hover:underline">uses.tech</a
+      >.
+    </p>
+  </div>
+</section>
+
+<!-- Workstation -->
+<section class="section-animate px-6 lg:px-[120px] py-8 lg:py-10">
+  <h2
+    class="font-heading text-2xl lg:text-3xl font-bold text-txt-primary tracking-[-0.8px] flex items-center gap-3 mb-8"
+  >
+    <span class="text-accent">💻</span>
+    Workstation
+  </h2>
+  <div class="flex flex-col gap-6 max-w-3xl">
+    {
+      workstationItems.map((item, i) => (
+        <div
+          class="uses-item group bg-bg-surface border border-border-subtle rounded-xl p-6 hover:border-accent/30 transition-all duration-300"
+          style={`animation-delay: ${i * 80}ms`}
+        >
+          <a
+            href={item.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-lg font-bold text-txt-primary group-hover:text-accent transition-colors duration-300 inline-flex items-center gap-2"
+          >
+            {item.name}
+            <svg
+              class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
+          </a>
+          <p class="text-txt-secondary leading-[1.7] mt-2 text-[15px]">
+            {item.description}
+          </p>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<!-- Placeholder sections for future -->
+<section class="section-animate px-6 lg:px-[120px] py-8 lg:py-10">
+  <div class="max-w-3xl border-t border-border-subtle pt-8">
+    <p class="text-txt-muted text-sm italic">
+      🚧 Más secciones próximamente: Herramientas de desarrollo, Creación de
+      contenido, Productividad y Este sitio.
+    </p>
+  </div>
+</section>
+
+<style>
+  .section-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: sectionFadeIn 0.8s ease-out forwards;
+  }
+
+  @keyframes sectionFadeIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .uses-item {
+    opacity: 0;
+    animation: fadeScale 0.4s ease-out forwards;
+  }
+
+  @keyframes fadeScale {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+</style>

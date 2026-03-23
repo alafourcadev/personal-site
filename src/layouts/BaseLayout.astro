@@ -1,0 +1,180 @@
+---
+import Navbar from '../components/Navbar.astro';
+import TypewriterLogo from '../components/TypewriterLogo.astro';
+import FooterFull from '../components/FooterFull.astro';
+import FooterSimple from '../components/FooterSimple.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  navVariant?: 'home' | 'blog';
+  footerVariant?: 'full' | 'simple';
+}
+
+const {
+  title,
+  description = 'Ingeniería sin filtros — Alejandro Lafourcade',
+  navVariant = 'home',
+  footerVariant = 'full',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script is:inline>
+      // Load theme before page renders to prevent flash
+      (function () {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body
+    class="bg-[#0f172a] text-txt-primary font-sans antialiased overflow-x-hidden"
+  >
+    <TypewriterLogo />
+    <Navbar variant={navVariant} />
+    <div class="max-w-[1400px] mx-auto">
+      <main class="pt-20">
+        <slot />
+      </main>
+      {footerVariant === 'full' ? <FooterFull /> : <FooterSimple />}
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Light mode (default when no dark class) */
+  :root {
+    --bg-deep: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-surface-hover: #f1f5f9;
+    --border-subtle: #e2e8f0;
+    --txt-primary: #1e293b;
+    --txt-secondary: #475569;
+    --txt-muted: #94a3b8;
+    --accent: #10b981;
+    --nav-bg: rgba(255, 255, 255, 0.8);
+    --scrollbar-track: #f1f5f9;
+    --scrollbar-thumb: #cbd5e1;
+    --scrollbar-thumb-hover: #94a3b8;
+  }
+
+  /* Dark mode (when dark class is present) */
+  html.dark {
+    --bg-deep: #0a0f1a;
+    --bg-surface: #131b2e;
+    --bg-surface-hover: #1a2540;
+    --border-subtle: #1e2d4a;
+    --txt-primary: #e2e8f0;
+    --txt-secondary: #94a3b8;
+    --txt-muted: #64748b;
+    --accent: #34d399;
+    --nav-bg: rgba(15, 23, 42, 0.8);
+    --scrollbar-track: #0f172a;
+    --scrollbar-thumb: #334155;
+    --scrollbar-thumb-hover: #475569;
+  }
+
+  /* Apply CSS variables */
+  body {
+    background-color: var(--bg-deep);
+    color: var(--txt-primary);
+  }
+
+  ::selection {
+    background: rgba(16, 185, 129, 0.3);
+    color: inherit;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+
+  /* Theme-aware component overrides */
+  .bg-\[\#0f172a\] {
+    background-color: var(--bg-deep) !important;
+  }
+  .bg-\[\#0f172a\]\/80 {
+    background-color: var(--nav-bg) !important;
+  }
+  .bg-\[\#0f172a\]\/95 {
+    background-color: var(--nav-bg) !important;
+  }
+  .bg-\[\#1e293b\] {
+    background-color: var(--bg-surface) !important;
+  }
+  .bg-bg-deep {
+    background-color: var(--bg-deep) !important;
+  }
+  .bg-bg-surface {
+    background-color: var(--bg-surface) !important;
+  }
+
+  .border-\[\#334155\] {
+    border-color: var(--border-subtle) !important;
+  }
+  .border-border-subtle {
+    border-color: var(--border-subtle) !important;
+  }
+
+  .text-txt-primary {
+    color: var(--txt-primary) !important;
+  }
+  .text-txt-secondary {
+    color: var(--txt-secondary) !important;
+  }
+  .text-txt-muted {
+    color: var(--txt-muted) !important;
+  }
+  .text-slate-100 {
+    color: var(--txt-primary) !important;
+  }
+  .text-slate-400 {
+    color: var(--txt-secondary) !important;
+  }
+  .text-slate-500 {
+    color: var(--txt-muted) !important;
+  }
+
+  .placeholder\:text-slate-500::placeholder {
+    color: var(--txt-muted) !important;
+  }
+  .placeholder\:text-txt-muted::placeholder {
+    color: var(--txt-muted) !important;
+  }
+</style>

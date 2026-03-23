@@ -1,0 +1,395 @@
+---
+import { getCollection } from 'astro:content';
+import Icon from './Icon.astro';
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const latestPosts = allPosts
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+const socialLinks = [
+  { icon: 'twitter', label: 'Twitter/X', href: 'https://x.com/alafourcadev' },
+  { icon: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/in/alafourcadedespaigne/' },
+  { icon: 'github', label: 'GitHub', href: 'https://github.com/alafourcadev' },
+];
+
+const workExperience = [
+  { company: 'Paraguay', role: 'Líder Técnico', period: '2025—Actualidad', logo: '🇵🇾' },
+  { company: 'México', role: 'Principal Engineer', period: '2023—2024', logo: '🇲🇽' },
+  { company: 'Chile', role: 'Staff Engineer', period: '2021—2024', logo: '🇨🇱' },
+  { company: 'Colombia / EEUU', role: 'Senior Backend Engineer', period: '2021—2023', logo: '🇨🇴🇺🇸' },
+  { company: 'España', role: 'IT Consultant', period: '2020—2021', logo: '🇪🇸' },
+  { company: 'México', role: 'Chief Engineer', period: '2018—2021', logo: '🇲🇽' },
+  { company: 'Paraguay', role: 'Backend Engineer', period: '2016—2018', logo: '🇵🇾' },
+  { company: 'Venezuela', role: 'L3 Support Lead', period: '2014—2016', logo: '🇻🇪' },
+  { company: 'Cuba', role: 'Junior Software Engineer', period: '2011—2014', logo: '🇨🇺' },
+];
+
+const stats = [
+  { number: '10+', label: 'Años de experiencia' },
+  { number: '8', label: 'Países' },
+  { number: '50+', label: 'Sistemas en producción' },
+];
+---
+
+<!-- Hero Section -->
+<section class="relative min-h-[85vh] flex items-center px-6 lg:px-[120px] pt-16 pb-12">
+  <!-- Decorative gradient orbs -->
+  <div class="absolute top-20 -left-32 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[128px] pointer-events-none" />
+  <div class="absolute bottom-10 right-0 w-[400px] h-[400px] bg-teal-500/5 rounded-full blur-[100px] pointer-events-none" />
+
+  <div class="relative z-10 flex flex-col items-start gap-8 max-w-4xl">
+    <!-- Availability Badge -->
+    <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-accent/20 bg-accent/5">
+      <span class="relative flex h-2 w-2">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+      </span>
+      <span class="text-accent text-sm font-medium">Disponible para consultoría</span>
+    </div>
+
+    <!-- Profile Photo with animated gradient ring -->
+    <div class="relative w-24 h-24">
+      <div class="absolute -inset-1 bg-gradient-to-r from-accent via-teal-400 to-accent rounded-full animate-spin-slow opacity-60 blur-sm" />
+      <img
+        src="/profile.jpg"
+        alt="Alejandro Lafourcade"
+        class="relative w-full h-full rounded-full object-cover border-2 border-bg-deep"
+        loading="eager"
+      />
+    </div>
+
+    <!-- Heading -->
+    <h1 class="font-heading text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold tracking-tight leading-[1.1]">
+      Ingeniero de Software.
+      <span class="hero-gradient">
+        +10 años. 8 países.
+      </span>
+      <br />Sistemas que no pueden fallar.
+    </h1>
+
+    <!-- Bio -->
+    <p class="text-lg lg:text-xl text-txt-secondary leading-relaxed max-w-2xl">
+      Hola 👋, soy Alejandro Lafourcade. Llevo más de una década diseñando,
+      construyendo y escalando los sistemas detrás de operaciones que no pueden
+      fallar. Cubano 🇨🇺 de raíz y paraguayo 🇵🇾 de corazón.
+    </p>
+
+    <!-- Social Links -->
+    <div class="flex items-center gap-3">
+      {socialLinks.map(({ icon, href, label }) => (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="p-2.5 rounded-xl bg-bg-surface border border-border-subtle text-txt-secondary hover:text-accent hover:border-accent/40 hover:bg-accent/5 transition-all duration-300"
+          aria-label={label}
+        >
+          <Icon name={icon} size={20} />
+        </a>
+      ))}
+    </div>
+
+    <!-- Stats -->
+    <div class="flex flex-wrap items-center gap-8 sm:gap-12 pt-6 border-t border-border-subtle w-full max-w-xl">
+      {stats.map(({ number, label }) => (
+        <div class="flex flex-col gap-1">
+          <span class="text-3xl lg:text-4xl font-heading font-extrabold text-txt-primary">{number}</span>
+          <span class="text-sm text-txt-muted">{label}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- Latest Writing -->
+<section class="px-6 lg:px-[120px] py-16 lg:py-24 reveal-section">
+  <div class="flex items-center justify-between mb-10">
+    <h2 class="font-heading text-2xl lg:text-3xl font-bold text-txt-primary">
+      Últimos artículos
+    </h2>
+    <a href="/blog" class="inline-flex items-center gap-1.5 text-accent text-sm font-medium hover:gap-2.5 transition-all duration-300">
+      Ver todos
+      <Icon name="arrow-right" size={14} />
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {latestPosts.map((post) => (
+      <a
+        href={`/blog/${post.slug}`}
+        class="group flex flex-col bg-bg-surface backdrop-blur-sm rounded-2xl border border-border-subtle overflow-hidden hover:border-accent/30 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)] transition-all duration-500"
+      >
+        <div class="h-[200px] overflow-hidden">
+          <img
+            src={post.data.image}
+            alt={post.data.title}
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            loading="lazy"
+          />
+        </div>
+        <div class="p-6 flex flex-col gap-3 flex-1">
+          <div class="flex flex-wrap gap-1.5">
+            {post.data.tags.slice(0, 2).map((tag: string) => (
+              <span class="text-[11px] font-medium text-tag-text bg-tag-bg rounded-md px-2.5 py-1">{tag}</span>
+            ))}
+          </div>
+          <h3 class="text-lg font-bold text-txt-primary leading-snug group-hover:text-accent transition-colors duration-300">
+            {post.data.title}
+          </h3>
+          <p class="text-sm text-txt-secondary leading-relaxed line-clamp-2 flex-1">
+            {post.data.description}
+          </p>
+          <div class="flex items-center gap-2 text-xs text-txt-muted mt-auto pt-3 border-t border-border-subtle">
+            <time>{formatDate(post.data.date)}</time>
+            <span class="w-1 h-1 rounded-full bg-txt-muted" />
+            <span>{post.data.readTime}</span>
+          </div>
+        </div>
+      </a>
+    ))}
+  </div>
+</section>
+
+<!-- Experience Section -->
+<section class="px-6 lg:px-[120px] py-16 lg:py-24 reveal-section">
+  <div class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-12 lg:gap-16">
+    <!-- Left: Narrative -->
+    <div class="flex flex-col justify-center gap-6">
+      <h2 class="font-heading text-2xl lg:text-3xl font-bold text-txt-primary leading-tight">
+        Una carrera construida en
+        <span class="hero-gradient">trincheras reales</span>
+      </h2>
+      <p class="text-lg text-txt-secondary leading-relaxed max-w-xl">
+        Desde Cuba hasta Paraguay, pasando por 8 países. Cada salto fue un
+        reset completo — nuevo idioma, nueva cultura, nuevos estándares. Lo que
+        no cambió: la obsesión por construir sistemas que no fallan.
+      </p>
+      <p class="text-txt-secondary leading-relaxed max-w-xl">
+        Hoy lidero equipos de ingeniería y exploro cómo la inteligencia
+        artificial está redefiniendo lo que significa construir software.
+        Este espacio es para compartir lo que aprendo — lo bueno, lo difícil
+        y lo que nadie te cuenta.
+      </p>
+    </div>
+
+    <!-- Right: Timeline -->
+    <div class="bg-bg-surface backdrop-blur-sm border border-border-subtle rounded-2xl p-6 lg:p-8">
+      <div class="flex items-center gap-2 mb-6">
+        <Icon name="briefcase" size={20} class="text-accent" />
+        <h3 class="font-bold text-txt-primary">Trayectoria</h3>
+      </div>
+      <div class="flex flex-col gap-4">
+        {workExperience.map(({ company, role, period, logo }) => (
+          <div class="flex items-center gap-4 group">
+            <div class={`w-10 h-10 rounded-xl bg-bg-deep border border-border-subtle flex items-center justify-center shrink-0 group-hover:border-accent/30 transition-colors duration-300 ${logo.length > 2 ? 'text-sm' : 'text-lg'}`}>
+              {logo}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-txt-primary text-sm group-hover:text-accent transition-colors duration-300">{role}</div>
+              <div class="text-txt-muted text-xs">{company} · {period}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Mentoría -->
+<section class="px-6 lg:px-[120px] py-16 lg:py-24 reveal-section">
+  <div class="relative rounded-3xl overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-accent/15 via-transparent to-teal-500/10" />
+    <div class="absolute inset-0 border border-accent/20 rounded-3xl" />
+
+    <div class="relative px-8 py-14 lg:px-16 lg:py-20 text-center">
+      <h2 class="font-heading text-3xl lg:text-4xl font-extrabold text-txt-primary leading-tight mb-4">
+        ¿Necesitás mentoría o consultoría
+        <span class="hero-gradient">técnica</span>?
+      </h2>
+      <p class="text-lg text-txt-secondary leading-relaxed max-w-lg mx-auto mb-10">
+        Sesiones 1:1, arquitectura de sistemas, code review y acompañamiento
+        técnico. Sin humo — solo experiencia real.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a
+          href="mailto:ale@alafourca.dev?subject=Consultoría%20Técnica"
+          class="px-8 py-3.5 bg-accent text-bg-deep font-bold rounded-xl hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5 transition-all duration-300"
+        >
+          Agendar Consultoría
+        </a>
+        <a
+          href="/blog"
+          class="px-8 py-3.5 border border-border-subtle text-txt-secondary font-medium rounded-xl hover:border-accent/40 hover:text-txt-primary transition-all duration-300"
+        >
+          Ver Blog
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Particle Network Canvas -->
+<canvas id="particle-canvas" class="fixed inset-0 z-0 pointer-events-none"></canvas>
+
+<script>
+  // Scroll Reveal
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+  );
+  document.querySelectorAll('.reveal-section').forEach((el) => observer.observe(el));
+
+  // Particle Network
+  const canvas = document.getElementById('particle-canvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  let mouse = { x: -999, y: -999 };
+  let particles: { x: number; y: number; vx: number; vy: number; size: number; opacity: number }[] = [];
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  function createParticles() {
+    const count = Math.floor((canvas.width * canvas.height) / 22000);
+    particles = [];
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        size: Math.random() * 1.5 + 0.5,
+        opacity: Math.random() * 0.3 + 0.05,
+      });
+    }
+  }
+
+  function getAccentColor() {
+    return document.documentElement.classList.contains('dark') ? '52, 211, 153' : '16, 185, 129';
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const accent = getAccentColor();
+    const connectionDist = 120;
+    const mouseDist = 200;
+
+    for (const p of particles) {
+      const dxM = mouse.x - p.x;
+      const dyM = mouse.y - p.y;
+      const distM = Math.sqrt(dxM * dxM + dyM * dyM);
+
+      if (distM < mouseDist && distM > 1) {
+        const force = (1 - distM / mouseDist) * 0.015;
+        p.vx += (dxM / distM) * force;
+        p.vy += (dyM / distM) * force;
+      }
+
+      p.vx *= 0.98;
+      p.vy *= 0.98;
+      const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+      if (speed > 1) { p.vx /= speed; p.vy /= speed; }
+
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+      const glowFactor = distM < mouseDist ? (1 - distM / mouseDist) * 0.4 : 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size + glowFactor * 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${accent}, ${Math.min(p.opacity + glowFactor, 0.6)})`;
+      ctx.fill();
+    }
+
+    for (let i = 0; i < particles.length; i++) {
+      const a = particles[i];
+      const dxA = a.x - mouse.x;
+      const dyA = a.y - mouse.y;
+      const distMA = Math.sqrt(dxA * dxA + dyA * dyA);
+
+      if (distMA < mouseDist) {
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(mouse.x, mouse.y);
+        ctx.strokeStyle = `rgba(${accent}, ${(1 - distMA / mouseDist) * 0.2})`;
+        ctx.lineWidth = 0.3;
+        ctx.stroke();
+
+        for (let j = i + 1; j < particles.length; j++) {
+          const b = particles[j];
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < connectionDist) {
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = `rgba(${accent}, ${(1 - dist / connectionDist) * (1 - distMA / mouseDist) * 0.35})`;
+            ctx.lineWidth = 0.4;
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  window.addEventListener('resize', () => { resize(); createParticles(); });
+  resize();
+  createParticles();
+  animate();
+</script>
+
+<style>
+  .hero-gradient {
+    background: linear-gradient(135deg, #059669, #0d9488);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  :global(html.dark) .hero-gradient {
+    background: linear-gradient(135deg, #34d399, #5eead4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .reveal-section {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+
+  .reveal-section.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>
