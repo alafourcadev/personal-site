@@ -53,7 +53,7 @@ const TAG_ROWS: { id: string; icon: LucideIcon; label: string }[][] = [
 ];
 
 const CONFIG = {
-  containerHeight: "h-[200px] sm:h-[220px]",
+  containerHeight: "h-[180px] sm:h-[200px]",
   lensSize: 80,
 };
 
@@ -66,12 +66,12 @@ const SkillsMarquee = () => {
   const inverseMask = useMotionTemplate`radial-gradient(circle 30px at calc(50% + ${lensX}px - 10px) calc(50% + ${lensY}px - 10px), transparent 100%, black 100%)`;
 
   return (
-    <div className="flex items-center justify-center w-full">
-      <div className="group relative w-full max-w-[600px] overflow-hidden rounded-2xl border border-[#1e2d4a] bg-[#131b2e]/80 p-1.5 shadow-2xl shadow-emerald-500/5 transition-all duration-500 hover:shadow-emerald-500/10">
+    <div className="w-full">
+      <div className="group relative w-full overflow-hidden rounded-xl bg-[#0d1117]/40 border border-[#1e2d4a]/50 p-3">
         <div
           ref={containerRef}
           className={cn(
-            "relative w-full overflow-hidden rounded-xl bg-[#0a0f1a]/60",
+            "relative w-full overflow-hidden",
             CONFIG.containerHeight
           )}
         >
@@ -92,7 +92,7 @@ const SkillsMarquee = () => {
                         : ["-33.333%", "0%"],
                   }}
                   transition={{
-                    duration: 25,
+                    duration: 30,
                     ease: "linear",
                     repeat: Infinity,
                   }}
@@ -126,7 +126,7 @@ const SkillsMarquee = () => {
                         : ["-33.333%", "0%"],
                   }}
                   transition={{
-                    duration: 25,
+                    duration: 30,
                     ease: "linear",
                     repeat: Infinity,
                   }}
@@ -134,7 +134,7 @@ const SkillsMarquee = () => {
                   {[...row, ...row, ...row].map((item, idx) => (
                     <div
                       key={`${item.id}-${idx}-reveal`}
-                      className="flex gap-2 bg-[#131b2e] whitespace-nowrap w-fit text-[#34d399] p-2 px-3 items-center border border-[#34d399]/20 shadow-sm shadow-[#34d399]/10 rounded-full text-xs scale-125 ml-6 font-medium"
+                      className="flex gap-2 bg-[#131b2e] whitespace-nowrap w-fit text-[#34d399] p-2 px-3 items-center border border-[#34d399]/20 shadow-sm shadow-[#34d399]/10 shadow-[0_0_12px_rgba(52,211,153,0.3)] rounded-full text-xs scale-125 ml-6 font-medium"
                     >
                       <item.icon size={14} className="text-[#34d399]" />
                       <span>{item.label}</span>
@@ -160,8 +160,10 @@ const SkillsMarquee = () => {
           </div>
 
           {/* Fade edges */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-[#0a0f1a] to-transparent z-20" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-[#0a0f1a] to-transparent z-20" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[var(--bg-deep)] to-transparent z-20" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[var(--bg-deep)] to-transparent z-20" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-[#0d1117]/80 to-transparent z-20" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#0d1117]/80 to-transparent z-20" />
         </div>
       </div>
     </div>
@@ -172,14 +174,14 @@ export default SkillsMarquee;
 
 const MagnifyingLens = ({ size = 92 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M365.424 335.392L342.24 312.192L311.68 342.736L334.88 365.936L365.424 335.392Z" fill="#4a5568" />
-    <path d="M358.08 342.736L334.88 319.552L319.04 335.392L342.24 358.584L358.08 342.736Z" fill="#718096" />
-    <path d="M352.368 321.808L342.752 312.192L312.208 342.752L321.824 352.36L352.368 321.808Z" fill="#4a5568" />
-    <path d="M332 332C260 404 142.4 404 69.6001 332C-2.3999 260 -2.3999 142.4 69.6001 69.6C141.6 -3.20003 259.2 -2.40002 332 69.6C404.8 142.4 404.8 260 332 332ZM315.2 87.2C252 24 150.4 24 88.0001 87.2C24.8001 150.4 24.8001 252 88.0001 314.4C151.2 377.6 252.8 377.6 315.2 314.4C377.6 252 377.6 150.4 315.2 87.2Z" fill="#718096" />
-    <path d="M319.2 319.2C254.4 384 148.8 384 83.2001 319.2C18.4001 254.4 18.4001 148.8 83.2001 83.2C148 18.4 253.6 18.4 319.2 83.2C384 148.8 384 254.4 319.2 319.2ZM310.4 92C250.4 32 152 32 92.0001 92C32.0001 152 32.0001 250.4 92.0001 310.4C152 370.4 250.4 370.4 310.4 310.4C370.4 250.4 370.4 152 310.4 92Z" fill="#2d3748" />
-    <path d="M484.104 428.784L373.8 318.472L318.36 373.912L428.672 484.216L484.104 428.784Z" fill="#1a202c" />
-    <path d="M471.664 441.224L361.344 330.928L330.8 361.48L441.12 471.76L471.664 441.224Z" fill="#2d3748" />
-    <path d="M495.2 423.2C504 432 432.8 504 423.2 495.2L417.6 489.6C408.8 480.8 480 408.8 489.6 417.6L495.2 423.2Z" fill="#4a5568" />
-    <path d="M483.2 435.2C492 444 444.8 492 435.2 483.2L429.6 477.6C420.8 468.8 468 420.8 477.6 429.6L483.2 435.2Z" fill="#718096" />
+    <path d="M365.424 335.392L342.24 312.192L311.68 342.736L334.88 365.936L365.424 335.392Z" fill="#94a3b8" />
+    <path d="M358.08 342.736L334.88 319.552L319.04 335.392L342.24 358.584L358.08 342.736Z" fill="#cbd5e1" />
+    <path d="M352.368 321.808L342.752 312.192L312.208 342.752L321.824 352.36L352.368 321.808Z" fill="#94a3b8" />
+    <path d="M332 332C260 404 142.4 404 69.6001 332C-2.3999 260 -2.3999 142.4 69.6001 69.6C141.6 -3.20003 259.2 -2.40002 332 69.6C404.8 142.4 404.8 260 332 332ZM315.2 87.2C252 24 150.4 24 88.0001 87.2C24.8001 150.4 24.8001 252 88.0001 314.4C151.2 377.6 252.8 377.6 315.2 314.4C377.6 252 377.6 150.4 315.2 87.2Z" fill="#cbd5e1" />
+    <path d="M319.2 319.2C254.4 384 148.8 384 83.2001 319.2C18.4001 254.4 18.4001 148.8 83.2001 83.2C148 18.4 253.6 18.4 319.2 83.2C384 148.8 384 254.4 319.2 319.2ZM310.4 92C250.4 32 152 32 92.0001 92C32.0001 152 32.0001 250.4 92.0001 310.4C152 370.4 250.4 370.4 310.4 310.4C370.4 250.4 370.4 152 310.4 92Z" fill="#64748b" />
+    <path d="M484.104 428.784L373.8 318.472L318.36 373.912L428.672 484.216L484.104 428.784Z" fill="#475569" />
+    <path d="M471.664 441.224L361.344 330.928L330.8 361.48L441.12 471.76L471.664 441.224Z" fill="#64748b" />
+    <path d="M495.2 423.2C504 432 432.8 504 423.2 495.2L417.6 489.6C408.8 480.8 480 408.8 489.6 417.6L495.2 423.2Z" fill="#94a3b8" />
+    <path d="M483.2 435.2C492 444 444.8 492 435.2 483.2L429.6 477.6C420.8 468.8 468 420.8 477.6 429.6L483.2 435.2Z" fill="#cbd5e1" />
   </svg>
 );

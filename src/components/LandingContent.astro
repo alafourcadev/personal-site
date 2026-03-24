@@ -34,11 +34,6 @@ const workExperience = [
   { company: 'Cuba', role: 'Junior Software Engineer', period: '2011—2014', logo: '🇨🇺' },
 ];
 
-const stats = [
-  { number: '+10', label: 'Años de experiencia' },
-  { number: '8', label: 'Países' },
-  { number: '+20', label: 'Sistemas en producción' },
-];
 ---
 
 <!-- Hero Section -->
@@ -71,12 +66,12 @@ const stats = [
       </div>
 
       <!-- Heading (full width) -->
-      <h1 class="font-heading text-3xl md:text-4xl lg:text-[3.2rem] xl:text-[3.8rem] font-extrabold tracking-tight leading-tight max-w-4xl">
+      <h1 class="font-heading text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight leading-relaxed max-w-5xl">
         Ingeniero de Software.
         <span class="hero-gradient">
           +10 años. 8 países.
         </span>
-        <br />Sistemas que no pueden fallar.
+        Sistemas que no pueden fallar.
       </h1>
 
       <!-- Bio (wider) -->
@@ -102,41 +97,15 @@ const stats = [
       </div>
     </div>
 
-    <!-- Bottom: Stats (left) + Skills Bento (right) — aligned on the divider line -->
-    <div class="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-8 items-start border-t border-border-subtle pt-6">
-      <!-- Stats -->
-      <div class="flex items-center gap-8 sm:gap-10">
-        {stats.map(({ number, label }) => (
-          <div class="flex flex-col gap-1">
-            <span class="text-3xl lg:text-4xl font-heading font-extrabold text-txt-primary">{number}</span>
-            <span class="text-sm text-txt-muted">{label}</span>
-          </div>
-        ))}
-      </div>
-
-      <!-- Skills Bento -->
-      <div class="hidden md:flex items-start justify-end -mt-6">
-        <SkillsMarquee client:visible />
-      </div>
+    <!-- Skills Marquee — full width below social links -->
+    <div class="hidden md:block border-t border-border-subtle pt-6">
+      <SkillsMarquee client:visible />
     </div>
   </div>
 </section>
 
-<!-- About + Two Columns -->
-<section class="px-6 lg:px-20 pt-16 pb-20 lg:pt-20 lg:pb-28 reveal-section">
-  <!-- Narrative text -->
-  <div class="flex flex-col gap-5 mb-16 max-w-2xl">
-    <h2 class="font-heading text-2xl lg:text-3xl font-bold text-txt-primary leading-tight">
-      Una carrera construida en
-      <span class="hero-gradient">trincheras reales</span>
-    </h2>
-    <p class="text-lg text-txt-secondary leading-relaxed">
-      Desde Cuba hasta Paraguay, pasando por 8 países. Cada salto fue un
-      reset completo — nuevo idioma, nueva cultura, nuevos estándares. Lo que
-      no cambió: la obsesión por construir sistemas que no fallan.
-    </p>
-  </div>
-
+<!-- Blog + Trayectoria -->
+<section class="px-6 lg:px-20 pt-12 pb-20 lg:pt-16 lg:pb-28 reveal-section">
   <!-- Two columns: Blog (wider) + Trayectoria (narrower) -->
   <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-16 lg:gap-20 items-start">
     <!-- Left: Latest articles -->
