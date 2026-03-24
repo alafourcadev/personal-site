@@ -14,7 +14,7 @@ const { slug, title, description, tags, date, readTime, image } = Astro.props
 
 <a
   href={`/blog/${slug}`}
-  class="group flex flex-col bg-[#1e293b] rounded-xl border border-[#334155] overflow-hidden hover:border-accent/50 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] transition-all duration-300"
+  class="group flex flex-col bg-bg-surface rounded-xl border border-border-subtle overflow-hidden hover:border-accent/30 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] transition-all duration-300"
   data-blog-card
   data-tags={tags.join(',')}
   data-title={title.toLowerCase()}
@@ -22,7 +22,7 @@ const { slug, title, description, tags, date, readTime, image } = Astro.props
 >
   <div class="h-[180px] overflow-hidden relative">
     <img src={image} alt={title} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
-    <div class="absolute inset-0 bg-gradient-to-t from-[#1e293b] to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-300" />
+    <div class="absolute inset-0 bg-gradient-to-t from-bg-surface to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-300" />
   </div>
   <div class="p-5 flex flex-col gap-3 flex-1">
     <div class="flex flex-wrap gap-1.5">

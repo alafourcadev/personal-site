@@ -7,6 +7,8 @@ import FooterSimple from '../components/FooterSimple.astro';
 interface Props {
   title: string;
   description?: string;
+  image?: string;
+  type?: string;
   navVariant?: 'home' | 'blog';
   footerVariant?: 'full' | 'simple';
 }
@@ -14,9 +16,13 @@ interface Props {
 const {
   title,
   description = 'Ingeniería sin filtros — Alejandro Lafourcade',
+  image,
+  type = 'website',
   navVariant = 'home',
   footerVariant = 'full',
 } = Astro.props;
+
+const ogImage = image || 'https://alafourca.dev/profile.jpg';
 ---
 
 <!doctype html>
@@ -25,8 +31,38 @@ const {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    <link rel="canonical" href={Astro.url.href} />
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={Astro.url.href} />
+    <meta property="og:type" content={type} />
+    <meta property="og:locale" content="es_ES" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@alafourcadev" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Alejandro Lafourcade",
+      "jobTitle": "Tech Lead & Software Engineer",
+      "url": "https://alafourca.dev",
+      "sameAs": [
+        "https://x.com/alafourcadev",
+        "https://www.linkedin.com/in/alafourcadedespaigne/",
+        "https://github.com/alafourcadev"
+      ]
+    })} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -48,10 +84,13 @@ const {
   <body
     class="bg-[#0f172a] text-txt-primary font-sans antialiased overflow-x-hidden"
   >
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-accent focus:text-bg-deep focus:rounded-lg focus:font-bold">
+      Saltar al contenido
+    </a>
     <TypewriterLogo />
     <Navbar variant={navVariant} />
-    <div class="max-w-[1400px] mx-auto">
-      <main class="pt-20">
+    <div class="max-w-[1440px] mx-auto">
+      <main id="main-content" class="pt-20">
         <slot />
       </main>
       {footerVariant === 'full' ? <FooterFull /> : <FooterSimple />}
@@ -176,5 +215,14 @@ const {
   }
   .placeholder\:text-txt-muted::placeholder {
     color: var(--txt-muted) !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 </style>

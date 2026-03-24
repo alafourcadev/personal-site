@@ -9,16 +9,14 @@ const { variant = 'home' } = Astro.props;
 const currentPath = Astro.url.pathname;
 
 const homeLinks = [
-  { label: 'Home', href: '/' },
-  { label: 'Blog', href: '/blog' },
   { label: 'Sobre Mí', href: '/sobre-mi' },
+  { label: 'Blog', href: '/blog' },
   { label: 'Mi Setup', href: '/uses' },
 ];
 
 const blogLinks = [
-  { label: 'Home', href: '/' },
-  { label: 'Blog', href: '/blog' },
   { label: 'Sobre Mí', href: '/sobre-mi' },
+  { label: 'Blog', href: '/blog' },
   { label: 'Mi Setup', href: '/uses' },
 ];
 
@@ -72,7 +70,7 @@ function isActive(href: string): boolean {
     </button>
     <a
       href="mailto:ale@alafourca.dev?subject=Consultoría%20Técnica"
-      class="ml-1 px-4 py-1.5 text-[12px] font-bold bg-accent text-bg-deep rounded-full hover:shadow-lg hover:shadow-accent/25 hover:-translate-y-0.5 transition-all duration-300"
+      class="ml-1 px-5 py-2 text-[12px] font-bold bg-accent text-bg-deep rounded-full hover:shadow-lg hover:shadow-accent/25 hover:-translate-y-0.5 transition-all duration-300"
     >
       Hablemos
     </a>
@@ -112,7 +110,7 @@ function isActive(href: string): boolean {
   }
   <a
     href="#subscribe"
-    class="flex items-center justify-center px-5 py-2.5 border-2 border-accent text-accent text-sm font-semibold rounded-lg hover:bg-accent hover:text-[#0f172a] transition-all duration-300 mt-2"
+    class="flex items-center justify-center px-5 py-2.5 border-2 border-accent text-accent text-sm font-semibold rounded-full hover:bg-accent hover:text-[#0f172a] transition-all duration-300 mt-2"
   >
     Suscribirse
   </a>
