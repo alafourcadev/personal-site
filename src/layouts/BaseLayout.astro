@@ -1,4 +1,15 @@
 ---
+// Font imports - only weights used in the site
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
+import '@fontsource/inter/800.css';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/500.css';
+import '@fontsource/outfit/700.css';
+import '@fontsource/outfit/800.css';
+
 import Navbar from '../components/Navbar.astro';
 import TypewriterLogo from '../components/TypewriterLogo.astro';
 import FooterFull from '../components/FooterFull.astro';
@@ -22,7 +33,7 @@ const {
   footerVariant = 'full',
 } = Astro.props;
 
-const ogImage = image || 'https://alafourca.dev/profile.jpg';
+const ogImage = image || 'https://alafourca.dev/profile-og.webp';
 ---
 
 <!doctype html>
@@ -31,7 +42,9 @@ const ogImage = image || 'https://alafourca.dev/profile.jpg';
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    <meta name="author" content="Alejandro Lafourcade" />
     <link rel="canonical" href={Astro.url.href} />
+    <link rel="alternate" type="application/rss+xml" title="alafourca.dev" href="/rss.xml" />
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
@@ -42,6 +55,7 @@ const ogImage = image || 'https://alafourca.dev/profile.jpg';
     <meta property="og:url" content={Astro.url.href} />
     <meta property="og:type" content={type} />
     <meta property="og:locale" content="es_ES" />
+    <meta property="og:site_name" content="alafourca.dev" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -63,12 +77,10 @@ const ogImage = image || 'https://alafourca.dev/profile.jpg';
         "https://github.com/alafourcadev"
       ]
     })} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap"
-      rel="stylesheet"
-    />
+    <meta name="theme-color" content="#0a0f1a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
+    <link rel="alternate" hreflang="es" href={Astro.url.href} />
+    <slot name="head" />
     <script is:inline>
       // Load theme before page renders to prevent flash
       (function () {
@@ -82,7 +94,7 @@ const ogImage = image || 'https://alafourca.dev/profile.jpg';
     </script>
   </head>
   <body
-    class="bg-[#0f172a] text-txt-primary font-sans antialiased overflow-x-hidden"
+    class="bg-bg-deep text-txt-primary font-sans antialiased overflow-x-hidden"
   >
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-accent focus:text-bg-deep focus:rounded-lg focus:font-bold">
       Saltar al contenido
@@ -109,14 +121,17 @@ const ogImage = image || 'https://alafourca.dev/profile.jpg';
 
   /* Light mode (default when no dark class) */
   :root {
-    --bg-deep: #f8fafc;
-    --bg-surface: #ffffff;
-    --bg-surface-hover: #f1f5f9;
-    --border-subtle: #e2e8f0;
-    --txt-primary: #1e293b;
-    --txt-secondary: #475569;
-    --txt-muted: #94a3b8;
-    --accent: #10b981;
+    --bg-deep: 248 250 252;
+    --bg-surface: 255 255 255;
+    --bg-surface-hover: 241 245 249;
+    --border-subtle: 226 232 240;
+    --code-bg: 241 245 249;
+    --txt-primary: 30 41 59;
+    --txt-secondary: 71 85 105;
+    --txt-muted: 148 163 184;
+    --accent: 16 185 129;
+    --tag-bg: 236 253 245;
+    --tag-text: 4 120 87;
     --nav-bg: rgba(255, 255, 255, 0.8);
     --scrollbar-track: #f1f5f9;
     --scrollbar-thumb: #cbd5e1;
@@ -125,14 +140,17 @@ const ogImage = image || 'https://alafourca.dev/profile.jpg';
 
   /* Dark mode (when dark class is present) */
   html.dark {
-    --bg-deep: #0a0f1a;
-    --bg-surface: #131b2e;
-    --bg-surface-hover: #1a2540;
-    --border-subtle: #1e2d4a;
-    --txt-primary: #e2e8f0;
-    --txt-secondary: #94a3b8;
-    --txt-muted: #64748b;
-    --accent: #34d399;
+    --bg-deep: 10 15 26;
+    --bg-surface: 19 27 46;
+    --bg-surface-hover: 26 37 64;
+    --border-subtle: 30 45 74;
+    --code-bg: 13 17 23;
+    --txt-primary: 226 232 240;
+    --txt-secondary: 148 163 184;
+    --txt-muted: 124 141 181;
+    --accent: 52 211 153;
+    --tag-bg: 6 78 59;
+    --tag-text: 110 231 183;
     --nav-bg: rgba(15, 23, 42, 0.8);
     --scrollbar-track: #0f172a;
     --scrollbar-thumb: #334155;
@@ -141,8 +159,8 @@ const ogImage = image || 'https://alafourca.dev/profile.jpg';
 
   /* Apply CSS variables */
   body {
-    background-color: var(--bg-deep);
-    color: var(--txt-primary);
+    background-color: rgb(var(--bg-deep));
+    color: rgb(var(--txt-primary));
   }
 
   ::selection {
@@ -164,57 +182,10 @@ const ogImage = image || 'https://alafourca.dev/profile.jpg';
     background: var(--scrollbar-thumb-hover);
   }
 
-  /* Theme-aware component overrides */
-  .bg-\[\#0f172a\] {
-    background-color: var(--bg-deep) !important;
-  }
-  .bg-\[\#0f172a\]\/80 {
-    background-color: var(--nav-bg) !important;
-  }
-  .bg-\[\#0f172a\]\/95 {
-    background-color: var(--nav-bg) !important;
-  }
-  .bg-\[\#1e293b\] {
-    background-color: var(--bg-surface) !important;
-  }
-  .bg-bg-deep {
-    background-color: var(--bg-deep) !important;
-  }
-  .bg-bg-surface {
-    background-color: var(--bg-surface) !important;
-  }
-
-  .border-\[\#334155\] {
-    border-color: var(--border-subtle) !important;
-  }
-  .border-border-subtle {
-    border-color: var(--border-subtle) !important;
-  }
-
-  .text-txt-primary {
-    color: var(--txt-primary) !important;
-  }
-  .text-txt-secondary {
-    color: var(--txt-secondary) !important;
-  }
-  .text-txt-muted {
-    color: var(--txt-muted) !important;
-  }
-  .text-slate-100 {
-    color: var(--txt-primary) !important;
-  }
-  .text-slate-400 {
-    color: var(--txt-secondary) !important;
-  }
-  .text-slate-500 {
-    color: var(--txt-muted) !important;
-  }
-
-  .placeholder\:text-slate-500::placeholder {
-    color: var(--txt-muted) !important;
-  }
-  .placeholder\:text-txt-muted::placeholder {
-    color: var(--txt-muted) !important;
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 
   @media (prefers-reduced-motion: reduce) {

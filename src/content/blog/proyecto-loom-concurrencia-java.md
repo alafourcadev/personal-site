@@ -1,6 +1,6 @@
 ---
-title: "Revolucionando la Concurrencia en Java: Cómo el Proyecto Loom Simplifica y Mejora el Rendimiento"
-description: "Cómo el Proyecto Loom Simplifica y Mejora el Rendimiento con hilos virtuales."
+title: "Hilos virtuales en Java 21: adiós a WebFlux, hola a Proyecto Loom"
+description: "Tu servidor aguanta 200 requests simultáneos? Con hilos virtuales de Java 21 puede manejar millones. Sin WebFlux. Sin Reactor. Código sincrónico puro."
 tags: ["Java", "Concurrency"]
 date: 2024-06-24
 readTime: "7 min read"

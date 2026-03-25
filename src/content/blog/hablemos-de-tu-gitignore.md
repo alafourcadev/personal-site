@@ -7,8 +7,6 @@ readTime: "8 min read"
 image: "/blog/hablemos-de-tu-gitignore.webp"
 ---
 
-Tiempo de lectura: **8 minutos** que te van a ahorrar años de frustración.
-
 Vamos directo al grano: tu `.gitignore` está mal. Y no es culpa tuya — es culpa de que nadie te enseñó a hacerlo bien.
 
 ## El problema

@@ -1,10 +1,14 @@
 ---
-title: "String Templates en Java 21"
-description: "Simplificando la Manipulación de Cadenas con la nueva característica de Java 21."
+title: "String Templates en Java: la feature que Oracle mató antes de nacer"
+description: "String Templates prometía ser la forma moderna de construir strings en Java 21. Pero Oracle la retiró en Java 23. Esta es la historia de la feature que no sobrevivió."
 tags: ["Java"]
 date: 2024-07-05
 readTime: "5 min read"
 image: "/blog/string-templates-java-21.webp"
+---
+
+> **⚠️ Actualización importante:** String Templates fue eliminado en Java 23 (JEP 465). Oracle retiró esta feature del lenguaje tras la etapa de preview. Este artículo documenta cómo funcionaba originalmente en Java 21, pero el código ya no es válido en versiones recientes de Java.
+
 ---
 
 Java 21 trajo una de las características más esperadas por la comunidad: **String Templates**. Una forma segura, legible y elegante de construir cadenas de texto.

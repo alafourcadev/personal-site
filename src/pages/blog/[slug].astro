@@ -16,12 +16,22 @@ export const getStaticPaths = (async () => {
 const { post } = Astro.props;
 const { Content, headings } = await post.render();
 
-// Get related posts (exclude current, take 3)
+// Get related posts (prioritize shared tags, then by date)
 const allPosts = await getCollection("blog", ({ data }) => !data.draft);
-const relatedPosts = allPosts
-  .filter((p) => p.slug !== post.slug)
-  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
-  .slice(0, 3);
+const currentTags = post.data.tags;
+const otherPosts = allPosts.filter((p) => p.slug !== post.slug);
+
+// Score posts by shared tags
+const scored = otherPosts.map((p) => ({
+  post: p,
+  score: p.data.tags.filter((tag: string) => currentTags.includes(tag)).length,
+}));
+
+// Sort by score (most shared tags first), then by date
+const relatedPosts = scored
+  .sort((a, b) => b.score - a.score || b.post.data.date.getTime() - a.post.data.date.getTime())
+  .slice(0, 3)
+  .map((s) => s.post);
 
 // Format date helper
 function formatDate(date: Date): string {
@@ -42,17 +52,68 @@ const tocItems = headings
   title={`${post.data.title} — Ingeniería sin filtros`}
   description={post.data.description}
   image={'https://alafourca.dev' + post.data.image}
+  type="article"
   navVariant="blog"
   footerVariant="simple"
 >
+  <!-- JSON-LD BlogPosting -->
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.data.title,
+    "description": post.data.description,
+    "image": "https://alafourca.dev" + post.data.image,
+    "datePublished": post.data.date.toISOString(),
+    "author": {
+      "@type": "Person",
+      "name": "Alejandro Lafourcade",
+      "url": "https://alafourca.dev"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Alejandro Lafourcade",
+      "url": "https://alafourca.dev"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://alafourca.dev/blog/${post.slug}`
+    }
+  })} />
+
+  <!-- JSON-LD BreadcrumbList -->
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://alafourca.dev"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://alafourca.dev/blog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": post.data.title,
+        "item": `https://alafourca.dev/blog/${post.slug}`
+      }
+    ]
+  })} />
+
   <!-- Article Header -->
   <section
     class="flex flex-col items-center gap-6 px-6 lg:px-[200px] py-[60px]"
   >
     <div class="flex items-center gap-2">
       <a href="/blog" class="text-sm text-accent hover:underline">Blog</a>
-      <Icon name="chevron-right" size={14} class="text-slate-500" />
-      <span class="text-sm text-slate-500">{post.data.tags[0]}</span>
+      <Icon name="chevron-right" size={14} class="text-txt-muted" />
+      <span class="text-sm text-txt-muted">{post.data.tags[0]}</span>
     </div>
     <div class="flex items-center gap-2">
       {
@@ -64,19 +125,19 @@ const tocItems = headings
       }
     </div>
     <h1
-      class="text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-100 text-center leading-tight tracking-[-0.5px] max-w-[900px]"
+      class="text-2xl md:text-3xl lg:text-4xl font-extrabold text-txt-primary text-center leading-tight tracking-[-0.5px] max-w-[900px]"
     >
       {post.data.title}
     </h1>
     <div class="flex flex-wrap items-center justify-center gap-5 text-sm">
       <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-full bg-accent"></div>
-        <span class="text-slate-100 font-medium">Alejandro Lafourcade</span>
+        <img src="/profile.jpg" alt="Alejandro Lafourcade" class="w-8 h-8 rounded-full object-cover" />
+        <span class="text-txt-primary font-medium">Alejandro Lafourcade</span>
       </div>
-      <span class="w-1 h-1 rounded-full bg-slate-500"></span>
-      <span class="text-slate-400">{formatDate(post.data.date)}</span>
-      <span class="w-1 h-1 rounded-full bg-slate-500"></span>
-      <span class="text-slate-400">{post.data.readTime}</span>
+      <span class="w-1 h-1 rounded-full bg-txt-muted"></span>
+      <span class="text-txt-secondary">{formatDate(post.data.date)}</span>
+      <span class="w-1 h-1 rounded-full bg-txt-muted"></span>
+      <span class="text-txt-secondary">{post.data.readTime}</span>
     </div>
   </section>
 
@@ -90,6 +151,9 @@ const tocItems = headings
         alt={post.data.title}
         class="w-full h-full object-cover"
         loading="eager"
+        width="1200"
+        height="600"
+        fetchpriority="high"
       />
     </div>
   </section>
@@ -100,7 +164,7 @@ const tocItems = headings
     {
       tocItems.length > 0 && (
         <aside class="hidden lg:flex flex-col gap-4 w-[260px] shrink-0 sticky top-24 self-start">
-          <h3 class="font-mono text-[11px] font-bold text-slate-500 tracking-[1px] uppercase">
+          <h3 class="font-mono text-[11px] font-bold text-txt-muted tracking-[1px] uppercase">
             Contenido
           </h3>
           <div class="h-px bg-border-subtle" />
@@ -108,12 +172,9 @@ const tocItems = headings
             {tocItems.map((item, i) => (
               <a
                 href={`#${item.id}`}
-                class:list={[
-                  "text-sm py-2.5 pl-3 border-l-2 transition-colors",
-                  i === 0
-                    ? "border-accent text-accent font-medium"
-                    : "border-transparent text-slate-400 hover:text-slate-200",
-                ]}
+                id={`toc-heading-${i}`}
+                data-toc-link={item.id}
+                class="text-sm py-2.5 pl-3 border-l-2 transition-colors border-transparent text-txt-muted hover:text-txt-secondary hover:border-border-subtle"
               >
                 {item.label}
               </a>
@@ -131,7 +192,7 @@ const tocItems = headings
       <div class="h-px bg-border-subtle mt-10"></div>
       <div class="flex flex-col gap-6 mt-6">
         <div class="flex flex-wrap items-center gap-2">
-          <span class="text-sm font-semibold text-slate-100">Tags:</span>
+          <span class="text-sm font-semibold text-txt-primary">Tags:</span>
           {
             post.data.tags.map((tag: string) => (
               <span class="text-xs font-medium text-tag-text bg-tag-bg rounded-md px-3 py-[5px]">
@@ -141,20 +202,30 @@ const tocItems = headings
           }
         </div>
         <div class="flex flex-wrap items-center gap-3">
-          <span class="text-sm font-medium text-slate-100"
+          <span class="text-sm font-medium text-txt-primary"
             >Compartir artículo:</span
           >
-          {
-            [
-              { icon: "twitter", label: "Compartir en Twitter" },
-              { icon: "linkedin", label: "Compartir en LinkedIn" },
-              { icon: "link", label: "Copiar enlace" },
-            ].map(({ icon, label }) => (
-              <button aria-label={label} class="w-9 h-9 rounded-lg bg-bg-surface border border-border-subtle flex items-center justify-center text-slate-500 hover:text-slate-200 hover:border-slate-500 transition-colors">
-                <Icon name={icon} size={16} />
-              </button>
-            ))
-          }
+          <button
+            id="share-twitter"
+            aria-label="Compartir en Twitter"
+            class="w-9 h-9 rounded-lg bg-bg-surface border border-border-subtle flex items-center justify-center text-txt-muted hover:text-txt-primary hover:border-txt-muted transition-colors"
+          >
+            <Icon name="twitter" size={16} />
+          </button>
+          <button
+            id="share-linkedin"
+            aria-label="Compartir en LinkedIn"
+            class="w-9 h-9 rounded-lg bg-bg-surface border border-border-subtle flex items-center justify-center text-txt-muted hover:text-txt-primary hover:border-txt-muted transition-colors"
+          >
+            <Icon name="linkedin" size={16} />
+          </button>
+          <button
+            id="share-copy"
+            aria-label="Copiar enlace"
+            class="w-9 h-9 rounded-lg bg-bg-surface border border-border-subtle flex items-center justify-center text-txt-muted hover:text-txt-primary hover:border-txt-muted transition-colors"
+          >
+            <Icon name="link" size={16} />
+          </button>
         </div>
       </div>
     </article>
@@ -168,7 +239,7 @@ const tocItems = headings
       <span class="font-mono text-sm font-medium text-accent"
         >// related_posts</span
       >
-      <h2 class="text-2xl lg:text-3xl font-bold text-slate-100">También te puede interesar</h2>
+      <h2 class="text-2xl lg:text-3xl font-bold text-txt-primary">También te puede interesar</h2>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       {
@@ -188,6 +259,65 @@ const tocItems = headings
   </section>
 </BaseLayout>
 
+<script>
+  document.getElementById('share-twitter')?.addEventListener('click', () => {
+    window.open(
+      'https://twitter.com/intent/tweet?url=' +
+        encodeURIComponent(window.location.href) +
+        '&text=' +
+        encodeURIComponent(document.title),
+      '_blank',
+      'noopener,noreferrer'
+    );
+  });
+
+  document.getElementById('share-linkedin')?.addEventListener('click', () => {
+    window.open(
+      'https://www.linkedin.com/sharing/share-offsite/?url=' +
+        encodeURIComponent(window.location.href),
+      '_blank',
+      'noopener,noreferrer'
+    );
+  });
+
+  document.getElementById('share-copy')?.addEventListener('click', () => {
+    const btn = document.getElementById('share-copy');
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      btn?.classList.add('!text-accent', '!border-accent');
+      setTimeout(() => {
+        btn?.classList.remove('!text-accent', '!border-accent');
+      }, 2000);
+    });
+  });
+</script>
+
+<script>
+  const tocLinks = document.querySelectorAll('[data-toc-link]');
+  const headings = document.querySelectorAll('article h2');
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          tocLinks.forEach((link) => {
+            link.classList.remove('border-accent', 'text-accent', 'font-medium');
+            link.classList.add('border-transparent', 'text-txt-muted');
+          });
+          const activeId = entry.target.id;
+          const activeLink = document.querySelector(`[data-toc-link="${activeId}"]`);
+          if (activeLink) {
+            activeLink.classList.remove('border-transparent', 'text-txt-muted');
+            activeLink.classList.add('border-accent', 'text-accent', 'font-medium');
+          }
+        }
+      });
+    },
+    { rootMargin: '0px 0px -70% 0px', threshold: 0 }
+  );
+
+  headings.forEach((heading) => observer.observe(heading));
+</script>
+
 <style is:global>
   /* Markdown prose styling */
   .prose-custom {
@@ -195,19 +325,19 @@ const tocItems = headings
   }
 
   .prose-custom h2 {
-    @apply text-2xl font-bold text-slate-100 mt-10 mb-4;
+    @apply text-2xl font-bold text-txt-primary mt-10 mb-4;
   }
 
   .prose-custom h3 {
-    @apply text-xl font-bold text-slate-100 mt-8 mb-3;
+    @apply text-xl font-bold text-txt-primary mt-8 mb-3;
   }
 
   .prose-custom h4 {
-    @apply text-lg font-semibold text-slate-100 mt-6 mb-2;
+    @apply text-lg font-semibold text-txt-primary mt-6 mb-2;
   }
 
   .prose-custom p {
-    @apply text-base text-slate-400 leading-[1.8] mb-5;
+    @apply text-base text-txt-secondary leading-[1.8] mb-5;
   }
 
   .prose-custom a {
@@ -215,19 +345,19 @@ const tocItems = headings
   }
 
   .prose-custom strong {
-    @apply text-slate-200 font-semibold;
+    @apply text-txt-primary font-semibold;
   }
 
   .prose-custom em {
-    @apply text-slate-300 italic;
+    @apply text-txt-primary italic;
   }
 
   .prose-custom ul {
-    @apply list-disc list-inside text-slate-400 mb-5 space-y-1.5;
+    @apply list-disc list-inside text-txt-secondary mb-5 space-y-1.5;
   }
 
   .prose-custom ol {
-    @apply list-decimal list-inside text-slate-400 mb-5 space-y-1.5;
+    @apply list-decimal list-inside text-txt-secondary mb-5 space-y-1.5;
   }
 
   .prose-custom li {
@@ -235,11 +365,12 @@ const tocItems = headings
   }
 
   .prose-custom blockquote {
-    @apply border-l-[3px] border-accent pl-5 py-3 my-6 bg-accent/5 rounded-r-lg;
+    @apply border-l-[3px] border-accent pl-5 py-3 my-6 rounded-r-lg;
+    background-color: rgba(52, 211, 153, 0.05);
   }
 
   .prose-custom blockquote p {
-    @apply text-slate-200 text-sm leading-[1.6] mb-0;
+    @apply text-txt-primary text-sm leading-[1.6] mb-0;
   }
 
   .prose-custom code {
@@ -247,11 +378,11 @@ const tocItems = headings
   }
 
   .prose-custom pre {
-    @apply rounded-xl border border-border-subtle overflow-hidden bg-[#0d1117] p-5 my-6 overflow-x-auto;
+    @apply rounded-xl border border-border-subtle overflow-hidden bg-code-bg p-5 my-6 overflow-x-auto;
   }
 
   .prose-custom pre code {
-    @apply bg-transparent p-0 text-[13px] leading-[1.7] text-slate-300;
+    @apply bg-transparent p-0 text-[13px] leading-[1.7] text-txt-primary;
   }
 
   .prose-custom hr {
@@ -263,11 +394,11 @@ const tocItems = headings
   }
 
   .prose-custom thead th {
-    @apply text-left text-slate-200 font-semibold border-b border-border-subtle py-2.5 px-3;
+    @apply text-left text-txt-primary font-semibold border-b border-border-subtle py-2.5 px-3;
   }
 
   .prose-custom tbody td {
-    @apply text-slate-400 border-b border-border-subtle/50 py-2.5 px-3;
+    @apply text-txt-secondary border-b border-border-subtle py-2.5 px-3;
   }
 
   .prose-custom img {

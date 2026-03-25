@@ -8,11 +8,11 @@ import Icon from "./Icon.astro";
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
       <a href="/" class="flex items-center gap-2">
         <span class="font-mono text-lg font-bold text-accent">&gt;_</span>
-        <span class="font-mono text-[15px] font-semibold text-slate-100"
+        <span class="font-mono text-[15px] font-semibold text-txt-primary"
           >alafourca.dev</span
         >
       </a>
-      <p class="text-[13px] text-slate-500">
+      <p class="text-[13px] text-txt-muted">
         &copy; {new Date().getFullYear()} Alejandro Lafourcade. Todos los derechos reservados.
       </p>
       <div class="flex items-center gap-4">
@@ -20,7 +20,7 @@ import Icon from "./Icon.astro";
           href="https://github.com/alafourcadev"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-slate-500 hover:text-slate-300 transition-colors"
+          class="text-txt-muted hover:text-txt-secondary transition-colors"
           aria-label="GitHub"
         >
           <Icon name="github" size={18} />
@@ -29,7 +29,7 @@ import Icon from "./Icon.astro";
           href="https://www.linkedin.com/in/alafourcadedespaigne/"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-slate-500 hover:text-slate-300 transition-colors"
+          class="text-txt-muted hover:text-txt-secondary transition-colors"
           aria-label="LinkedIn"
         >
           <Icon name="linkedin" size={18} />
@@ -38,7 +38,7 @@ import Icon from "./Icon.astro";
           href="https://x.com/alafourcadev"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-slate-500 hover:text-slate-300 transition-colors"
+          class="text-txt-muted hover:text-txt-secondary transition-colors"
           aria-label="Twitter"
         >
           <Icon name="twitter" size={18} />

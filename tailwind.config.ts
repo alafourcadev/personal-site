@@ -2,26 +2,26 @@ import type { Config } from 'tailwindcss'
 
 export default {
   darkMode: 'class',
-  content: ['./src/**/*.{astro,html,ts}'],
+  content: ['./src/**/*.{astro,html,ts,tsx,jsx}'],
   theme: {
     extend: {
       colors: {
-        'bg-deep': '#0a0f1a',
-        'bg-surface': '#131b2e',
-        'bg-surface-hover': '#1a2540',
-        'border-subtle': '#1e2d4a',
-        'code-bg': '#0d1117',
+        'bg-deep': 'rgb(var(--bg-deep) / <alpha-value>)',
+        'bg-surface': 'rgb(var(--bg-surface) / <alpha-value>)',
+        'bg-surface-hover': 'rgb(var(--bg-surface-hover) / <alpha-value>)',
+        'border-subtle': 'rgb(var(--border-subtle) / <alpha-value>)',
+        'code-bg': 'rgb(var(--code-bg) / <alpha-value>)',
         accent: {
-          DEFAULT: '#34d399',
+          DEFAULT: 'rgb(var(--accent) / <alpha-value>)',
           dark: '#10b981',
-          dim: 'rgba(52, 211, 153, 0.08)',
-          glow: 'rgba(52, 211, 153, 0.15)',
+          dim: 'rgb(var(--accent) / 0.08)',
+          glow: 'rgb(var(--accent) / 0.15)',
         },
-        'tag-bg': 'rgba(52, 211, 153, 0.08)',
-        'tag-text': '#6ee7b7',
-        'txt-primary': '#e2e8f0',
-        'txt-secondary': '#94a3b8',
-        'txt-muted': '#64748b',
+        'tag-bg': 'rgb(var(--tag-bg) / <alpha-value>)',
+        'tag-text': 'rgb(var(--tag-text) / <alpha-value>)',
+        'txt-primary': 'rgb(var(--txt-primary) / <alpha-value>)',
+        'txt-secondary': 'rgb(var(--txt-secondary) / <alpha-value>)',
+        'txt-muted': 'rgb(var(--txt-muted) / <alpha-value>)',
       },
       fontFamily: {
         mono: ['"JetBrains Mono"', 'monospace'],

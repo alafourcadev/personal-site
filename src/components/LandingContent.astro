@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Icon from './Icon.astro';
-import SkillsMarquee from './ui/skills-marquee';
+import SkillsMarquee from './SkillsMarquee.astro';
 
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
 const latestPosts = allPosts
@@ -50,8 +50,10 @@ const workExperience = [
         <div class="relative w-16 h-16">
           <div class="absolute -inset-1 bg-gradient-to-r from-accent via-teal-400 to-accent rounded-full animate-spin-slow opacity-60 blur-sm" />
           <img
-            src="/profile.jpg"
+            src="/profile-64.webp"
             alt="Alejandro Lafourcade"
+            width="64"
+            height="64"
             class="relative w-full h-full rounded-full object-cover border-2 border-bg-deep"
             loading="eager"
           />
@@ -102,7 +104,14 @@ const workExperience = [
 
     <!-- Skills Marquee — full width below social links -->
     <div class="hidden md:block border-t border-border-subtle pt-6">
-      <SkillsMarquee client:visible />
+      <SkillsMarquee />
+    </div>
+    <div class="md:hidden flex flex-wrap gap-2 pt-4 border-t border-border-subtle">
+      {['Go', 'TypeScript', 'Java', 'Python', 'Node.js', 'PostgreSQL', 'Redis', 'Docker', 'Kubernetes', 'AWS', 'React', 'Git'].map((skill) => (
+        <span class="text-xs px-3 py-1.5 rounded-full bg-bg-surface text-txt-secondary border border-border-subtle">
+          {skill}
+        </span>
+      ))}
     </div>
   </div>
 </section>
@@ -114,7 +123,7 @@ const workExperience = [
     <!-- Left: Latest articles -->
     <div>
       <div class="flex items-center justify-between pb-6 border-b border-border-subtle">
-        <h3 class="font-heading text-xl font-bold text-txt-primary">Últimos artículos</h3>
+        <h2 class="font-heading text-xl font-bold text-txt-primary">Últimos artículos</h2>
         <a href="/blog" class="inline-flex items-center gap-1.5 text-accent text-sm font-medium hover:gap-2.5 transition-all duration-300">
           Ver todos
           <Icon name="arrow-right" size={14} />
@@ -125,14 +134,14 @@ const workExperience = [
           <article class="group py-8 first:pt-8">
             <div class="flex flex-col gap-3">
               <div class="flex items-center gap-3 text-xs text-txt-muted tracking-wide uppercase">
-                <time>{formatDate(post.data.date)}</time>
+                <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
                 <span class="w-1 h-1 rounded-full bg-txt-muted" />
                 <span>{post.data.readTime}</span>
               </div>
               <a href={`/blog/${post.slug}`} class="group/link flex flex-col gap-2">
-                <h4 class="text-lg font-bold text-txt-primary leading-snug group-hover/link:text-accent transition-colors duration-200">
+                <h3 class="text-lg font-bold text-txt-primary leading-snug group-hover/link:text-accent transition-colors duration-200">
                   {post.data.title}
-                </h4>
+                </h3>
                 <p class="text-[15px] text-txt-secondary leading-relaxed line-clamp-2">
                   {post.data.description}
                 </p>
@@ -152,7 +161,7 @@ const workExperience = [
       <div class="bg-bg-surface/50 backdrop-blur-sm border border-border-subtle rounded-xl p-7">
         <div class="flex items-center gap-2.5 pb-5 border-b border-border-subtle mb-5">
           <Icon name="briefcase" size={18} class="text-accent" />
-          <h3 class="font-bold text-txt-primary text-sm uppercase tracking-wider">Trayectoria</h3>
+          <h2 class="font-bold text-txt-primary text-sm uppercase tracking-wider">Trayectoria</h2>
         </div>
         <div class="flex flex-col gap-5">
           {workExperience.map(({ company, role, period, logo }) => (
@@ -206,7 +215,7 @@ const workExperience = [
 </section>
 
 <!-- Particle Network Canvas -->
-<canvas id="particle-canvas" class="fixed inset-0 z-0 pointer-events-none"></canvas>
+<canvas id="particle-canvas" class="fixed inset-0 z-0 pointer-events-none" aria-hidden="true" role="presentation"></canvas>
 
 <script>
   // Scroll Reveal
@@ -226,110 +235,136 @@ const workExperience = [
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Particle Network
-  const canvas = document.getElementById('particle-canvas') as HTMLCanvasElement;
-  const ctx = canvas.getContext('2d')!;
-  let mouse = { x: -999, y: -999 };
-  let particles: { x: number; y: number; vx: number; vy: number; size: number; opacity: number }[] = [];
+  (function initParticles() {
+    // Skip on mobile — decorative effect not worth the CPU cost
+    if (window.innerWidth < 768) return;
 
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
+    const canvas = document.getElementById('particle-canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    let mouse = { x: -999, y: -999 };
+    let animationId: number;
+    let particles: { x: number; y: number; vx: number; vy: number; size: number; opacity: number }[] = [];
 
-  function createParticles() {
-    const count = Math.floor((canvas.width * canvas.height) / 22000);
-    particles = [];
-    for (let i = 0; i < count; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.25,
-        vy: (Math.random() - 0.5) * 0.25,
-        size: Math.random() * 1.5 + 0.5,
-        opacity: Math.random() * 0.3 + 0.05,
-      });
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
-  }
 
-  function getAccentColor() {
-    return document.documentElement.classList.contains('dark') ? '52, 211, 153' : '16, 185, 129';
-  }
+    function createParticles() {
+      const count = Math.floor((canvas.width * canvas.height) / 30000);
+      particles = [];
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.25,
+          vy: (Math.random() - 0.5) * 0.25,
+          size: Math.random() * 1.5 + 0.5,
+          opacity: Math.random() * 0.3 + 0.05,
+        });
+      }
+    }
 
-  function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const accent = getAccentColor();
-    const connectionDist = 120;
-    const mouseDist = 200;
+    function getAccentColor() {
+      return document.documentElement.classList.contains('dark') ? '52, 211, 153' : '16, 185, 129';
+    }
 
-    for (const p of particles) {
-      const dxM = mouse.x - p.x;
-      const dyM = mouse.y - p.y;
-      const distM = Math.sqrt(dxM * dxM + dyM * dyM);
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const accent = getAccentColor();
+      const connectionDist = 120;
+      const mouseDist = 200;
 
-      if (distM < mouseDist && distM > 1) {
-        const force = (1 - distM / mouseDist) * 0.015;
-        p.vx += (dxM / distM) * force;
-        p.vy += (dyM / distM) * force;
+      for (const p of particles) {
+        const dxM = mouse.x - p.x;
+        const dyM = mouse.y - p.y;
+        const distM = Math.sqrt(dxM * dxM + dyM * dyM);
+
+        if (distM < mouseDist && distM > 1) {
+          const force = (1 - distM / mouseDist) * 0.015;
+          p.vx += (dxM / distM) * force;
+          p.vy += (dyM / distM) * force;
+        }
+
+        p.vx *= 0.98;
+        p.vy *= 0.98;
+        const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+        if (speed > 1) { p.vx /= speed; p.vy /= speed; }
+
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+        const glowFactor = distM < mouseDist ? (1 - distM / mouseDist) * 0.4 : 0;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size + glowFactor * 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${accent}, ${Math.min(p.opacity + glowFactor, 0.6)})`;
+        ctx.fill();
       }
 
-      p.vx *= 0.98;
-      p.vy *= 0.98;
-      const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-      if (speed > 1) { p.vx /= speed; p.vy /= speed; }
+      for (let i = 0; i < particles.length; i++) {
+        const a = particles[i];
+        const dxA = a.x - mouse.x;
+        const dyA = a.y - mouse.y;
+        const distMA = Math.sqrt(dxA * dxA + dyA * dyA);
 
-      p.x += p.vx;
-      p.y += p.vy;
-      if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-      if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+        if (distMA < mouseDist) {
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.strokeStyle = `rgba(${accent}, ${(1 - distMA / mouseDist) * 0.2})`;
+          ctx.lineWidth = 0.3;
+          ctx.stroke();
 
-      const glowFactor = distM < mouseDist ? (1 - distM / mouseDist) * 0.4 : 0;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size + glowFactor * 1.5, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${accent}, ${Math.min(p.opacity + glowFactor, 0.6)})`;
-      ctx.fill();
-    }
-
-    for (let i = 0; i < particles.length; i++) {
-      const a = particles[i];
-      const dxA = a.x - mouse.x;
-      const dyA = a.y - mouse.y;
-      const distMA = Math.sqrt(dxA * dxA + dyA * dyA);
-
-      if (distMA < mouseDist) {
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(mouse.x, mouse.y);
-        ctx.strokeStyle = `rgba(${accent}, ${(1 - distMA / mouseDist) * 0.2})`;
-        ctx.lineWidth = 0.3;
-        ctx.stroke();
-
-        for (let j = i + 1; j < particles.length; j++) {
-          const b = particles[j];
-          const dx = a.x - b.x;
-          const dy = a.y - b.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < connectionDist) {
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = `rgba(${accent}, ${(1 - dist / connectionDist) * (1 - distMA / mouseDist) * 0.35})`;
-            ctx.lineWidth = 0.4;
-            ctx.stroke();
+          for (let j = i + 1; j < particles.length; j++) {
+            const b = particles[j];
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < connectionDist) {
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.strokeStyle = `rgba(${accent}, ${(1 - dist / connectionDist) * (1 - distMA / mouseDist) * 0.35})`;
+              ctx.lineWidth = 0.4;
+              ctx.stroke();
+            }
           }
         }
       }
+
+      animationId = requestAnimationFrame(animate);
     }
 
-    requestAnimationFrame(animate);
-  }
+    if (!prefersReducedMotion) {
+      // Throttle mousemove via rAF — avoids updating on every single event
+      let mouseMoveQueued = false;
+      window.addEventListener('mousemove', (e) => {
+        if (mouseMoveQueued) return;
+        mouseMoveQueued = true;
+        requestAnimationFrame(() => {
+          mouse.x = e.clientX;
+          mouse.y = e.clientY;
+          mouseMoveQueued = false;
+        });
+      });
 
-  if (!prefersReducedMotion) {
-    window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
-    window.addEventListener('resize', () => { resize(); createParticles(); });
-    resize();
-    createParticles();
-    animate();
-  }
+      // Pause animation when tab is not visible — zero CPU when hidden
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          cancelAnimationFrame(animationId);
+        } else {
+          animationId = requestAnimationFrame(animate);
+        }
+      });
+
+      window.addEventListener('resize', () => { resize(); createParticles(); });
+      resize();
+      createParticles();
+      animate();
+    }
+  })();
 
 </script>
 

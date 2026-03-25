@@ -33,6 +33,7 @@ function isActive(href: string): boolean {
 ---
 
 <nav
+  aria-label="Navegación principal"
   class="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center gap-5 h-[44px] px-5 bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-xl border border-slate-200 dark:border-[#334155] rounded-full shadow-lg shadow-black/10 dark:shadow-black/25 transition-colors duration-300"
 >
   <!-- Desktop links -->
@@ -41,6 +42,7 @@ function isActive(href: string): boolean {
       links.map((link, index) => (
         <a
           href={link.href}
+          aria-current={isActive(link.href) ? "page" : undefined}
           class:list={[
             'nav-link relative text-[13px] transition-all duration-300 hover:text-accent',
             isActive(link.href)
@@ -63,7 +65,7 @@ function isActive(href: string): boolean {
     <button
       id="theme-toggle"
       class="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:rotate-12 transition-all duration-300"
-      aria-label="Toggle theme"
+      aria-label="Cambiar tema"
     >
       <Icon name="moon" size={16} class="moon-icon" />
       <Icon name="sun" size={16} class="sun-icon hidden" />
@@ -80,7 +82,9 @@ function isActive(href: string): boolean {
   <button
     id="menu-toggle"
     class="md:hidden text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
-    aria-label="Toggle menu"
+    aria-label="Abrir menú"
+    aria-expanded="false"
+    aria-controls="mobile-menu"
   >
     <Icon name="menu" size={20} class="menu-icon" />
     <Icon name="x" size={20} class="close-icon hidden" />
@@ -88,8 +92,9 @@ function isActive(href: string): boolean {
 </nav>
 
 <!-- Mobile menu -->
-<div
+<nav
   id="mobile-menu"
+  aria-label="Menú móvil"
   class="hidden md:hidden fixed top-[72px] left-0 right-0 z-40 bg-[#0f172a]/95 backdrop-blur-xl border-b border-[#334155] p-6 flex flex-col gap-4"
 >
   {
@@ -109,12 +114,12 @@ function isActive(href: string): boolean {
     ))
   }
   <a
-    href="#subscribe"
+    href="mailto:ale@alafourca.dev?subject=Suscripción%20Blog"
     class="flex items-center justify-center px-5 py-2.5 border-2 border-accent text-accent text-sm font-semibold rounded-full hover:bg-accent hover:text-[#0f172a] transition-all duration-300 mt-2"
   >
     Suscribirse
   </a>
-</div>
+</nav>
 
 <script>
   const btn = document.getElementById('menu-toggle');
@@ -126,6 +131,8 @@ function isActive(href: string): boolean {
     menu?.classList.toggle('hidden');
     menuIcon?.classList.toggle('hidden');
     closeIcon?.classList.toggle('hidden');
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!expanded));
   });
 
   // Theme toggle functionality

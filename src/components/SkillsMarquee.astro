@@ -1,0 +1,103 @@
+---
+import Icon from './Icon.astro';
+
+interface Skill {
+  icon: string;
+  label: string;
+}
+
+const rows: Skill[][] = [
+  [
+    { icon: 'code', label: 'Go' },
+    { icon: 'code', label: 'TypeScript' },
+    { icon: 'code', label: 'Java' },
+    { icon: 'code', label: 'Python' },
+    { icon: 'server', label: 'Node.js' },
+    { icon: 'zap', label: 'Rust' },
+  ],
+  [
+    { icon: 'database', label: 'PostgreSQL' },
+    { icon: 'database', label: 'MongoDB' },
+    { icon: 'database', label: 'Redis' },
+    { icon: 'server', label: 'Kafka' },
+    { icon: 'server', label: 'RabbitMQ' },
+    { icon: 'search', label: 'Elasticsearch' },
+  ],
+  [
+    { icon: 'container', label: 'Docker' },
+    { icon: 'network', label: 'Kubernetes' },
+    { icon: 'cloud', label: 'AWS' },
+    { icon: 'cloud', label: 'GCP' },
+    { icon: 'layers', label: 'Terraform' },
+    { icon: 'terminal', label: 'Linux' },
+  ],
+  [
+    { icon: 'globe', label: 'React' },
+    { icon: 'git-branch', label: 'Git' },
+    { icon: 'globe', label: 'GraphQL' },
+    { icon: 'network', label: 'gRPC' },
+    { icon: 'settings', label: 'CI/CD' },
+    { icon: 'cpu', label: 'Microservices' },
+  ],
+];
+---
+
+<div class="skills-marquee w-full">
+  <div class="relative w-full overflow-hidden rounded-xl bg-bg-surface/40 border border-border-subtle p-3">
+    <div class="relative w-full overflow-hidden h-[180px] sm:h-[200px]">
+      <div class="flex flex-col gap-4 w-full h-full justify-center">
+        {rows.map((row, rowIndex) => (
+          <div
+            class:list={[
+              'marquee-track flex gap-3 w-max',
+              rowIndex % 2 === 0 ? 'marquee-left' : 'marquee-right',
+            ]}
+          >
+            {/* Triple the items for seamless loop */}
+            {[...row, ...row, ...row].map((skill) => (
+              <div class="skill-pill flex gap-2 whitespace-nowrap w-fit p-2 px-3 items-center rounded-full text-xs bg-bg-surface/80 backdrop-blur-sm text-txt-secondary border border-border-subtle">
+                <Icon name={skill.icon} size={14} />
+                <span>{skill.label}</span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {/* Fade edges */}
+      <div class="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-bg-surface/40 to-transparent z-10" />
+      <div class="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-bg-surface/40 to-transparent z-10" />
+      <div class="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-bg-surface/60 to-transparent z-10" />
+      <div class="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-bg-surface/60 to-transparent z-10" />
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes marquee-scroll-left {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-33.333%); }
+  }
+
+  @keyframes marquee-scroll-right {
+    from { transform: translateX(-33.333%); }
+    to   { transform: translateX(0); }
+  }
+
+  .marquee-left {
+    animation: marquee-scroll-left 30s linear infinite;
+    will-change: transform;
+  }
+
+  .marquee-right {
+    animation: marquee-scroll-right 30s linear infinite;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-left,
+    .marquee-right {
+      animation-play-state: paused;
+    }
+  }
+</style>
