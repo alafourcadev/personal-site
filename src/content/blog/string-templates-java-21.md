@@ -11,11 +11,15 @@ image: "/blog/string-templates-java-21.webp"
 
 ---
 
-Java 21 trajo una de las características más esperadas por la comunidad: **String Templates**. Una forma segura, legible y elegante de construir cadenas de texto.
+Esta es la historia de una feature que todos queríamos, que Java finalmente nos dio... y que Oracle decidió matar.
 
-## El problema con lo que tenemos
+**String Templates** llegó en Java 21 como preview feature. Era elegante. Era útil. Resolvía un problema real. Y en Java 23, Oracle la retiró sin reemplazo. Así de simple.
 
-Hasta ahora, teníamos tres formas principales de construir strings en Java, y ninguna era ideal:
+¿Por qué escribo sobre una feature muerta? Porque lo que intentaba resolver sigue sin resolverse. Y porque la historia dice mucho sobre cómo evoluciona Java — y sobre por qué no deberías apostar tu código de producción en preview features.
+
+## El dolor que intentaba resolver
+
+Seamos honestos: construir strings en Java es y siempre fue un desastre. Tenemos tres formas, y las tres son malas:
 
 ### Concatenación con +
 
@@ -23,7 +27,7 @@ Hasta ahora, teníamos tres formas principales de construir strings en Java, y n
 String mensaje = "Hola " + nombre + ", tu pedido #" + pedidoId + " tiene " + items + " items.";
 ```
 
-Funciona, pero es difícil de leer. Cuando tenés muchas variables, se vuelve un desastre.
+Funciona, pero es ilegible. Cuando tenés 4+ variables, querés tirarte por la ventana.
 
 ### String.format()
 
@@ -43,11 +47,11 @@ String mensaje = new StringBuilder()
     .toString();
 ```
 
-Verbose. Nadie quiere escribir esto para un simple mensaje.
+Verbose. Si te gusta escribir esto, tenemos que hablar.
 
-## String Templates al rescate
+## Lo que String Templates prometía
 
-Con Java 21, podemos usar String Templates (preview feature):
+Con Java 21, podíamos escribir esto (preview feature):
 
 ```java
 String mensaje = STR."Hola \{nombre}, tu pedido #\{pedidoId} tiene \{items} items.";
@@ -137,8 +141,16 @@ En tu `pom.xml` o `build.gradle`, asegurate de habilitar preview features:
 </plugin>
 ```
 
-## Conclusión
+## ¿Y ahora qué?
 
-String Templates simplifica algo que hacemos decenas de veces al día: construir strings. Con mejor legibilidad, seguridad contra inyección, y la capacidad de crear processors personalizados.
+Oracle retiró String Templates en Java 23 (JEP 465). Sin reemplazo directo. Sin timeline para algo nuevo. El problema de construir strings de forma legible en Java sigue sin resolver oficialmente.
 
-Si ya estás en Java 21, probalo. Es una de esas features que una vez que empezás a usar, no querés volver atrás.
+¿Qué aprendemos de esto?
+
+1. **No uses preview features en producción.** Por algo se llaman preview. Esta es la prueba de que pueden desaparecer.
+2. **El problema sigue siendo real.** Seguimos concatenando strings como en 2005. Java evolucionó en muchas cosas, pero en esto nos quedamos atrás.
+3. **Kotlin, TypeScript, Python, Go** — todos resolvieron esto hace años. Java sigue sin hacerlo.
+
+Si me preguntás a mí, String Templates era exactamente lo que Java necesitaba. Ojalá Oracle reconsidere y traiga algo similar. Pero hasta entonces, seguimos con `String.format()` y resignación.
+
+**La moraleja: en Java, no te encariñes con las preview features.**

@@ -7,11 +7,15 @@ readTime: "7 min read"
 image: "/blog/proyecto-loom-concurrencia-java.webp"
 ---
 
-La concurrencia en Java siempre fue poderosa pero compleja. El **Proyecto Loom** cambia las reglas del juego introduciendo **hilos virtuales** (virtual threads), una forma radicalmente más simple y eficiente de manejar tareas concurrentes.
+Voy a ser directo: si estás usando WebFlux o Project Reactor solo para aguantar más requests concurrentes, **estás sufriendo innecesariamente.**
 
-## El problema con los hilos tradicionales
+Llevo años peleando con código reactivo en producción. Los `.flatMap()` encadenados, los errores imposibles de debuggear, los stack traces que no te dicen nada. Todo eso para resolver un problema que Java 21 ya resolvió con una línea de código.
 
-En Java, cada `Thread` tradicional está mapeado 1:1 a un hilo del sistema operativo. Esto tiene consecuencias serias:
+Se llama **Proyecto Loom**. Y es la razón por la que en mis últimos dos proyectos no escribí ni una línea de código reactivo.
+
+## El problema que nos metimos solos
+
+En Java, cada `Thread` tradicional está mapeado 1:1 a un hilo del sistema operativo. Y acá es donde empieza el dolor:
 
 ```java
 // Cada uno de estos consume ~1MB de stack memory
@@ -28,9 +32,9 @@ for (int i = 0; i < 10_000; i++) {
 - **Context switching**: El OS tiene que alternar entre miles de hilos, perdiendo tiempo valioso.
 - **Límite práctico**: En la mayoría de aplicaciones, no podés tener más de unos pocos miles de hilos.
 
-## Hilos virtuales: la revolución
+## Hilos virtuales: la solución que debió llegar hace años
 
-Con Proyecto Loom (disponible desde Java 21), los hilos virtuales son **extremadamente livianos**:
+Ahora mirá esto. Con Proyecto Loom (Java 21), los hilos virtuales son **ridículamente livianos**:
 
 ```java
 // Esto funciona sin problemas con hilos virtuales
@@ -47,7 +51,7 @@ try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
 **Un millón de hilos virtuales.** Sin `OutOfMemoryError`. Sin context switching excesivo.
 
-## ¿Cómo funciona?
+## ¿Cómo funciona? (sin buzzwords)
 
 Los hilos virtuales se ejecutan sobre un pool de **carrier threads** (hilos del OS). Cuando un hilo virtual se bloquea (I/O, sleep, etc.), se **desmonta** del carrier thread, liberándolo para ejecutar otro hilo virtual.
 
@@ -83,11 +87,11 @@ server.setExecutor(executor);
 // Decenas de miles de requests simultáneos, fácil
 ```
 
-El cambio es **una línea**. La mejora en throughput puede ser de **10x a 100x** para aplicaciones I/O bound.
+El cambio es **una línea**. La mejora en throughput puede ser de **10x a 100x** para aplicaciones I/O bound. Y no tuviste que aprender Mono, Flux, ni sufrir con `.subscribeOn(Schedulers.boundedElastic())`.
 
 ## Spring Boot y Proyecto Loom
 
-Spring Boot 3.2+ soporta hilos virtuales nativamente:
+Si usás Spring Boot, esto te va a gustar. Spring Boot 3.2+ soporta hilos virtuales nativamente:
 
 ```yaml
 # application.yml
@@ -124,10 +128,12 @@ System.out.println("Tiempo: " + (System.currentTimeMillis() - start) + "ms");
 
 La diferencia es brutal para cargas de trabajo I/O bound.
 
-## Conclusión
+## Mi opinión después de usarlo en producción
 
-Proyecto Loom no es solo una mejora — es un cambio de paradigma en cómo escribimos código concurrente en Java.
+Proyecto Loom no es solo una mejora — es la razón por la que dejé de recomendar WebFlux.
 
-Ya no necesitás frameworks reactivos complejos (WebFlux, Project Reactor) solo para tener buena concurrencia. Podés escribir código **sincrónico, simple y legible**, y obtener el rendimiento que antes solo lograban las soluciones reactivas.
+En los últimos dos proyectos donde lo implementé, eliminamos toda la capa reactiva. El código quedó más simple, los juniors lo entienden sin necesitar un curso de programación reactiva, y el rendimiento mejoró porque dejamos de pelear con el framework.
 
-**Java se simplificó. Y eso es algo para celebrar.**
+Ya no necesitás aprender Mono, Flux, ni sufrir con operadores que nadie recuerda. Podés escribir código **sincrónico, simple y legible**, y obtener el rendimiento que antes solo lograban las soluciones reactivas.
+
+**Si estás empezando un proyecto nuevo en 2025 y alguien te sugiere WebFlux "por performance"... mandales este artículo.**

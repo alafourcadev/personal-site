@@ -7,14 +7,39 @@ interface Skill {
 }
 
 const rows: Skill[][] = [
+  // Backend
   [
+    { icon: 'code', label: 'Java (8-25)' },
     { icon: 'code', label: 'Go' },
     { icon: 'code', label: 'TypeScript' },
-    { icon: 'code', label: 'Java' },
-    { icon: 'code', label: 'Python' },
+    { icon: 'server', label: 'Spring Boot' },
+    { icon: 'server', label: 'Spring Cloud' },
+    { icon: 'server', label: 'Spring Modulith' },
     { icon: 'server', label: 'Node.js' },
-    { icon: 'zap', label: 'Rust' },
   ],
+  // Arquitectura & IA
+  [
+    { icon: 'cpu', label: 'Microservicios' },
+    { icon: 'layers', label: 'DDD' },
+    { icon: 'layers', label: 'Hexagonal' },
+    { icon: 'layers', label: 'CQRS' },
+    { icon: 'layers', label: 'Scrum' },
+    { icon: 'cpu', label: 'AI Voice Agents' },
+    { icon: 'cpu', label: 'RAG' },
+    { icon: 'settings', label: 'n8n Workflows' },
+  ],
+  // Cloud & DevOps
+  [
+    { icon: 'cloud', label: 'AWS' },
+    { icon: 'cloud', label: 'GCP' },
+    { icon: 'container', label: 'Docker' },
+    { icon: 'network', label: 'Kubernetes' },
+    { icon: 'terminal', label: 'Linux' },
+    { icon: 'settings', label: 'GitHub Actions' },
+    { icon: 'settings', label: 'CI/CD' },
+    { icon: 'settings', label: 'Jenkins' },
+  ],
+  // Datos & Seguridad
   [
     { icon: 'database', label: 'PostgreSQL' },
     { icon: 'database', label: 'MongoDB' },
@@ -22,29 +47,16 @@ const rows: Skill[][] = [
     { icon: 'server', label: 'Kafka' },
     { icon: 'server', label: 'RabbitMQ' },
     { icon: 'search', label: 'Elasticsearch' },
-  ],
-  [
-    { icon: 'container', label: 'Docker' },
-    { icon: 'network', label: 'Kubernetes' },
-    { icon: 'cloud', label: 'AWS' },
-    { icon: 'cloud', label: 'GCP' },
-    { icon: 'layers', label: 'Terraform' },
-    { icon: 'terminal', label: 'Linux' },
-  ],
-  [
-    { icon: 'globe', label: 'React' },
-    { icon: 'git-branch', label: 'Git' },
-    { icon: 'globe', label: 'GraphQL' },
     { icon: 'network', label: 'gRPC' },
-    { icon: 'settings', label: 'CI/CD' },
-    { icon: 'cpu', label: 'Microservices' },
+    { icon: 'shield', label: 'OAuth2 / JWT' },
+    { icon: 'shield', label: 'Keycloak' },
   ],
 ];
 ---
 
 <div class="skills-marquee w-full">
   <div class="relative w-full overflow-hidden rounded-xl bg-bg-surface/40 border border-border-subtle p-3">
-    <div class="relative w-full overflow-hidden h-[180px] sm:h-[200px]">
+    <div class="relative w-full overflow-hidden h-[220px] sm:h-[240px]">
       <div class="flex flex-col gap-4 w-full h-full justify-center">
         {rows.map((row, rowIndex) => (
           <div
@@ -85,19 +97,12 @@ const rows: Skill[][] = [
   }
 
   .marquee-left {
-    animation: marquee-scroll-left 30s linear infinite;
+    animation: marquee-scroll-left 35s linear infinite !important;
     will-change: transform;
   }
 
   .marquee-right {
-    animation: marquee-scroll-right 30s linear infinite;
+    animation: marquee-scroll-right 35s linear infinite !important;
     will-change: transform;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .marquee-left,
-    .marquee-right {
-      animation-play-state: paused;
-    }
   }
 </style>
