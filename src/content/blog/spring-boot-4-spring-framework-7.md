@@ -1,5 +1,5 @@
 ---
-title: "Spring Boot 4 y Spring Framework 7: lo que cambió, lo que se rompió y lo que nadie te cuenta"
+title: "Spring Boot 4: lo que cambió, lo que se rompió y lo que nadie te cuenta"
 description: "Llevo meses migrando proyectos a Boot 4. Esto es todo lo que aprendí — con las cicatrices para probarlo."
 tags: ["Java", "Spring Boot"]
 date: 2026-03-23
