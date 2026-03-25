@@ -1,34 +1,207 @@
 ---
-const workstationItems = [
+interface UsesItem {
+  name: string;
+  href?: string;
+  description: string;
+}
+
+interface UsesSection {
+  emoji: string;
+  title: string;
+  items: UsesItem[];
+}
+
+const sections: UsesSection[] = [
   {
-    name: 'MacBook Pro 16" — Apple M3 Pro / 36GB RAM',
-    href: 'https://www.apple.com/macbook-pro/',
-    description:
-      'Mi máquina principal para todo: desarrollo, contenido, arquitectura. El chip M3 Pro con 36GB de RAM mueve sin despeinarse múltiples instancias de IntelliJ, Docker, bases de datos y lo que le ponga encima. Silenciosa, rápida y con una batería que dura todo el día. Si trabajás en backend pesado, esta máquina no te va a fallar.',
+    emoji: '💻',
+    title: 'Workstation',
+    items: [
+      {
+        name: 'MacBook Pro 16" — Apple M3 Pro / 36GB RAM',
+        href: 'https://www.apple.com/macbook-pro/',
+        description: 'Mi máquina principal para todo: desarrollo, contenido, arquitectura. El chip M3 Pro con 36GB de RAM mueve sin despeinarse múltiples instancias de IntelliJ, Docker, bases de datos y lo que le ponga encima. Silenciosa, rápida y con una batería que dura todo el día.',
+      },
+      {
+        name: '2x Xiaomi 4K Monitor A27Ui — 27" IPS 4K UHD',
+        href: 'https://www.mi.com/global/product/xiaomi-4k-monitor-a27ui/',
+        description: 'Dos monitores idénticos con resolución 4K real, panel IPS con precisión de color ΔE<1 y certificación TÜV de luz azul baja. Un solo cable USB-C para video y carga. Código a la izquierda, documentación a la derecha.',
+      },
+      {
+        name: 'AULA F99 Pro — Teclado Mecánico',
+        href: 'https://www.amazon.com/AULA-F99-Pro-Mechanical-Swappable/dp/B0DKNDPKV3/',
+        description: 'Layout 96%, gasket-mount, switches hot-swappable pre-lubricados. Triple conectividad: Bluetooth 5.1, 2.4GHz y USB-C. Batería de 8000mAh que dura semanas. Una bestia silenciosa para sesiones largas de código.',
+      },
+      {
+        name: 'Logitech MX Master 3S',
+        href: 'https://www.logitech.com/en-us/products/mice/mx-master-3s.910-006557.html',
+        description: 'Sensor de 8000 DPI, scroll electromagnético MagSpeed 90% más silencioso, y ergonomía perfecta. Se conecta a 3 dispositivos simultáneos. El mouse que todo developer debería tener.',
+      },
+      {
+        name: 'iVANKY FusionDock 1 — Docking Station 12-in-2',
+        href: 'https://www.amazon.com/MacBook-Docking-Station-Adapter-Display/dp/B08PP8HYR9/',
+        description: '12 puertos en un solo dock: dual HDMI 4K@60Hz, 4x USB 3.0, Ethernet Gigabit, lector SD/TF y carga de 96W. Convierte la laptop en una estación de trabajo completa con un solo conector.',
+      },
+    ],
   },
   {
-    name: '2x Xiaomi 4K Monitor A27Ui — 27" IPS 4K UHD',
-    href: 'https://www.mi.com/global/product/xiaomi-4k-monitor-a27ui/',
-    description:
-      'Dos monitores idénticos con resolución 4K real, panel IPS con precisión de color ΔE<1 y certificación TÜV de luz azul baja. Lo que más me gusta: el puerto USB-C con carga reversa — un solo cable para video y carga. Perfectos para tener código a la izquierda y documentación/terminal a la derecha sin perder un detalle.',
+    emoji: '⚡',
+    title: 'Desarrollo',
+    items: [
+      {
+        name: 'IntelliJ IDEA Ultimate',
+        href: 'https://www.jetbrains.com/idea/',
+        description: 'Mi IDE principal. No negocio esto. Para Java/Spring Boot, Go, y cualquier cosa backend, no hay nada que se le acerque. El refactoring, el debugger y la integración con bases de datos valen cada centavo de la licencia.',
+      },
+      {
+        name: 'Warp',
+        href: 'https://www.warp.dev/',
+        description: 'Terminal moderna con autocompletado inteligente, bloques de comandos y búsqueda de historial que realmente funciona. Una vez que la probás, no volvés a iTerm.',
+      },
+      {
+        name: 'Zsh + Oh My Zsh',
+        href: 'https://ohmyz.sh/',
+        description: 'El shell que hace que trabajar en la terminal sea productivo. Con plugins para git, docker, kubectl y aliases que me ahorran horas por semana.',
+      },
+      {
+        name: 'GitKraken',
+        href: 'https://www.gitkraken.com/',
+        description: 'Para visualizar branches complejos, resolver conflictos de merge y hacer code review. El gráfico de commits te da una claridad que la terminal no puede.',
+      },
+      {
+        name: 'Postman',
+        href: 'https://www.postman.com/',
+        description: 'Para diseñar, testear y documentar APIs. Las colecciones compartidas con el equipo y los environments variables hacen que trabajar con microservicios sea manejable.',
+      },
+      {
+        name: 'DataGrip',
+        href: 'https://www.jetbrains.com/datagrip/',
+        description: 'Cliente de base de datos universal. PostgreSQL, MongoDB, Redis — todo en un lugar. El autocompletado de SQL y la introspección de schemas son de otro nivel.',
+      },
+    ],
   },
   {
-    name: 'AULA F99 Pro — Teclado Mecánico',
-    href: 'https://www.amazon.com/AULA-F99-Pro-Mechanical-Swappable/dp/B0DKNDPKV3/',
-    description:
-      'Teclado mecánico con layout 96%, estructura gasket-mount y switches hot-swappable pre-lubricados. Triple conectividad: Bluetooth 5.1, 2.4GHz wireless y USB-C. La batería de 8000mAh dura semanas. Con RGB personalizable y keycaps PBT que no se desgastan. Una bestia silenciosa para sesiones largas de código.',
+    emoji: '🤖',
+    title: 'AI & Productividad',
+    items: [
+      {
+        name: 'Claude Code',
+        href: 'https://claude.ai/',
+        description: 'Mi copiloto de desarrollo. Lo uso para arquitectura, code review, refactoring, y hasta para escribir los artículos de este blog. Este sitio fue construido y auditado con Claude Code. No es un asistente — es un multiplicador de fuerza.',
+      },
+    ],
   },
   {
-    name: 'Logitech MX Master 3S',
-    href: 'https://www.logitech.com/en-us/products/mice/mx-master-3s.910-006557.html',
-    description:
-      'El mouse que todo developer debería tener. Sensor de 8000 DPI que trackea hasta en vidrio, scroll electromagnético MagSpeed que es 90% más silencioso, y una ergonomía que se siente como extensión de la mano. Se conecta a 3 dispositivos simultáneos y con Logi Flow paso archivos entre máquinas sin pensarlo.',
+    emoji: '🐳',
+    title: 'DevOps & Infra',
+    items: [
+      {
+        name: 'Docker Desktop',
+        href: 'https://www.docker.com/products/docker-desktop/',
+        description: 'Para levantar ambientes de desarrollo completos en segundos. PostgreSQL, Redis, Kafka, Elasticsearch — todo corre en containers locales idénticos a producción.',
+      },
+      {
+        name: 'kubectl',
+        href: 'https://kubernetes.io/docs/reference/kubectl/',
+        description: 'La navaja suiza para manejar clusters de Kubernetes. Combinado con aliases y scripts, es la forma más rápida de diagnosticar y operar servicios en producción.',
+      },
+      {
+        name: 'Lens',
+        href: 'https://k8slens.dev/',
+        description: 'IDE para Kubernetes. Cuando necesitás ver el estado de un cluster de forma visual — pods, logs, métricas — Lens te ahorra docenas de comandos kubectl.',
+      },
+      {
+        name: 'AWS CLI',
+        href: 'https://aws.amazon.com/cli/',
+        description: 'Para manejar EC2, S3, RDS, Lambda, EKS y todo el ecosistema AWS desde la terminal. Combinado con perfiles y scripts, automatizo todo lo que se pueda automatizar.',
+      },
+      {
+        name: 'Termius',
+        href: 'https://termius.com/',
+        description: 'Cliente SSH multiplataforma. Organizo todos mis servidores, túneles y snippets en un solo lugar. La sincronización entre dispositivos es clave cuando trabajás desde distintos lugares.',
+      },
+    ],
   },
   {
-    name: 'iVANKY FusionDock 1 — Docking Station 12-in-2',
-    href: 'https://www.amazon.com/MacBook-Docking-Station-Adapter-Display/dp/B08PP8HYR9/',
-    description:
-      '12 puertos en un solo dock: dual HDMI 4K@60Hz, 4x USB 3.0, Ethernet Gigabit, lector SD/TF y carga de 96W para el MacBook. Convierte la laptop en una estación de trabajo completa con un solo conector. Compacta, sólida y sin complicaciones.',
+    emoji: '🎨',
+    title: 'Diseño & Contenido',
+    items: [
+      {
+        name: 'Canva',
+        href: 'https://www.canva.com/',
+        description: 'Para crear posts de redes sociales, presentaciones y materiales de marca. No soy diseñador, pero Canva me permite crear contenido visual profesional sin depender de nadie.',
+      },
+      {
+        name: 'Pencil',
+        href: 'https://pencil.evolvetechnology.com/',
+        description: 'Para diseño de interfaces y prototipos. Cuando necesito visualizar un flujo de usuario o diseñar un dashboard antes de codear, Pencil es mi herramienta.',
+      },
+      {
+        name: 'FocuSee',
+        href: 'https://gemoo.com/focusee/',
+        description: 'Para grabar screencasts y demos con zoom automático y efectos profesionales. Perfecto para mostrar features a clientes o crear contenido técnico.',
+      },
+      {
+        name: 'Obsidian',
+        href: 'https://obsidian.md/',
+        description: 'Mi segundo cerebro. Todas las notas, ideas de artículos, apuntes de reuniones y documentación personal viven acá. Markdown puro, local, y con un sistema de links que conecta todo.',
+      },
+    ],
+  },
+  {
+    emoji: '💬',
+    title: 'Comunicación',
+    items: [
+      {
+        name: 'Slack',
+        href: 'https://slack.com/',
+        description: 'Para comunicación con equipos y clientes. Canales organizados, threads, integraciones con GitHub y CI/CD. El estándar de la industria por una razón.',
+      },
+      {
+        name: 'Discord',
+        href: 'https://discord.com/',
+        description: 'Para comunidades tech y conversaciones más informales. Lo uso para grupos de desarrollo y para conectar con otros devs de LATAM.',
+      },
+      {
+        name: 'Google Meet / Zoom',
+        description: 'Para consultorías, entrevistas y reuniones de equipo. Meet para lo rápido, Zoom cuando necesito grabar o tener breakout rooms.',
+      },
+      {
+        name: 'Cal.com',
+        href: 'https://cal.com/alafourcadev/consultoria-tecnica-1-1',
+        description: 'Para agendar consultorías. Open source, se sincroniza con Google Calendar, y el cliente elige el horario sin ir y venir de emails. Simple.',
+      },
+    ],
+  },
+  {
+    emoji: '🌐',
+    title: 'Este sitio',
+    items: [
+      {
+        name: 'Astro',
+        href: 'https://astro.build/',
+        description: 'Framework para sitios estáticos. Cero JavaScript al cliente por defecto, build ultra rápido, y content collections para el blog. Perfecto para un sitio que prioriza performance.',
+      },
+      {
+        name: 'Tailwind CSS',
+        href: 'https://tailwindcss.com/',
+        description: 'Utility-first CSS. Con un sistema de tokens personalizado para dark/light mode. Todo el sitio usa variables CSS con canales RGB para soporte nativo de opacidad.',
+      },
+      {
+        name: 'Vercel',
+        href: 'https://vercel.com/',
+        description: 'Deploy automático en cada push a main. CDN global, builds en 15 segundos, preview deployments. Cero configuración de infra.',
+      },
+      {
+        name: 'Cloudflare',
+        href: 'https://www.cloudflare.com/',
+        description: 'DNS, protección DDoS y Web Analytics. El dominio alafourca.dev vive acá. Analytics sin cookies, sin scripts, sin impacto en performance.',
+      },
+      {
+        name: 'GitHub',
+        href: 'https://github.com/alafourcadev',
+        description: 'Repositorio del código. Todo el historial de commits cuenta la historia de cómo se construyó este sitio — desde el primer commit hasta la auditoría completa.',
+      },
+    ],
   },
 ];
 ---
@@ -42,8 +215,8 @@ const workstationItems = [
       Mi Setup
     </h1>
     <p class="text-lg text-txt-secondary leading-relaxed">
-      Hardware y software que uso, gadgets que me encantan y herramientas que
-      recomiendo. Inspirado en <a
+      Hardware, software y herramientas que uso todos los días para diseñar, construir y escalar
+      sistemas. Inspirado en <a
         href="https://uses.tech/"
         target="_blank"
         rel="noopener noreferrer"
@@ -53,51 +226,55 @@ const workstationItems = [
   </div>
 </section>
 
-<!-- Workstation -->
-<section class="section-animate px-6 lg:px-[120px] py-8 lg:py-10">
-  <h2
-    class="font-heading text-2xl lg:text-3xl font-bold text-txt-primary tracking-[-0.8px] flex items-center gap-3 mb-8"
-  >
-    <span class="text-accent">💻</span>
-    Workstation
-  </h2>
-  <div class="flex flex-col gap-6 max-w-3xl">
-    {
-      workstationItems.map((item, i) => (
+<!-- Sections -->
+{sections.map((section, sectionIndex) => (
+  <section class="section-animate px-6 lg:px-[120px] py-8 lg:py-10" style={`animation-delay: ${sectionIndex * 100}ms`}>
+    <h2
+      class="font-heading text-2xl lg:text-3xl font-bold text-txt-primary tracking-[-0.8px] flex items-center gap-3 mb-8"
+    >
+      <span class="text-accent">{section.emoji}</span>
+      {section.title}
+    </h2>
+    <div class="flex flex-col gap-5 max-w-3xl">
+      {section.items.map((item, i) => (
         <div
           class="uses-item group bg-bg-surface border border-border-subtle rounded-xl p-6 hover:border-accent/30 transition-all duration-300"
-          style={`animation-delay: ${i * 80}ms`}
+          style={`animation-delay: ${(sectionIndex * 100) + (i * 60)}ms`}
         >
-          <a
-            href={item.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-lg font-bold text-txt-primary group-hover:text-accent transition-colors duration-300 inline-flex items-center gap-2"
-          >
-            {item.name}
-            <svg
-              class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          {item.href ? (
+            <a
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-lg font-bold text-txt-primary group-hover:text-accent transition-colors duration-300 inline-flex items-center gap-2"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              />
-            </svg>
-          </a>
+              {item.name}
+              <svg
+                class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </a>
+          ) : (
+            <span class="text-lg font-bold text-txt-primary">{item.name}</span>
+          )}
           <p class="text-txt-secondary leading-[1.7] mt-2 text-[15px]">
             {item.description}
           </p>
         </div>
-      ))
-    }
-  </div>
-</section>
-
+      ))}
+    </div>
+  </section>
+))}
 
 <style>
   .section-animate {
