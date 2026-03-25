@@ -11,7 +11,6 @@ const socialLinks = [
     href: 'https://www.linkedin.com/in/alafourcadedespaigne/',
   },
   { icon: 'github', label: 'GitHub', href: 'https://github.com/alafourcadev' },
-  { icon: 'mail', label: 'alafourca.dev', href: 'mailto:ale@alafourca.dev' },
 ];
 
 const bioParagraphs = [
@@ -22,13 +21,10 @@ const bioParagraphs = [
 ];
 
 const caminoParagraphs = [
-  'Mi camino en la tecnología no empezó con un plan perfecto.',
-  'Como muchos, empecé con curiosidad. Quería entender cómo funcionaban las cosas por dentro. No la interfaz bonita, no el botón que el usuario ve — lo que pasa después del clic. La lógica. La arquitectura. El sistema.',
-  'Siendo cubano-paraguayo, aprendí algo que me sirvió más que cualquier curso: a adaptarme. A reinventarme. A construir con lo que hay y no esperar condiciones perfectas. Esa mentalidad me acompañó toda mi carrera.',
-  'Con el tiempo, la curiosidad se convirtió en profesión. Trabajé en equipos chicos donde hacías de todo y en equipos grandes donde la especialización era clave. Diseñé APIs, modelé bases de datos, peleé con sistemas legacy, migré monolitos a microservicios (y aprendí que no siempre era buena idea), y sobre todo, aprendí a tomar decisiones técnicas que van más allá del código.',
-  "No todo fue en línea recta. Hubo momentos en que sentí que no sabía lo suficiente. Momentos en que veía a otros avanzar y pensaba '¿qué me falta?'. Hoy sé que eso tiene nombre: síndrome del impostor. Y lejos de ser una debilidad, se convirtió en lo que me mantiene aprendiendo.",
-  "Después de más de una década, un día me hice una pregunta simple: '¿Por qué los que más sabemos somos los que menos compartimos?' Los seniors escriben código, no artículos. Los que enseñan muchas veces no tienen años de experiencia real. Y los juniors se quedan sin referentes auténticos.",
-  'Hoy, la industria está viviendo su mayor transformación con la inteligencia artificial. Y como siempre en mi carrera, elegí no mirar desde afuera. Estoy aprendiendo, experimentando y construyendo con IA — no porque sea tendencia, sino porque entender estas herramientas es lo que separa a los ingenieros que van a liderar el próximo capítulo de los que se van a quedar repitiendo el anterior.',
+  'Mi camino en la tecnología no empezó con un plan perfecto. Empecé con curiosidad — quería entender cómo funcionaban las cosas por dentro. No la interfaz bonita, no el botón que el usuario ve — lo que pasa después del clic. La lógica. La arquitectura. El sistema.',
+  'Siendo cubano-paraguayo, aprendí algo que me sirvió más que cualquier curso: a adaptarme. A construir con lo que hay y no esperar condiciones perfectas. Esa mentalidad me llevó a trabajar en equipos chicos donde hacías de todo y en equipos grandes donde la especialización era clave. Diseñé APIs, peleé con sistemas legacy, migré monolitos a microservicios (y aprendí que no siempre era buena idea), y sobre todo, aprendí a tomar decisiones técnicas que van más allá del código.',
+  "No todo fue en línea recta. Hubo momentos en que sentí que no sabía lo suficiente — el famoso síndrome del impostor. Pero lejos de frenarme, se convirtió en lo que me mantiene aprendiendo. Hasta que un día me hice una pregunta simple: '¿Por qué los que más sabemos somos los que menos compartimos?' Los seniors escriben código, no artículos. Los juniors se quedan sin referentes auténticos.",
+  'Hoy estoy construyendo con IA — no porque sea tendencia, sino porque me obsesiona entender las herramientas que van a cambiar cómo hacemos software. Igual que siempre en mi carrera: no miro desde afuera.',
   'Ingeniería sin filtros nació de todo eso. No es un curso. No es una marca corporativa. Es mi forma de devolver lo que esta industria me dio.',
 ];
 
@@ -124,7 +120,7 @@ const algoParagraphs = [
 </section>
 
 <!-- Algo que siempre me acompañó -->
-<section class="section-animate px-6 lg:px-[120px] py-20 flex flex-col gap-8">
+<section class="section-animate px-6 lg:px-[120px] pt-4 pb-10 lg:pt-6 lg:pb-[60px] flex flex-col gap-8">
   <h2
     class="font-heading text-2xl lg:text-3xl font-bold text-txt-primary tracking-[-0.8px] flex items-center gap-3"
   >
@@ -205,6 +201,31 @@ const algoParagraphs = [
           </div>
         ))
       }
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="px-6 lg:px-[120px] py-12 lg:py-16 section-animate">
+  <div class="relative rounded-3xl overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-accent/15 via-transparent to-teal-500/10" />
+    <div class="absolute inset-0 border border-accent/20 rounded-3xl" />
+    <div class="relative px-8 py-14 lg:px-16 lg:py-20 text-center">
+      <h2 class="font-heading text-2xl lg:text-3xl font-bold text-txt-primary leading-tight mb-4">
+        ¿Querés trabajar <span class="text-accent">conmigo</span>?
+      </h2>
+      <p class="text-lg text-txt-secondary leading-relaxed max-w-lg mx-auto mb-10">
+        Arquitectura de sistemas, decisiones técnicas, code review o mentoría.
+        Agendá una sesión 1:1 y hablemos sin vueltas.
+      </p>
+      <a
+        href="https://cal.com/alafourcadev/consultoria-tecnica-1-1"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="px-8 py-3.5 bg-accent text-bg-deep font-bold rounded-xl hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5 transition-all duration-300"
+      >
+        Agendar Consultoría
+      </a>
     </div>
   </div>
 </section>

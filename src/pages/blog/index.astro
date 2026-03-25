@@ -93,22 +93,26 @@ function formatDate(date: Date): string {
       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
     >
       {
-        posts.map((post, i) => (
-          <div
-            class="blog-card-wrapper"
-            style={`animation-delay: ${i * 100}ms`}
-          >
-            <BlogCard
-              slug={post.slug}
-              title={post.data.title}
-              description={post.data.description}
-              tags={post.data.tags}
-              date={formatDate(post.data.date)}
-              readTime={post.data.readTime}
-              image={post.data.image}
-            />
-          </div>
-        ))
+        posts.map((post, i) => {
+          const wordCount = post.body.split(/\s+/).length;
+          const readTime = `${Math.max(1, Math.ceil(wordCount / 200))} min read`;
+          return (
+            <div
+              class="blog-card-wrapper"
+              style={`animation-delay: ${i * 100}ms`}
+            >
+              <BlogCard
+                slug={post.slug}
+                title={post.data.title}
+                description={post.data.description}
+                tags={post.data.tags}
+                date={formatDate(post.data.date)}
+                readTime={readTime}
+                image={post.data.image}
+              />
+            </div>
+          );
+        })
       }
     </div>
     <p id="no-results" class="hidden text-center text-txt-muted py-12">

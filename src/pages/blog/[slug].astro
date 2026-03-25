@@ -16,6 +16,11 @@ export const getStaticPaths = (async () => {
 const { post } = Astro.props;
 const { Content, headings } = await post.render();
 
+// Auto-calculate read time from word count
+const wordCount = post.body.split(/\s+/).length;
+const readTime = Math.max(1, Math.ceil(wordCount / 200));
+const readTimeText = `${readTime} min read`;
+
 // Get related posts (prioritize shared tags, then by date)
 const allPosts = await getCollection("blog", ({ data }) => !data.draft);
 const currentTags = post.data.tags;
@@ -137,7 +142,7 @@ const tocItems = headings
       <span class="w-1 h-1 rounded-full bg-txt-muted"></span>
       <span class="text-txt-secondary">{formatDate(post.data.date)}</span>
       <span class="w-1 h-1 rounded-full bg-txt-muted"></span>
-      <span class="text-txt-secondary">{post.data.readTime}</span>
+      <span class="text-txt-secondary">{readTimeText}</span>
     </div>
   </section>
 
@@ -187,6 +192,20 @@ const tocItems = headings
     <!-- Article -->
     <article class="flex-1 min-w-0 prose-custom">
       <Content />
+
+      <!-- CTA post-artículo -->
+      <div class="mt-12 p-8 rounded-2xl border border-border-subtle bg-bg-surface/50 text-center">
+        <p class="text-lg font-bold text-txt-primary mb-2">¿Te sirvió este artículo?</p>
+        <p class="text-txt-secondary mb-6">Si querés resolver un problema de arquitectura, revisar decisiones técnicas o simplemente hablar de código — agendá una sesión 1:1.</p>
+        <a
+          href="https://cal.com/alafourcadev/consultoria-tecnica-1-1"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block px-6 py-3 bg-accent text-bg-deep font-bold rounded-xl hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5 transition-all duration-300"
+        >
+          Agendar Consultoría
+        </a>
+      </div>
 
       <!-- Article Footer -->
       <div class="h-px bg-border-subtle mt-10"></div>
@@ -243,17 +262,21 @@ const tocItems = headings
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       {
-        relatedPosts.map((p) => (
-          <BlogCard
-            slug={p.slug}
-            title={p.data.title}
-            description={p.data.description}
-            tags={p.data.tags}
-            date={formatDate(p.data.date)}
-            readTime={p.data.readTime}
-            image={p.data.image}
-          />
-        ))
+        relatedPosts.map((p) => {
+          const pWordCount = p.body.split(/\s+/).length;
+          const pReadTime = `${Math.max(1, Math.ceil(pWordCount / 200))} min read`;
+          return (
+            <BlogCard
+              slug={p.slug}
+              title={p.data.title}
+              description={p.data.description}
+              tags={p.data.tags}
+              date={formatDate(p.data.date)}
+              readTime={pReadTime}
+              image={p.data.image}
+            />
+          );
+        })
       }
     </div>
   </section>
