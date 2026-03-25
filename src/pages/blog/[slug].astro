@@ -201,7 +201,7 @@ const tocItems = headings
           href="https://cal.com/alafourcadev/consultoria-tecnica-1-1"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-block px-6 py-3 bg-accent text-bg-deep font-bold rounded-xl hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5 transition-all duration-300"
+          class="cta-button inline-block px-6 py-3 bg-accent text-bg-deep font-bold rounded-xl hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5 transition-all duration-300"
         >
           Agendar Consultoría
         </a>
@@ -367,6 +367,15 @@ const tocItems = headings
     @apply text-accent hover:underline;
   }
 
+  /* Preserve explicit text colors on CTA buttons inside prose */
+  .prose-custom a.cta-button {
+    color: rgb(var(--bg-deep)) !important;
+    text-decoration: none !important;
+  }
+  .prose-custom a.cta-button:hover {
+    text-decoration: none !important;
+  }
+
   .prose-custom strong {
     @apply text-txt-primary font-semibold;
   }
@@ -389,7 +398,7 @@ const tocItems = headings
 
   .prose-custom blockquote {
     @apply border-l-[3px] border-accent pl-5 py-3 my-6 rounded-r-lg;
-    background-color: rgba(52, 211, 153, 0.05);
+    background-color: rgb(var(--accent) / 0.05);
   }
 
   .prose-custom blockquote p {
@@ -397,15 +406,26 @@ const tocItems = headings
   }
 
   .prose-custom code {
-    @apply font-mono text-[13px] text-accent bg-bg-surface rounded px-1.5 py-0.5;
+    @apply font-mono text-[13px] text-accent bg-code-bg rounded px-1.5 py-0.5;
   }
 
   .prose-custom pre {
-    @apply rounded-xl border border-border-subtle overflow-hidden bg-code-bg p-5 my-6 overflow-x-auto;
+    @apply rounded-xl border border-border-subtle overflow-hidden p-5 my-6 overflow-x-auto;
+    background-color: rgb(var(--code-bg)) !important;
   }
 
   .prose-custom pre code {
-    @apply bg-transparent p-0 text-[13px] leading-[1.7] text-txt-primary;
+    @apply bg-transparent p-0 text-[13px] leading-[1.7];
+    color: inherit;
+  }
+
+  /* Shiki dual-theme support: switch syntax colors in dark mode */
+  html.dark .astro-code,
+  html.dark .astro-code span {
+    color: var(--shiki-dark) !important;
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
   }
 
   .prose-custom hr {

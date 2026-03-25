@@ -5,9 +5,9 @@
 <a href="/" class="fixed top-4 left-6 z-50 flex items-center gap-1.5 group">
     <span class="font-mono text-xl font-bold text-accent"> &gt;_ </span>
     <span
-        class="logo-text font-mono text-base font-semibold text-slate-700 dark:text-slate-100 overflow-hidden whitespace-nowrap transition-colors duration-300"
+        class="logo-text font-mono text-base font-semibold text-txt-primary overflow-hidden whitespace-nowrap transition-colors duration-300"
     >
-        alafourca.dev
+        Ingeniería sin filtros
     </span>
 </a>
 
@@ -16,11 +16,12 @@
         width: 0;
         border-right: 2px solid transparent;
         animation:
-            typewriter 2s steps(14) forwards,
+            typewriter 2.5s steps(23) forwards,
             blink-caret 0.6s step-end infinite,
-            delete-text 1s steps(14) forwards 5s,
-            typewriter 2s steps(14) forwards 6.5s;
-        animation-iteration-count: 1, infinite, 1, 1;
+            delete-text 1.2s steps(23) forwards 6s,
+            typewriter 2.5s steps(23) forwards 7.5s !important;
+        animation-iteration-count: 1, infinite, 1, 1 !important;
+        animation-duration: 2.5s, 0.6s, 1.2s, 2.5s !important;
     }
 
     @keyframes typewriter {
@@ -53,7 +54,7 @@
 </style>
 
 <script>
-    // Restart the typewriter animation every 8 seconds
+    // Restart the typewriter animation every 10 seconds (matches full cycle)
     const logoText = document.querySelector(".logo-text") as HTMLElement;
 
     function restartAnimation() {
@@ -64,6 +65,5 @@
         }
     }
 
-    // Restart every 8 seconds (matches full animation cycle)
-    setInterval(restartAnimation, 8000);
+    setInterval(restartAnimation, 10000);
 </script>

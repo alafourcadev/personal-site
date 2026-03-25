@@ -6,4 +6,12 @@ export default defineConfig({
   site: 'https://alafourca.dev',
   trailingSlash: 'never',
   integrations: [tailwind({ applyBaseStyles: false }), sitemap()],
+  markdown: {
+    shikiConfig: {
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark',
+      },
+    },
+  },
 })

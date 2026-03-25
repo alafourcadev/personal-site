@@ -188,6 +188,14 @@ const ogImage = image || 'https://alafourca.dev/profile-og.webp';
     border-radius: 4px;
   }
 
+  /* Theme-aware card hover shadow */
+  .card-hover-shadow:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  }
+  html.dark .card-hover-shadow:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;

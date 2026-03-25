@@ -34,7 +34,8 @@ function isActive(href: string): boolean {
 
 <nav
   aria-label="Navegación principal"
-  class="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center gap-5 h-[44px] px-5 bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-xl border border-slate-200 dark:border-[#334155] rounded-full shadow-lg shadow-black/10 dark:shadow-black/25 transition-colors duration-300"
+  class="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center gap-5 h-[44px] px-5 backdrop-blur-xl border border-border-subtle rounded-full shadow-lg shadow-black/5 dark:shadow-black/25 transition-colors duration-300"
+  style="background-color: var(--nav-bg)"
 >
   <!-- Desktop links -->
   <div class="hidden md:flex items-center gap-5">
@@ -47,7 +48,7 @@ function isActive(href: string): boolean {
             'nav-link relative text-[13px] transition-all duration-300 hover:text-accent',
             isActive(link.href)
               ? 'text-accent font-medium'
-              : 'text-slate-500 dark:text-slate-400',
+              : 'text-txt-muted hover:text-txt-primary',
           ]}
           style={`animation-delay: ${index * 100}ms`}
         >
@@ -61,10 +62,10 @@ function isActive(href: string): boolean {
         </a>
       ))
     }
-    <span class="text-slate-300 dark:text-[#334155]">|</span>
+    <span class="text-border-subtle">|</span>
     <button
       id="theme-toggle"
-      class="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:rotate-12 transition-all duration-300"
+      class="text-txt-muted hover:text-txt-primary hover:rotate-12 transition-all duration-300"
       aria-label="Cambiar tema"
     >
       <Icon name="moon" size={16} class="moon-icon" />
@@ -83,7 +84,7 @@ function isActive(href: string): boolean {
   <!-- Mobile menu toggle -->
   <button
     id="menu-toggle"
-    class="md:hidden text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+    class="md:hidden text-txt-muted hover:text-txt-primary transition-colors"
     aria-label="Abrir menú"
     aria-expanded="false"
     aria-controls="mobile-menu"
@@ -97,7 +98,7 @@ function isActive(href: string): boolean {
 <nav
   id="mobile-menu"
   aria-label="Menú móvil"
-  class="hidden md:hidden fixed top-[72px] left-0 right-0 z-40 bg-[#0f172a]/95 backdrop-blur-xl border-b border-[#334155] p-6 flex flex-col gap-4"
+  class="hidden md:hidden fixed top-[72px] left-0 right-0 z-40 bg-bg-surface/95 backdrop-blur-xl border-b border-border-subtle p-6 flex flex-col gap-4"
 >
   {
     links.map((link, index) => (
@@ -107,7 +108,7 @@ function isActive(href: string): boolean {
           'text-[15px] py-2 transition-all duration-300 pl-3 border-l-2',
           isActive(link.href)
             ? 'text-accent font-medium border-accent'
-            : 'text-slate-400 border-transparent hover:border-slate-500 hover:text-slate-200',
+            : 'text-txt-muted border-transparent hover:border-txt-muted hover:text-txt-primary',
         ]}
         style={`animation-delay: ${index * 50}ms`}
       >
@@ -119,7 +120,7 @@ function isActive(href: string): boolean {
     href="https://cal.com/alafourcadev/consultoria-tecnica-1-1"
     target="_blank"
     rel="noopener noreferrer"
-    class="flex items-center justify-center px-5 py-2.5 border-2 border-accent text-accent text-sm font-semibold rounded-full hover:bg-accent hover:text-[#0f172a] transition-all duration-300 mt-2"
+    class="flex items-center justify-center px-5 py-2.5 border-2 border-accent text-accent text-sm font-semibold rounded-full hover:bg-accent hover:text-bg-deep transition-all duration-300 mt-2"
   >
     Agendar Consultoría
   </a>
