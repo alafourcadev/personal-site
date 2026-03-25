@@ -20,7 +20,7 @@ const { slug, title, description, tags, date, readTime, image } = Astro.props
   data-title={title.toLowerCase()}
   data-description={description.toLowerCase()}
 >
-  <div class="h-[180px] overflow-hidden relative">
+  <div class="h-[160px] sm:h-[180px] overflow-hidden relative">
     <img src={image} alt={title} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" width="800" height="400" />
     <div class="absolute inset-0 bg-gradient-to-t from-bg-surface to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-300" />
   </div>

@@ -30,17 +30,17 @@ function formatDate(date: Date): string {
   footerVariant="simple"
 >
   <!-- Blog Header -->
-  <section class="flex flex-col items-center gap-8 px-6 lg:px-20 py-[60px]">
+  <section class="flex flex-col items-center gap-6 sm:gap-8 px-4 sm:px-6 md:px-10 lg:px-20 py-10 sm:py-12 md:py-[60px]">
     <span class="font-mono text-sm font-medium text-accent animate-pulse"
       >// blog</span
     >
     <h1
-      class="text-3xl lg:text-[42px] font-bold text-txt-primary text-center animate-fade-in"
+      class="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-bold text-txt-primary text-center animate-fade-in"
     >
       Artículos
     </h1>
     <p
-      class="text-[17px] text-txt-secondary text-center max-w-2xl animate-fade-in"
+      class="text-[15px] sm:text-[17px] text-txt-secondary text-center max-w-2xl animate-fade-in"
       style="animation-delay: 100ms"
     >
       Ingeniería de software, arquitectura de sistemas y las decisiones técnicas
@@ -66,13 +66,13 @@ function formatDate(date: Date): string {
     </div>
 
     <!-- Tags -->
-    <div class="flex flex-wrap items-center gap-2.5 justify-center">
+    <div class="flex flex-wrap items-center gap-2 sm:gap-2.5 justify-center">
       {
         filterTags.map((tag, i) => (
           <button
             data-tag={tag}
             class:list={[
-              "tag-btn text-[13px] font-medium rounded-full px-[18px] py-2 transition-all duration-300 cursor-pointer hover:scale-105",
+              "tag-btn text-[13px] font-medium rounded-full px-4 py-2.5 min-h-[44px] transition-all duration-300 cursor-pointer hover:scale-105",
               i === 0
                 ? "bg-accent text-bg-deep font-semibold active-tag shadow-[0_0_15px_rgba(52,211,153,0.3)]"
                 : "bg-bg-surface text-txt-secondary border border-border-subtle hover:border-accent/50 hover:text-txt-primary",
@@ -87,7 +87,7 @@ function formatDate(date: Date): string {
   </section>
 
   <!-- Blog Grid -->
-  <section class="px-6 lg:px-20 pb-20">
+  <section class="px-4 sm:px-6 md:px-10 lg:px-20 pb-20">
     <div
       id="blog-grid"
       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -161,10 +161,10 @@ function formatDate(date: Date): string {
       tagButtons.forEach((b) => {
         if (b.dataset.tag === activeTag) {
           b.className =
-            "tag-btn text-[13px] font-semibold rounded-full px-[18px] py-2 transition-all duration-300 cursor-pointer hover:scale-105 bg-accent text-bg-deep active-tag shadow-[0_0_15px_rgba(52,211,153,0.3)]";
+            "tag-btn text-[13px] font-semibold rounded-full px-4 py-2.5 min-h-[44px] transition-all duration-300 cursor-pointer hover:scale-105 bg-accent text-bg-deep active-tag shadow-[0_0_15px_rgba(52,211,153,0.3)]";
         } else {
           b.className =
-            "tag-btn text-[13px] font-medium rounded-full px-[18px] py-2 transition-all duration-300 cursor-pointer hover:scale-105 bg-bg-surface text-txt-secondary border border-border-subtle hover:border-accent/50 hover:text-txt-primary";
+            "tag-btn text-[13px] font-medium rounded-full px-4 py-2.5 min-h-[44px] transition-all duration-300 cursor-pointer hover:scale-105 bg-bg-surface text-txt-secondary border border-border-subtle hover:border-accent/50 hover:text-txt-primary";
         }
       });
 

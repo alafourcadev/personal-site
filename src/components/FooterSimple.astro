@@ -3,45 +3,45 @@ import Icon from "./Icon.astro";
 ---
 
 <footer class="bg-bg-surface">
-  <div class="px-6 lg:px-20 py-10 flex flex-col gap-6">
+  <div class="px-4 sm:px-6 md:px-10 lg:px-20 py-8 sm:py-10 flex flex-col gap-6">
     <div class="h-px bg-border-subtle"></div>
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-      <a href="/" class="flex items-center gap-2">
+      <a href="/" class="flex items-center gap-2 min-h-[44px]">
         <span class="font-mono text-lg font-bold text-accent">&gt;_</span>
         <span class="font-mono text-[15px] font-semibold text-txt-primary"
           >Ingeniería sin filtros</span
         >
       </a>
-      <p class="text-[13px] text-txt-muted">
+      <p class="text-[13px] text-txt-muted text-center">
         &copy; {new Date().getFullYear()} Alejandro Lafourcade. Todos los derechos reservados.
       </p>
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-1">
         <a
           href="https://github.com/alafourcadev"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-txt-muted hover:text-txt-secondary transition-colors"
+          class="flex items-center justify-center w-11 h-11 rounded-lg text-txt-muted hover:text-txt-secondary transition-colors"
           aria-label="GitHub"
         >
-          <Icon name="github" size={18} />
+          <Icon name="github" size={20} />
         </a>
         <a
           href="https://www.linkedin.com/in/alafourcadedespaigne/"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-txt-muted hover:text-txt-secondary transition-colors"
+          class="flex items-center justify-center w-11 h-11 rounded-lg text-txt-muted hover:text-txt-secondary transition-colors"
           aria-label="LinkedIn"
         >
-          <Icon name="linkedin" size={18} />
+          <Icon name="linkedin" size={20} />
         </a>
         <a
           href="https://x.com/alafourcadev"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-txt-muted hover:text-txt-secondary transition-colors"
+          class="flex items-center justify-center w-11 h-11 rounded-lg text-txt-muted hover:text-txt-secondary transition-colors"
           aria-label="Twitter"
         >
-          <Icon name="twitter" size={18} />
+          <Icon name="twitter" size={20} />
         </a>
       </div>
     </div>

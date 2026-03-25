@@ -7,7 +7,7 @@ interface Props {
 const { quote, attribution } = Astro.props
 ---
 
-<blockquote class="group bg-bg-surface border border-border-subtle rounded-xl p-8 flex flex-col gap-5 transition-all duration-300 hover:border-accent/30 hover:bg-bg-surface-hover hover:-translate-y-1 card-hover-shadow">
+<blockquote class="group bg-bg-surface border border-border-subtle rounded-xl p-5 sm:p-8 flex flex-col gap-4 sm:gap-5 transition-all duration-300 hover:border-accent/30 hover:bg-bg-surface-hover hover:-translate-y-1 card-hover-shadow">
   <span class="text-5xl font-bold leading-[0.5] text-accent/30 group-hover:text-accent/50 transition-colors duration-300 select-none" aria-hidden="true">&ldquo;</span>
   <p class="text-[15px] italic text-txt-primary leading-[1.7] tracking-[-0.2px]">{quote}</p>
   <footer class="text-[13px] text-txt-muted group-hover:text-txt-secondary transition-colors duration-300">— <cite class="not-italic">{attribution}</cite></footer>

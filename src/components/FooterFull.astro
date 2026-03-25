@@ -8,21 +8,21 @@ const navLinks = [
 
 <footer class="border-t border-border-subtle mt-16">
   <div
-    class="px-6 lg:px-20 py-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+    class="px-4 sm:px-6 md:px-10 lg:px-20 py-6 flex flex-col sm:flex-row items-center justify-between gap-4"
   >
-    <nav aria-label="Navegación del pie de página" class="flex items-center gap-6 flex-wrap">
+    <nav aria-label="Navegación del pie de página" class="flex items-center gap-4 sm:gap-6 flex-wrap">
       {
         navLinks.map((l) => (
           <a
             href={l.href}
-            class="text-sm text-txt-secondary hover:text-accent transition-colors duration-200"
+            class="text-sm text-txt-secondary hover:text-accent transition-colors duration-200 min-h-[44px] inline-flex items-center"
           >
             {l.label}
           </a>
         ))
       }
     </nav>
-    <p class="text-sm text-txt-muted">
+    <p class="text-xs sm:text-sm text-txt-muted text-center">
       &copy; {new Date().getFullYear()} Alejandro Lafourcade. Todos los derechos reservados.
     </p>
   </div>

@@ -182,14 +182,14 @@ const sections: UsesSection[] = [
 ---
 
 <!-- Header -->
-<section class="section-animate px-6 lg:px-[120px] pt-12 pb-6 lg:pt-16 lg:pb-8">
+<section class="section-animate px-4 sm:px-6 md:px-10 lg:px-[120px] pt-12 pb-6 lg:pt-16 lg:pb-8">
   <div class="max-w-3xl">
     <h1
-      class="font-heading text-3xl md:text-4xl lg:text-5xl font-extrabold text-txt-primary leading-tight tracking-tight mb-4"
+      class="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-txt-primary leading-tight tracking-tight mb-4"
     >
       Mi Setup
     </h1>
-    <p class="text-lg text-txt-secondary leading-relaxed">
+    <p class="text-base sm:text-lg text-txt-secondary leading-relaxed">
       Hardware, software y herramientas que uso todos los días para diseñar, construir y escalar
       sistemas. Inspirado en <a
         href="https://uses.tech/"
@@ -203,9 +203,9 @@ const sections: UsesSection[] = [
 
 <!-- Sections -->
 {sections.map((section, sectionIndex) => (
-  <section class="section-animate px-6 lg:px-[120px] py-8 lg:py-10" style={`animation-delay: ${sectionIndex * 100}ms`}>
+  <section class="section-animate px-4 sm:px-6 md:px-10 lg:px-[120px] py-8 lg:py-10" style={`animation-delay: ${sectionIndex * 100}ms`}>
     <h2
-      class="font-heading text-2xl lg:text-3xl font-bold text-txt-primary tracking-[-0.8px] flex items-center gap-3 mb-8"
+      class="font-heading text-xl sm:text-2xl lg:text-3xl font-bold text-txt-primary tracking-[-0.8px] flex items-center gap-3 mb-6 sm:mb-8"
     >
       <span class="text-accent">{section.emoji}</span>
       {section.title}
@@ -213,7 +213,7 @@ const sections: UsesSection[] = [
     <div class="flex flex-col gap-5 max-w-3xl">
       {section.items.map((item, i) => (
         <div
-          class="uses-item group bg-bg-surface border border-border-subtle rounded-xl p-6 hover:border-accent/30 transition-all duration-300"
+          class="uses-item group bg-bg-surface border border-border-subtle rounded-xl p-4 sm:p-6 hover:border-accent/30 transition-all duration-300"
           style={`animation-delay: ${(sectionIndex * 100) + (i * 60)}ms`}
         >
           {item.href ? (
@@ -221,7 +221,7 @@ const sections: UsesSection[] = [
               href={item.href}
               target="_blank"
               rel="noopener noreferrer"
-              class="text-lg font-bold text-txt-primary group-hover:text-accent transition-colors duration-300 inline-flex items-center gap-2"
+              class="text-base sm:text-lg font-bold text-txt-primary group-hover:text-accent transition-colors duration-300 inline-flex items-start sm:items-center gap-2 flex-wrap"
             >
               {item.name}
               <svg

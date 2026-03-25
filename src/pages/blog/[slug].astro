@@ -113,14 +113,14 @@ const tocItems = headings
 
   <!-- Article Header -->
   <section
-    class="flex flex-col items-center gap-6 px-6 lg:px-[200px] py-[60px]"
+    class="flex flex-col items-center gap-4 sm:gap-6 px-4 sm:px-6 md:px-16 lg:px-[200px] py-8 sm:py-12 md:py-[60px]"
   >
     <div class="flex items-center gap-2">
       <a href="/blog" class="text-sm text-accent hover:underline">Blog</a>
       <Icon name="chevron-right" size={14} class="text-txt-muted" />
       <span class="text-sm text-txt-muted">{post.data.tags[0]}</span>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
       {
         post.data.tags.map((tag: string) => (
           <span class="text-xs font-medium text-tag-text bg-tag-bg rounded px-3 py-1">
@@ -130,26 +130,26 @@ const tocItems = headings
       }
     </div>
     <h1
-      class="text-2xl md:text-3xl lg:text-4xl font-extrabold text-txt-primary text-center leading-tight tracking-[-0.5px] max-w-[900px]"
+      class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-txt-primary text-center leading-tight tracking-[-0.5px] max-w-[900px]"
     >
       {post.data.title}
     </h1>
-    <div class="flex flex-wrap items-center justify-center gap-5 text-sm">
+    <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-sm">
       <div class="flex items-center gap-2.5">
         <img src="/profile.jpg" alt="Alejandro Lafourcade" class="w-8 h-8 rounded-full object-cover" />
-        <span class="text-txt-primary font-medium">Alejandro Lafourcade</span>
+        <span class="text-txt-primary font-medium text-xs sm:text-sm">Alejandro Lafourcade</span>
       </div>
+      <span class="w-1 h-1 rounded-full bg-txt-muted hidden sm:block"></span>
+      <span class="text-txt-secondary text-xs sm:text-sm">{formatDate(post.data.date)}</span>
       <span class="w-1 h-1 rounded-full bg-txt-muted"></span>
-      <span class="text-txt-secondary">{formatDate(post.data.date)}</span>
-      <span class="w-1 h-1 rounded-full bg-txt-muted"></span>
-      <span class="text-txt-secondary">{readTimeText}</span>
+      <span class="text-txt-secondary text-xs sm:text-sm">{readTimeText}</span>
     </div>
   </section>
 
   <!-- Cover Image -->
-  <section class="px-6 lg:px-20">
+  <section class="px-4 sm:px-6 md:px-10 lg:px-20">
     <div
-      class="w-full h-64 lg:h-[400px] rounded-xl overflow-hidden bg-bg-surface"
+      class="w-full h-48 sm:h-64 md:h-80 lg:h-[400px] rounded-xl overflow-hidden bg-bg-surface"
     >
       <img
         src={post.data.image}
@@ -164,7 +164,7 @@ const tocItems = headings
   </section>
 
   <!-- Content Area -->
-  <section class="flex gap-12 px-6 lg:px-20 py-12">
+  <section class="flex gap-8 md:gap-10 lg:gap-12 px-4 sm:px-6 md:px-10 lg:px-20 py-8 sm:py-12">
     <!-- TOC Sidebar -->
     {
       tocItems.length > 0 && (
@@ -194,14 +194,14 @@ const tocItems = headings
       <Content />
 
       <!-- CTA post-artículo -->
-      <div class="mt-12 p-8 rounded-2xl border border-border-subtle bg-bg-surface/50 text-center">
-        <p class="text-lg font-bold text-txt-primary mb-2">¿Te sirvió este artículo?</p>
-        <p class="text-txt-secondary mb-6">Si querés resolver un problema de arquitectura, revisar decisiones técnicas o simplemente hablar de código — agendá una sesión 1:1.</p>
+      <div class="mt-8 sm:mt-12 p-5 sm:p-8 rounded-xl sm:rounded-2xl border border-border-subtle bg-bg-surface/50 text-center">
+        <p class="text-base sm:text-lg font-bold text-txt-primary mb-2">¿Te sirvió este artículo?</p>
+        <p class="text-sm sm:text-base text-txt-secondary mb-6">Si querés resolver un problema de arquitectura, revisar decisiones técnicas o simplemente hablar de código — agendá una sesión 1:1.</p>
         <a
           href="https://cal.com/alafourcadev/consultoria-tecnica-1-1"
           target="_blank"
           rel="noopener noreferrer"
-          class="cta-button inline-block px-6 py-3 bg-accent text-bg-deep font-bold rounded-xl hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5 transition-all duration-300"
+          class="cta-button inline-block w-full sm:w-auto text-center px-6 py-3 min-h-[44px] bg-accent text-bg-deep font-bold rounded-xl hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5 transition-all duration-300"
         >
           Agendar Consultoría
         </a>
@@ -227,23 +227,23 @@ const tocItems = headings
           <button
             id="share-twitter"
             aria-label="Compartir en Twitter"
-            class="w-9 h-9 rounded-lg bg-bg-surface border border-border-subtle flex items-center justify-center text-txt-muted hover:text-txt-primary hover:border-txt-muted transition-colors"
+            class="w-11 h-11 rounded-lg bg-bg-surface border border-border-subtle flex items-center justify-center text-txt-muted hover:text-txt-primary hover:border-txt-muted transition-colors"
           >
-            <Icon name="twitter" size={16} />
+            <Icon name="twitter" size={18} />
           </button>
           <button
             id="share-linkedin"
             aria-label="Compartir en LinkedIn"
-            class="w-9 h-9 rounded-lg bg-bg-surface border border-border-subtle flex items-center justify-center text-txt-muted hover:text-txt-primary hover:border-txt-muted transition-colors"
+            class="w-11 h-11 rounded-lg bg-bg-surface border border-border-subtle flex items-center justify-center text-txt-muted hover:text-txt-primary hover:border-txt-muted transition-colors"
           >
-            <Icon name="linkedin" size={16} />
+            <Icon name="linkedin" size={18} />
           </button>
           <button
             id="share-copy"
             aria-label="Copiar enlace"
-            class="w-9 h-9 rounded-lg bg-bg-surface border border-border-subtle flex items-center justify-center text-txt-muted hover:text-txt-primary hover:border-txt-muted transition-colors"
+            class="w-11 h-11 rounded-lg bg-bg-surface border border-border-subtle flex items-center justify-center text-txt-muted hover:text-txt-primary hover:border-txt-muted transition-colors"
           >
-            <Icon name="link" size={16} />
+            <Icon name="link" size={18} />
           </button>
         </div>
       </div>
@@ -252,15 +252,15 @@ const tocItems = headings
 
   <!-- Related Posts -->
   <section
-    class="border-t border-border-subtle px-6 lg:px-20 py-[60px] flex flex-col gap-8"
+    class="border-t border-border-subtle px-4 sm:px-6 md:px-10 lg:px-20 py-10 sm:py-12 md:py-[60px] flex flex-col gap-6 sm:gap-8"
   >
     <div class="flex flex-col gap-2">
       <span class="font-mono text-sm font-medium text-accent"
         >// related_posts</span
       >
-      <h2 class="text-2xl lg:text-3xl font-bold text-txt-primary">También te puede interesar</h2>
+      <h2 class="text-xl sm:text-2xl lg:text-3xl font-bold text-txt-primary">También te puede interesar</h2>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {
         relatedPosts.map((p) => {
           const pWordCount = p.body.split(/\s+/).length;
@@ -348,11 +348,11 @@ const tocItems = headings
   }
 
   .prose-custom h2 {
-    @apply text-2xl font-bold text-txt-primary mt-10 mb-4;
+    @apply text-xl sm:text-2xl font-bold text-txt-primary mt-8 sm:mt-10 mb-4;
   }
 
   .prose-custom h3 {
-    @apply text-xl font-bold text-txt-primary mt-8 mb-3;
+    @apply text-lg sm:text-xl font-bold text-txt-primary mt-6 sm:mt-8 mb-3;
   }
 
   .prose-custom h4 {
@@ -407,11 +407,13 @@ const tocItems = headings
 
   .prose-custom code {
     @apply font-mono text-[13px] text-accent bg-code-bg rounded px-1.5 py-0.5;
+    word-break: break-word;
   }
 
   .prose-custom pre {
-    @apply rounded-xl border border-border-subtle overflow-hidden p-5 my-6 overflow-x-auto;
+    @apply rounded-lg sm:rounded-xl border border-border-subtle overflow-hidden p-3 sm:p-5 my-4 sm:my-6 overflow-x-auto;
     background-color: rgb(var(--code-bg)) !important;
+    -webkit-overflow-scrolling: touch;
   }
 
   .prose-custom pre code {
@@ -434,6 +436,9 @@ const tocItems = headings
 
   .prose-custom table {
     @apply w-full border-collapse my-6 text-sm;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .prose-custom thead th {
@@ -445,6 +450,6 @@ const tocItems = headings
   }
 
   .prose-custom img {
-    @apply rounded-xl my-6;
+    @apply rounded-lg sm:rounded-xl my-4 sm:my-6 max-w-full h-auto;
   }
 </style>
