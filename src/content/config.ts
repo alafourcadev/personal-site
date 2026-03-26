@@ -10,6 +10,7 @@ const blog = defineCollection({
         readTime: z.string().optional(),
         image: z.string(),
         draft: z.boolean().default(false),
+        day: z.number().optional(),
     }),
 })
 

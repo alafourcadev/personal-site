@@ -59,6 +59,10 @@ Me puse reglas estrictas. Si no las cumplo, el ejercicio no tiene sentido:
 - **Nada de pseudocódigo.** Spring Boot, Java, herramientas que usamos en la vida real.
 - **Sin consejos genéricos.** No voy a decirte "usá caché". Voy a mostrarte cuándo, cómo, y qué pasa cuando lo hacés mal.
 
+## ¿Por qué 110 si se llama #100?
+
+Porque los últimos 10 días son checkpoints y retrospectivas — no son problemas nuevos, son pausas para consolidar lo aprendido. Los 100 días de contenido técnico puro están ahí. Los 10 extras son los respiros que necesitás para no volverte loco y para conectar los conceptos entre sí. Podría haberlos escondido, pero preferí ser transparente. Ingeniería sin filtros, ¿no?
+
 ## Para quién es esto
 
 Si sos un developer que sabe programar pero quiere entender **por qué** se toman ciertas decisiones. Si querés dejar de ser la persona que implementa y empezar a ser la persona que diseña. Si estás cansado de leer "depende" como respuesta a todo y querés ver los trade-offs con código real.

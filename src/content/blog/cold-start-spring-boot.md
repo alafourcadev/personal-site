@@ -5,6 +5,7 @@ tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-01
 readTime: "8 min read"
 image: "/blog/cold-start-spring-boot.webp"
+day: 1
 ---
 
 Tu PM te mira con cara de "¿y ahora?" porque el health check tarda una eternidad. El pod se reinicia en Kubernetes. El usuario ve una pantalla en blanco. Y vos, mientras tanto, mirando los logs pensando que "es normal que Spring levante lento".

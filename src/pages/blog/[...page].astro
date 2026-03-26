@@ -1,16 +1,22 @@
 ---
+import type { GetStaticPaths } from "astro";
+import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Icon from "../../components/Icon.astro";
 import BlogCard from "../../components/BlogCard.astro";
-import { getCollection } from "astro:content";
 
-const allPosts = await getCollection("blog", ({ data }) => !data.draft);
-const posts = allPosts.sort(
-  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
-);
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  const sorted = posts.sort(
+    (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+  );
+  return paginate(sorted, { pageSize: 9 });
+}) satisfies GetStaticPaths;
 
-// Generate filter tags dynamically from all posts
-const allTags = [...new Set(posts.flatMap((p) => p.data.tags))];
+const { page } = Astro.props;
+
+// Generate filter tags from THIS page's posts
+const allTags = [...new Set(page.data.flatMap((p) => p.data.tags))];
 const filterTags = ["All", ...allTags];
 
 // Format date helper
@@ -21,6 +27,9 @@ function formatDate(date: Date): string {
     day: "numeric",
   });
 }
+
+// Build page numbers array
+const pageNumbers = Array.from({ length: page.lastPage }, (_, i) => i + 1);
 ---
 
 <BaseLayout
@@ -87,13 +96,13 @@ function formatDate(date: Date): string {
   </section>
 
   <!-- Blog Grid -->
-  <section class="px-4 sm:px-6 md:px-10 lg:px-20 pb-20">
+  <section class="px-4 sm:px-6 md:px-10 lg:px-20 pb-12">
     <div
       id="blog-grid"
       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
     >
       {
-        posts.map((post, i) => {
+        page.data.map((post, i) => {
           const wordCount = post.body.split(/\s+/).length;
           const readTime = `${Math.max(1, Math.ceil(wordCount / 200))} min read`;
           return (
@@ -119,6 +128,66 @@ function formatDate(date: Date): string {
       No se encontraron artículos.
     </p>
   </section>
+
+  <!-- Pagination -->
+  {
+    page.lastPage > 1 && (
+      <nav
+        aria-label="Paginación del blog"
+        class="flex items-center justify-center gap-2 px-4 sm:px-6 md:px-10 lg:px-20 pb-20"
+      >
+        {/* Previous */}
+        {page.url.prev ? (
+          <a
+            href={page.url.prev}
+            class="flex items-center gap-1.5 text-[13px] font-medium rounded-full px-4 py-2.5 bg-bg-surface text-txt-secondary border border-border-subtle hover:border-accent/50 hover:text-txt-primary transition-all duration-300 hover:scale-105"
+          >
+            &larr; Anterior
+          </a>
+        ) : (
+          <span class="flex items-center gap-1.5 text-[13px] font-medium rounded-full px-4 py-2.5 bg-bg-surface text-txt-muted border border-border-subtle opacity-50 cursor-not-allowed select-none">
+            &larr; Anterior
+          </span>
+        )}
+
+        {/* Page numbers */}
+        {pageNumbers.map((num) => {
+          const isActive = num === page.currentPage;
+          const href =
+            num === 1 ? "/blog" : `/blog/${num}`;
+          return isActive ? (
+            <span
+              class="text-[13px] font-semibold rounded-full px-4 py-2.5 bg-accent text-bg-deep shadow-[0_0_15px_rgba(52,211,153,0.3)] min-w-[44px] text-center"
+              aria-current="page"
+            >
+              {num}
+            </span>
+          ) : (
+            <a
+              href={href}
+              class="text-[13px] font-medium rounded-full px-4 py-2.5 bg-bg-surface text-txt-secondary border border-border-subtle hover:border-accent/50 hover:text-txt-primary transition-all duration-300 hover:scale-105 min-w-[44px] text-center"
+            >
+              {num}
+            </a>
+          );
+        })}
+
+        {/* Next */}
+        {page.url.next ? (
+          <a
+            href={page.url.next}
+            class="flex items-center gap-1.5 text-[13px] font-medium rounded-full px-4 py-2.5 bg-bg-surface text-txt-secondary border border-border-subtle hover:border-accent/50 hover:text-txt-primary transition-all duration-300 hover:scale-105"
+          >
+            Siguiente &rarr;
+          </a>
+        ) : (
+          <span class="flex items-center gap-1.5 text-[13px] font-medium rounded-full px-4 py-2.5 bg-bg-surface text-txt-muted border border-border-subtle opacity-50 cursor-not-allowed select-none">
+            Siguiente &rarr;
+          </span>
+        )}
+      </nav>
+    )
+  }
 </BaseLayout>
 
 <script>
