@@ -1,5 +1,5 @@
 ---
-title: "Tu app tarda 11 segundos en arrancar y vos pensás que es normal"
+title: "Día 001: Tu app tarda 11 segundos en arrancar y vos pensás que es normal"
 description: "De 10.7s a 1.3s de startup. El problema no es Spring Boot — es cómo inicializás tus servicios. Día 001 de #100ArchitectureDays."
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-01
