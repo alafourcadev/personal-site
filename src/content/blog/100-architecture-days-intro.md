@@ -77,8 +77,8 @@ Porque me hubiera encantado tener algo así cuando estaba creciendo como develop
 
 **110 días. 110 problemas. Código real.**
 
-Mañana arrancamos con el Día 1: *"La primera carga tarda más que preparar un asado"*. Vamos a diagnosticar por qué tu aplicación tarda 15 segundos en arrancar y qué podés hacer al respecto.
+El Día 1 ya está arriba: [*"Tu app tarda 11 segundos en arrancar y vos pensás que es normal"*](/blog/cold-start-spring-boot). Diagnóstico, código ANTES/DESPUÉS, y una mejora del 88% en tiempo de startup.
 
-Si querés seguir la serie, suscribite al blog o seguime en redes. Cada día hay un problema nuevo, una solución real, y algo que podés aplicar en tu proyecto.
+Si querés seguir la serie, suscribite al newsletter o seguime en redes. Cada nuevo artículo, directo en tu inbox.
 
-Nos vemos mañana. Esto recién empieza.
+Esto recién empieza.
