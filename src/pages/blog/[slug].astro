@@ -156,12 +156,12 @@ const tocItems = headings
   <!-- Cover Image -->
   <section class="px-4 sm:px-6 md:px-10 lg:px-20">
     <div
-      class="w-full max-h-[300px] rounded-xl overflow-hidden bg-bg-surface"
+      class="w-full rounded-xl overflow-hidden"
     >
       <img
         src={post.data.image}
         alt={post.data.title}
-        class="w-full h-full object-cover object-center"
+        class="w-full h-auto max-h-[350px] object-contain"
         loading="eager"
         width="1200"
         height="630"
