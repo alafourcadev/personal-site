@@ -2,7 +2,7 @@
 title: "Día 2: El SELECT * que arruinó tu API (y vos ni te enteraste)"
 description: "Tu API responde en 10 segundos porque estás trayendo columnas que nadie necesita. Día 2 de #100ArchitectureDays."
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
-date: 2026-04-03
+date: 2026-03-27
 readTime: "7 min read"
 image: "/blog/select-star-spring.webp"
 day: 2
