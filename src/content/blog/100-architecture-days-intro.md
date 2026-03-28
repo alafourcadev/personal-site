@@ -2,7 +2,7 @@
 title: "#100ArchitectureDays: 110 problemas reales de arquitectura, con código, sin humo"
 description: "Arranco un reto de 110 días donde resuelvo un problema real de arquitectura de software por día. Con Spring Boot, código que compila, y métricas reales."
 tags: ["Architecture", "Spring Boot", "100ArchitectureDays"]
-date: 2026-04-01
+date: 2026-03-26
 readTime: "5 min read"
 image: "/blog/100-architecture-days-intro.webp"
 ---
