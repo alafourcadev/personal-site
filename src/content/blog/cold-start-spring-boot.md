@@ -146,3 +146,5 @@ Este artículo es parte de **#100ArchitectureDays** — una serie de 110 problem
 Si tu app tarda más de 3 segundos en arrancar, tenés tarea para hoy.
 
 Seguí la saga completa en **#100ArchitectureDays**.
+
+💻 Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una ⭐ — es gratis y ayuda a que más gente lo encuentre.

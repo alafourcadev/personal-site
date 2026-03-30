@@ -160,3 +160,5 @@ Este artículo es parte de **#100ArchitectureDays** — una serie de problemas r
 La próxima vez que una query ande lenta, antes de agregar un índice, corré `EXPLAIN ANALYZE`. Puede que el índice ya exista y simplemente no lo estés usando. Diagnosticá primero, optimizá después.
 
 Seguí la saga completa en **#100ArchitectureDays**.
+
+💻 Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una ⭐ — es gratis y ayuda a que más gente lo encuentre.

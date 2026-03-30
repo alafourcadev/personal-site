@@ -82,3 +82,5 @@ El Día 1 ya está arriba: [*"Tu app tarda 11 segundos en arrancar y vos pensás
 Si querés seguir la serie, suscribite al newsletter o seguime en redes. Cada nuevo artículo, directo en tu inbox.
 
 Esto recién empieza.
+
+💻 Todo el código de la serie está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te copa el proyecto, dejame una ⭐ — es gratis y ayuda a que más gente lo encuentre.

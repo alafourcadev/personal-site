@@ -154,3 +154,5 @@ Este artículo es parte de **#100ArchitectureDays** — una serie de problemas r
 La próxima vez que escribas un endpoint de listado, preguntate: "¿realmente necesito todas estas columnas?" Si la respuesta es no, ya sabés qué hacer.
 
 Seguí la saga completa en **#100ArchitectureDays**.
+
+💻 Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una ⭐ — es gratis y ayuda a que más gente lo encuentre.
