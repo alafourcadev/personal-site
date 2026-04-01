@@ -1,5 +1,5 @@
 ---
-title: "N+1 Queries: el bug que tu DBA ya sabe que tenés"
+title: "Día 5: N+1 Queries — el bug que tu DBA ya sabe que tenés"
 description: "Para mostrar 50 usuarios hacés 250 queries a la base de datos. Tu DBA te odia y tiene razón. Día 5 de #100ArchitectureDays."
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-01
