@@ -1,0 +1,74 @@
+---
+// Giscus comments — powered by GitHub Discussions
+---
+
+<section
+  class="border-t border-border-subtle px-4 sm:px-6 md:px-10 lg:px-20 py-10 sm:py-12 md:py-[60px] flex flex-col gap-6 sm:gap-8"
+>
+  <div class="flex flex-col gap-2">
+    <span class="font-mono text-sm font-medium text-accent"
+      >// comentarios</span
+    >
+    <h2
+      class="text-xl sm:text-2xl lg:text-3xl font-bold text-txt-primary"
+    >
+      ¿Qué opinás?
+    </h2>
+    <p class="text-sm text-txt-secondary">
+      Logueate con tu cuenta de GitHub para dejar tu comentario.
+    </p>
+  </div>
+
+  <div class="giscus"></div>
+</section>
+
+<script>
+  function getGiscusTheme(): string {
+    return document.documentElement.classList.contains('dark')
+      ? 'transparent_dark'
+      : 'light';
+  }
+
+  function loadGiscus() {
+    const container = document.querySelector('.giscus');
+    if (!container || container.querySelector('iframe')) return;
+
+    const script = document.createElement('script');
+    script.src = 'https://giscus.app/client.js';
+    script.setAttribute('data-repo', 'alafourcadev/personal-site');
+    script.setAttribute('data-repo-id', 'R_kgDORu3axw');
+    script.setAttribute('data-category', 'Announcements');
+    script.setAttribute('data-category-id', 'DIC_kwDORu3ax84C6M1W');
+    script.setAttribute('data-mapping', 'pathname');
+    script.setAttribute('data-strict', '0');
+    script.setAttribute('data-reactions-enabled', '1');
+    script.setAttribute('data-emit-metadata', '0');
+    script.setAttribute('data-input-position', 'top');
+    script.setAttribute('data-theme', getGiscusTheme());
+    script.setAttribute('data-lang', 'es');
+    script.setAttribute('data-loading', 'lazy');
+    script.crossOrigin = 'anonymous';
+    script.async = true;
+    container.appendChild(script);
+  }
+
+  function updateGiscusTheme() {
+    const iframe = document.querySelector<HTMLIFrameElement>('.giscus-frame');
+    if (!iframe) return;
+    iframe.contentWindow?.postMessage(
+      { giscus: { setConfig: { theme: getGiscusTheme() } } },
+      'https://giscus.app'
+    );
+  }
+
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.attributeName === 'class') {
+        updateGiscusTheme();
+      }
+    }
+  });
+  observer.observe(document.documentElement, { attributes: true });
+
+  loadGiscus();
+</script>

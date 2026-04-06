@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Icon from "../../components/Icon.astro";
 import BlogCard from "../../components/BlogCard.astro";
+import Comments from "../../components/Comments.astro";
 import { getCollection } from "astro:content";
 import type { GetStaticPaths } from "astro";
 
@@ -200,43 +201,47 @@ const tocItems = headings
     <article class="flex-1 min-w-0 prose-custom">
       <Content />
 
-      <!-- Newsletter -->
-      <div class="mt-8 sm:mt-12 p-5 sm:p-8 rounded-xl sm:rounded-2xl border border-accent/20 bg-accent/5 text-center">
-        <p class="text-base sm:text-lg font-bold text-txt-primary mb-2">No te pierdas el próximo artículo</p>
-        <p class="text-sm sm:text-base text-txt-secondary mb-5">Suscribite y recibí cada nuevo post directo en tu inbox. Sin spam — solo ingeniería real.</p>
-        <form
-          action="https://buttondown.com/api/emails/embed-subscribe/alafourcadedespaigne"
-          method="post"
-          class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
-        >
-          <input
-            type="email"
-            name="email"
-            placeholder="tu@email.com"
-            required
-            class="flex-1 px-4 py-3 min-h-[44px] rounded-xl bg-bg-surface border border-border-subtle text-txt-primary placeholder:text-txt-muted text-sm focus:outline-none focus:border-accent/50 transition-colors"
-          />
-          <button
-            type="submit"
-            class="cta-button px-6 py-3 min-h-[44px] bg-accent text-bg-deep font-bold rounded-xl hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5 transition-all duration-300 text-sm"
+      <!-- Newsletter + Consultoría -->
+      <div class="mt-10 pt-8 border-t border-border-subtle">
+        <span class="font-mono text-sm font-medium text-accent">// suscribite</span>
+        <div class="flex flex-col lg:flex-row lg:items-end gap-4 lg:gap-8 mt-3">
+          <div class="flex-1 min-w-0">
+            <p class="text-base font-bold text-txt-primary">No te pierdas el próximo artículo</p>
+            <p class="text-sm text-txt-secondary mt-1">Sin spam — solo ingeniería real, directo a tu inbox.</p>
+          </div>
+          <form
+            action="https://buttondown.com/api/emails/embed-subscribe/alafourcadedespaigne"
+            method="post"
+            class="flex gap-2 w-full lg:w-auto shrink-0"
           >
-            Suscribirme
-          </button>
-        </form>
-      </div>
-
-      <!-- CTA consultoría -->
-      <div class="mt-5 p-5 sm:p-8 rounded-xl sm:rounded-2xl border border-border-subtle bg-bg-surface/50 text-center">
-        <p class="text-base sm:text-lg font-bold text-txt-primary mb-2">¿Necesitás ayuda con tu proyecto?</p>
-        <p class="text-sm sm:text-base text-txt-secondary mb-6">Arquitectura, code review, decisiones técnicas — agendá una sesión 1:1.</p>
-        <a
-          href="https://cal.com/alafourcadev/consultoria-tecnica-1-1"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="cta-button inline-block w-full sm:w-auto text-center px-6 py-3 min-h-[44px] bg-accent text-bg-deep font-bold rounded-xl hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5 transition-all duration-300"
-        >
-          Agendar Consultoría
-        </a>
+            <input
+              type="email"
+              name="email"
+              placeholder="tu@email.com"
+              required
+              class="flex-1 lg:w-[220px] px-4 py-2.5 min-h-[44px] rounded-lg bg-bg-surface border border-border-subtle text-txt-primary placeholder:text-txt-muted text-sm focus:outline-none focus:border-accent/50 transition-colors"
+            />
+            <button
+              type="submit"
+              class="cta-button px-5 py-2.5 min-h-[44px] bg-accent text-bg-deep font-bold rounded-lg hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5 transition-all duration-300 text-sm whitespace-nowrap cursor-pointer"
+            >
+              Suscribirme
+            </button>
+          </form>
+        </div>
+        <div class="flex items-center gap-3 mt-6 pt-6 border-t border-border-subtle/50">
+          <p class="text-sm text-txt-muted">
+            ¿Necesitás ayuda con tu proyecto?
+            <a
+              href="https://cal.com/alafourcadev/consultoria-tecnica-1-1"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-accent hover:underline font-medium"
+            >
+              Agendá una sesión 1:1 &rarr;
+            </a>
+          </p>
+        </div>
       </div>
 
       <!-- Article Footer -->
@@ -281,6 +286,9 @@ const tocItems = headings
       </div>
     </article>
   </section>
+
+  <!-- Comments -->
+  <Comments />
 
   <!-- Related Posts -->
   <section
