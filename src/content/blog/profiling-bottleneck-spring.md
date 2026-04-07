@@ -1,6 +1,6 @@
 ---
-title: "Dia 7: Cacheaste todo y la app sigue lenta. El problema esta en otro lado."
-description: "Antes de optimizar, medi. Profiling con Spring Boot Actuator y Micrometer. Dia 7 de #100ArchitectureDays."
+title: "Día 7: Tu endpoint tarda 3 segundos y estás adivinando por qué"
+description: "Optimizás a ciegas porque nunca mediste. Profiling con Actuator y Micrometer para encontrar el cuello de botella real. Día 7 de #100ArchitectureDays."
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-07
 readTime: "7 min read"
@@ -8,21 +8,21 @@ image: "/blog/profiling-bottleneck-spring.webp"
 day: 7
 ---
 
-Le metiste `@Cacheable` a todo. Moviste queries a vistas materializadas. Hasta pusiste un CDN. La app sigue tardando 4 segundos en responder. ¿Y ahora?
+Tu endpoint tarda 3 segundos. Tu PM te pregunta por qué. Y vos decís lo primero que se te ocurre: "debe ser la base de datos".
 
-Ahora hacés lo que deberías haber hecho desde el principio: **medir**.
+No mediste. No sabés. Estás adivinando.
 
-## El error clásico
+## El primo peligroso de la optimización prematura
 
-La optimización prematura tiene un primo hermano igual de peligroso: la **optimización ciega**. Es cuando optimizás basándote en intuición en vez de datos.
+Todos conocemos la frase de Knuth: "la optimización prematura es la raíz de todos los males." Pero hay un primo hermano igual de peligroso: la **optimización ciega**.
 
-"Seguro es la base de datos." No mediste. "Debe ser la serialización JSON." No mediste. "El servicio externo tarda mucho." No. Mediste. Nada.
+"Seguro es la base de datos." No mediste. "Debe ser la serialización JSON." No mediste. "El servicio externo tarda mucho." No mediste tampoco.
 
-Y así terminás cacheando cosas que tardan 2ms y dejando pasar el endpoint que tarda 3 segundos porque ni sabías que existía.
+Y así terminás optimizando cosas que tardan 2ms mientras el verdadero culpable — un servicio que tarda 3.2 segundos — sigue ahí, invisible, arruinándote la vida.
 
-## El desastre en acción
+## El problema real
 
-Mirá esta app de e-commerce. El equipo puso caché en todo y sigue lenta:
+Mirá este endpoint de e-commerce. Tarda 3.3 segundos y nadie sabe por qué:
 
 ```java
 @RestController
