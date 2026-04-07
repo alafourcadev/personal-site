@@ -20,9 +20,26 @@ Más silencio.
 
 Ahí le dije lo que te voy a decir a vos: **¿quién te mandó a optimizar si ni siquiera mediste?**
 
-## Optimización ciega: el error que todos cometemos
+## Esto tiene nombre: se llama profiling
 
-Todos conocemos la frase de Knuth: "la optimización prematura es la raíz de todos los males." Pero hay un primo hermano igual de peligroso: la **optimización ciega**.
+Lo que mi amigo necesitaba no es una optimización. Es un **diagnóstico**. Y la técnica para hacerlo existe desde hace décadas: se llama **profiling**.
+
+Profiling es medir cuánto tiempo tarda cada parte de tu código. No adivinar, no intuir — medir con números reales. Es la diferencia entre un médico que te dice "tomá ibuprofeno, algo te debe doler" y uno que te hace estudios antes de recetarte algo.
+
+Todos los lenguajes y frameworks tienen herramientas para esto:
+
+- **Java/Spring:** Micrometer + Actuator
+- **Python:** cProfile, Py-Spy, Django Debug Toolbar
+- **Node.js:** Clinic.js, built-in profiler, OpenTelemetry
+- **Go:** pprof (viene integrado en el runtime)
+- **.NET:** dotnet-trace, Application Insights
+- **Ruby/Rails:** rack-mini-profiler, Stackprof
+
+La herramienta cambia. El concepto es universal: **antes de optimizar, medí.**
+
+## El primo peligroso de la optimización prematura
+
+Todos conocemos la frase de Knuth: "la optimización prematura es la raíz de todos los males." Pero hay un primo hermano igual de peligroso que nadie nombra: la **optimización ciega**.
 
 "Seguro es la base de datos." No mediste. "Debe ser la serialización JSON." No mediste. "El servicio externo tarda mucho." Tampoco mediste.
 
@@ -52,7 +69,9 @@ public class PedidoController {
 
 Cuatro llamadas. ¿Cuál es la lenta? No tenés idea. Y sin datos, estás tirando dardos con los ojos vendados.
 
-## Paso 1: Actuator te muestra lo que no ves
+## Cómo se hace en Spring Boot (pero el concepto es el mismo en cualquier stack)
+
+En Spring Boot, las herramientas de profiling son **Actuator** (expone métricas por HTTP) y **Micrometer** (instrumenta tu código con timers). Es el equivalente a pprof en Go o cProfile en Python.
 
 Agregá las dependencias:
 
@@ -82,9 +101,9 @@ management:
 
 Con esto ya tenés `/actuator/metrics` expuesto. Podés ver cuánto tardan tus endpoints, cuántas conexiones a la base de datos estás usando, el estado del thread pool, la memoria. Todo.
 
-## Paso 2: Micrometer te dice exactamente dónde duele
+## Instrumentá cada operación
 
-Ahora instrumentá el código que sospechás:
+El segundo paso es ponerle un timer a cada operación que sospechás. En cualquier lenguaje el patrón es el mismo: "empezá a contar, ejecutá la operación, pará de contar". En Spring Boot se hace con Micrometer:
 
 ```java
 @Service
@@ -138,9 +157,9 @@ Ahora mirás `descuento.calcular`:
 
 Resulta que el servicio de descuentos llama a una API externa que tarda un promedio de 3 segundos. Pero nadie lo sabía porque nadie midió.
 
-## Paso 3: @Timed para no ensuciar el código
+## @Timed: la versión declarativa
 
-Si no querés meter `registry.timer()` en cada método, usá la anotación:
+Si no querés meter `registry.timer()` en cada método, Spring tiene una anotación que hace lo mismo de forma más limpia:
 
 ```java
 @Service
@@ -205,7 +224,7 @@ Antes de optimizar cualquier cosa, respondé estas tres preguntas:
 2. **¿Cuánto impacto tiene?** (Si es el 2% del tiempo total, no importa.)
 3. **¿Cuál es el costo de optimizarlo?** (A veces la solución es más cara que el problema.)
 
-La optimización no es una actividad creativa. Es una actividad científica. Hipótesis, medición, conclusión.
+La optimización no es una actividad creativa. Es una actividad científica. Hipótesis, medición, conclusión. Y esto aplica igual si estás en Spring Boot, Django, Express o Rails.
 
 ## Esto es el Día 7
 
