@@ -1,5 +1,5 @@
 ---
-title: "Día 7: Tu endpoint tarda 3 segundos y estás adivinando por qué"
+title: "Día 7: ¿Quién te mandó a optimizar si ni siquiera mediste?"
 description: "Optimizás a ciegas porque nunca mediste. Profiling con Actuator y Micrometer para encontrar el cuello de botella real. Día 7 de #100ArchitectureDays."
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-07
@@ -8,21 +8,29 @@ image: "/blog/profiling-bottleneck-spring.webp"
 day: 7
 ---
 
-Tu endpoint tarda 3 segundos. Tu PM te pregunta por qué. Y vos decís lo primero que se te ocurre: "debe ser la base de datos".
+Después del post del Día 6 sobre caché, un amigo me escribió: "Ale, leí tu artículo y me puse a optimizar todo. Moví queries a vistas materializadas, metí un CDN, cambié el serializer de JSON. La app sigue tardando 3 segundos."
 
-No mediste. No sabés. Estás adivinando.
+Le pregunté: "¿Y mediste dónde está el cuello de botella?"
 
-## El primo peligroso de la optimización prematura
+Silencio.
+
+"¿Al menos sabés cuál de los 4 servicios que llama tu endpoint es el lento?"
+
+Más silencio.
+
+Ahí le dije lo que te voy a decir a vos: **¿quién te mandó a optimizar si ni siquiera mediste?**
+
+## Optimización ciega: el error que todos cometemos
 
 Todos conocemos la frase de Knuth: "la optimización prematura es la raíz de todos los males." Pero hay un primo hermano igual de peligroso: la **optimización ciega**.
 
-"Seguro es la base de datos." No mediste. "Debe ser la serialización JSON." No mediste. "El servicio externo tarda mucho." No mediste tampoco.
+"Seguro es la base de datos." No mediste. "Debe ser la serialización JSON." No mediste. "El servicio externo tarda mucho." Tampoco mediste.
 
 Y así terminás optimizando cosas que tardan 2ms mientras el verdadero culpable — un servicio que tarda 3.2 segundos — sigue ahí, invisible, arruinándote la vida.
 
-## El problema real
+## El caso de mi amigo
 
-Mirá este endpoint de e-commerce. Tarda 3.3 segundos y nadie sabe por qué:
+Mirá el endpoint que me mandó. Tarda 3.3 segundos y nadie sabe por qué:
 
 ```java
 @RestController
