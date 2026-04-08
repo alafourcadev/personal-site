@@ -1,5 +1,5 @@
 ---
-title: "Día 8: Tu endpoint procesa 1 millón de registros de golpe. Se nota."
+title: "Día 8: El usuario subió un Excel y tu servidor pidió perdón"
 description: "HTTP no fue diseñado para operaciones de minutos. Batch processing, async patterns y cómo dejar de torturar a tus usuarios. Día 8 de #100ArchitectureDays."
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-08
