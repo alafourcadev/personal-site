@@ -5,3 +5,6 @@ dist
 .astro
 !public/
 .vercel
+
+# Drafts (en Obsidian vault)
+content-drafts/
