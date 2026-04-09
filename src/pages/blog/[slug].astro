@@ -212,7 +212,9 @@ const tocItems = headings
           <form
             action="https://buttondown.com/api/emails/embed-subscribe/alafourcadedespaigne"
             method="post"
-            class="flex gap-2 w-full lg:w-auto shrink-0"
+            target="popupwindow"
+            onsubmit="window.open('https://buttondown.com/alafourcadedespaigne', 'popupwindow')"
+            class="embeddable-buttondown-form flex gap-2 w-full lg:w-auto shrink-0"
           >
             <input
               type="email"
@@ -221,6 +223,7 @@ const tocItems = headings
               required
               class="flex-1 lg:w-[220px] px-4 py-2.5 min-h-[44px] rounded-lg bg-bg-surface border border-border-subtle text-txt-primary placeholder:text-txt-muted text-sm focus:outline-none focus:border-accent/50 transition-colors"
             />
+            <input type="hidden" value="1" name="embed" />
             <button
               type="submit"
               class="cta-button px-5 py-2.5 min-h-[44px] bg-accent text-bg-deep font-bold rounded-lg hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5 transition-all duration-300 text-sm whitespace-nowrap cursor-pointer"
