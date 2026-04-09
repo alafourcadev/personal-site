@@ -1,5 +1,10 @@
 ---
 // Giscus comments — powered by GitHub Discussions
+interface Props {
+  term: string;
+}
+
+const { term } = Astro.props;
 ---
 
 <section
@@ -19,7 +24,7 @@
     </p>
   </div>
 
-  <div class="giscus"></div>
+  <div class="giscus" data-term={term}></div>
 </section>
 
 <script>
@@ -30,8 +35,14 @@
   }
 
   function loadGiscus() {
-    const container = document.querySelector('.giscus');
+    const container = document.querySelector<HTMLDivElement>('.giscus');
     if (!container || container.querySelector('iframe')) return;
+
+    const term = container.dataset.term;
+    if (!term) {
+      console.error('Giscus: missing data-term attribute');
+      return;
+    }
 
     const script = document.createElement('script');
     script.src = 'https://giscus.app/client.js';
@@ -39,7 +50,8 @@
     script.setAttribute('data-repo-id', 'R_kgDORu3axw');
     script.setAttribute('data-category', 'General');
     script.setAttribute('data-category-id', 'DIC_kwDORu3ax84C6M1X');
-    script.setAttribute('data-mapping', 'pathname');
+    script.setAttribute('data-mapping', 'specific');
+    script.setAttribute('data-term', term);
     script.setAttribute('data-strict', '1');
     script.setAttribute('data-reactions-enabled', '1');
     script.setAttribute('data-emit-metadata', '0');
