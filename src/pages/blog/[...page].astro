@@ -15,9 +15,9 @@ export const getStaticPaths = (async ({ paginate }) => {
 
 const { page } = Astro.props;
 
-// Generate filter tags from THIS page's posts
-const allTags = [...new Set(page.data.flatMap((p) => p.data.tags))];
-const filterTags = ["All", ...allTags];
+const allPosts = await getCollection("blog", ({ data }) => !data.draft);
+const globalTags = [...new Set(allPosts.flatMap((p) => p.data.tags))].sort();
+const filterTags = ["All", ...globalTags];
 
 // Format date helper
 function formatDate(date: Date): string {
@@ -78,18 +78,18 @@ const pageNumbers = Array.from({ length: page.lastPage }, (_, i) => i + 1);
     <div class="flex flex-wrap items-center gap-2 sm:gap-2.5 justify-center">
       {
         filterTags.map((tag, i) => (
-          <button
-            data-tag={tag}
+          <a
+            href={tag === "All" ? "/blog" : `/blog/tags/${tag}`}
             class:list={[
               "tag-btn text-[13px] font-medium rounded-full px-4 py-2.5 min-h-[44px] transition-all duration-300 cursor-pointer hover:scale-105",
-              i === 0
+              tag === "All"
                 ? "bg-accent text-bg-deep font-semibold active-tag shadow-[0_0_15px_rgba(52,211,153,0.3)]"
                 : "bg-bg-surface text-txt-secondary border border-border-subtle hover:border-accent/50 hover:text-txt-primary",
             ]}
             style={`animation-delay: ${i * 50}ms`}
           >
             {tag}
-          </button>
+          </a>
         ))
       }
     </div>
@@ -198,48 +198,25 @@ const pageNumbers = Array.from({ length: page.lastPage }, (_, i) => i + 1);
   const cards = document.querySelectorAll<HTMLElement>("[data-blog-card]");
   const noResults = document.getElementById("no-results");
 
-  let activeTag = "All";
-
   function filterCards() {
     const query = searchInput?.value.toLowerCase() ?? "";
     let visible = 0;
 
     cards.forEach((card) => {
-      const tags = card.dataset.tags ?? "";
-      const title = card.dataset.title ?? "";
-      const description = card.dataset.description ?? "";
+      const title = card.dataset.title?.toLowerCase() ?? "";
+      const description = card.dataset.description?.toLowerCase() ?? "";
 
-      const matchesTag = activeTag === "All" || tags.includes(activeTag);
       const matchesSearch =
         query === "" || title.includes(query) || description.includes(query);
 
-      const show = matchesTag && matchesSearch;
-      card.style.display = show ? "" : "none";
-      if (show) visible++;
+      card.style.display = matchesSearch ? "" : "none";
+      if (matchesSearch) visible++;
     });
 
     if (noResults) noResults.style.display = visible === 0 ? "block" : "none";
   }
 
   searchInput?.addEventListener("input", filterCards);
-
-  tagButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      activeTag = btn.dataset.tag ?? "All";
-
-      tagButtons.forEach((b) => {
-        if (b.dataset.tag === activeTag) {
-          b.className =
-            "tag-btn text-[13px] font-semibold rounded-full px-4 py-2.5 min-h-[44px] transition-all duration-300 cursor-pointer hover:scale-105 bg-accent text-bg-deep active-tag shadow-[0_0_15px_rgba(52,211,153,0.3)]";
-        } else {
-          b.className =
-            "tag-btn text-[13px] font-medium rounded-full px-4 py-2.5 min-h-[44px] transition-all duration-300 cursor-pointer hover:scale-105 bg-bg-surface text-txt-secondary border border-border-subtle hover:border-accent/50 hover:text-txt-primary";
-        }
-      });
-
-      filterCards();
-    });
-  });
 </script>
 
 <style>
