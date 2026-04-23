@@ -286,7 +286,7 @@ const tocItems = headings
           const pReadTime = `${Math.max(1, Math.ceil(pWordCount / 200))} min read`;
           return (
             <BlogCard
-              slug={p.slug}
+              slug={p.id}
               title={p.data.title}
               description={p.data.description}
               tags={p.data.tags}
@@ -299,6 +299,36 @@ const tocItems = headings
       }
     </div>
   </section>
+
+  <script is:inline>
+    // Table of Contents Active Link Highlight
+    window.addEventListener('DOMContentLoaded', () => {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            const tocLinks = document.querySelectorAll('[data-toc-link]');
+            tocLinks.forEach((link) => {
+              if (link.getAttribute('data-toc-link') === id) {
+                link.classList.add('active-toc');
+              } else {
+                link.classList.remove('active-toc');
+              }
+            });
+          }
+        });
+      }, { rootMargin: '-100px 0px -66%' });
+
+      const headings = document.querySelectorAll('article h2, article h3');
+      headings.forEach((heading) => observer.observe(heading));
+    });
+  </script>
+
+  <style>
+    .active-toc {
+      @apply text-accent border-accent bg-accent/5 font-medium !important;
+    }
+  </style>
 </BaseLayout>
 
 <script>
