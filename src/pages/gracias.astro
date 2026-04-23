@@ -1,0 +1,82 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout 
+  title="¡Suscripción Confirmada! — Ingeniería sin filtros" 
+  description="Gracias por confirmar tu suscripción. Acá tenés tu Blueprint de Arquitectura."
+  navVariant="blog"
+  footerVariant="simple"
+>
+  <section class="min-h-[80vh] flex flex-col items-center justify-center px-4 py-20 relative overflow-hidden">
+    <!-- Brand elements -->
+    <div class="absolute top-0 right-0 w-96 h-96 bg-accent/5 rounded-full blur-[120px] -mr-48 -mt-48"></div>
+    <div class="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-[120px] -ml-48 -mb-48"></div>
+
+    <div class="max-w-3xl w-full text-center relative z-10 space-y-10">
+      <div class="space-y-4">
+        <span class="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-accent text-sm font-mono tracking-widest uppercase animate-pulse">
+          Acceso Concedido
+        </span>
+        <h1 class="text-4xl md:text-6xl font-extrabold text-txt-primary tracking-tight">
+          ¡Bienvenido a bordo, <span class="text-accent">Senior.</span>
+        </h1>
+        <p class="text-xl text-txt-secondary max-w-xl mx-auto leading-relaxed">
+          Ya sos parte de la comunidad de Ingeniería sin filtros. <br/>
+          Como prometido, acá tenés tu material de alto valor.
+        </p>
+      </div>
+
+      <!-- PDF Download Card -->
+      <div class="p-1 md:p-1.5 rounded-3xl bg-gradient-to-br from-accent/20 to-transparent border border-white/5 shadow-2xl">
+        <div class="bg-bg-surface rounded-[22px] p-8 md:p-12 flex flex-col md:flex-row items-center gap-10 text-left">
+          <!-- Mockup Mini -->
+          <div class="relative w-40 h-56 shrink-0 bg-[#0a0f1a] rounded-lg shadow-xl border border-white/5 overflow-hidden rotate-[-3deg] hidden sm:block">
+            <div class="absolute inset-0 p-4 flex flex-col justify-between">
+              <div class="text-[6px] font-mono text-accent opacity-50">>_ ISF</div>
+              <div>
+                <div class="text-lg font-bold leading-none text-white">ARCH</div>
+                <div class="text-xl font-black leading-none text-accent">RED FLAGS</div>
+              </div>
+              <div class="h-1 w-full bg-accent/20"></div>
+            </div>
+          </div>
+
+          <div class="flex-1 space-y-6">
+            <div class="space-y-2">
+              <h2 class="text-2xl md:text-3xl font-bold text-txt-primary">Architecture Red Flags</h2>
+              <p class="text-txt-secondary font-mono text-sm uppercase tracking-tighter">& The Modern Backend Blueprint (PDF)</p>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4">
+              <a 
+                href="/assets/architecture-red-flags.pdf" 
+                download
+                class="flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-accent text-bg-deep font-bold hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-1 transition-all"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                Descargar PDF Ahora
+              </a>
+              <a 
+                href="/blog" 
+                class="flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-bg-deep border border-border-subtle text-txt-primary font-bold hover:bg-bg-surface transition-all"
+              >
+                Ir al Blog
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-10 border-t border-border-subtle/50">
+        <p class="text-sm text-txt-muted max-w-md mx-auto italic">
+          "La diferencia entre un Senior y un Arquitecto es la capacidad de ver el desastre antes de que ocurra. Este PDF es tu primer paso."
+        </p>
+      </div>
+
+      <p class="text-sm text-txt-muted font-mono tracking-tighter pt-4">
+        >_ INGENIERÍA SIN FILTROS · ALAFOURCA.DEV
+      </p>
+    </div>
+  </section>
+</BaseLayout>
