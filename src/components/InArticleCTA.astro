@@ -1,0 +1,20 @@
+---
+interface Props {
+  text?: string;
+}
+
+const { text = "Si te sirve este contenido, tengo un War Manual gratuito con las 15 Red Flags de arquitectura que están hundiendo tu proyecto." } = Astro.props;
+---
+
+<div class="my-8 p-6 bg-accent/5 border-l-4 border-accent rounded-r-xl group">
+  <p class="text-txt-primary font-medium leading-relaxed">
+    <span class="text-accent font-bold">💡 Tip:</span> {text}
+  </p>
+  <a 
+    href="#lead-magnet-form" 
+    class="inline-flex items-center mt-3 text-accent font-bold hover:underline gap-2 group-hover:translate-x-1 transition-transform"
+  >
+    Descargar Blueprint Gratis
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+  </a>
+</div>
