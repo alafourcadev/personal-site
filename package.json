@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "publish:devto": "node scripts/publish-to-devto.mjs"
   },
   "engines": {
     "node": ">=22.0.0"
@@ -20,6 +21,7 @@
     "@fontsource/jetbrains-mono": "^5.2.8",
     "@fontsource/outfit": "^5.2.8",
     "astro": "^6.1.9",
+    "gray-matter": "^4.0.3",
     "tailwindcss": "^3.4.15",
     "typescript": "^5.6.3"
   }
