@@ -1,0 +1,226 @@
+---
+title: "Día 14: Cambiaste una clase y rompiste 10 más. Efecto dominó."
+description: "Alto acoplamiento, baja cohesión. Cambias un DTO y te explota medio sistema. Cómo separar modelos por capa para eliminar el efecto dominó. Día 14 de #100ArchitectureDays."
+tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
+date: 2026-04-22
+readTime: "7 min read"
+image: "/blog/coupling-cohesion.webp"
+day: 14
+---
+
+Cambiaste un campo en un DTO. Un rename inocente. Y de repente tienes 10 clases con errores de compilación, 3 tests rotos y un compañero preguntándote "¿qué tocaste?".
+
+No tocaste nada raro. Tocaste **una clase**. El problema es que esa clase está conectada a todo como si fuera el centro del universo. Y en tu codebase, probablemente lo es.
+
+## Esto no es solo de Java
+
+El anti-pattern es el mismo en cualquier stack. Solo cambia la sintaxis:
+
+- **Java / Spring Boot**: un `UserDTO` compartido entre controller, service y repository
+- **TypeScript / NestJS**: un `user.dto.ts` que se usa en controllers, guards, pipes y servicios
+- **Python / Django**: un serializer gigante que sirve para crear, leer, actualizar y exportar
+- **C# / .NET**: un `UserModel` compartido entre API, business layer y data access
+- **Ruby on Rails**: un modelo `User` con `as_json` sobreescrito 4 veces para diferentes contextos
+- **PHP / Laravel**: un `UserResource` que hace transform distinto según quién lo llame
+
+El patrón es siempre el mismo: un objeto compartido entre capas con necesidades distintas. Cuando lo tocas, se rompe todo.
+
+## Alto acoplamiento, baja cohesión
+
+Dos conceptos que suenan a examen de facultad pero que definen si tu código es mantenible o una bomba de tiempo:
+
+**Acoplamiento** = cuánto depende una clase de otra. Si cambiar A rompe B, C y D, están acopladas.
+
+**Cohesión** = cuánto se relacionan las cosas dentro de una clase. Si una clase hace cosas que no tienen nada que ver entre sí, tiene baja cohesión.
+
+Lo ideal: bajo acoplamiento, alta cohesión. La realidad de la mayoría de los proyectos: exactamente lo opuesto.
+
+## El ejemplo: un DTO que gobierna todo
+
+Un solo `UserDTO` compartido entre controller, service y hasta la capa de persistencia:
+
+```java
+public class UserDTO {
+    private Long id;
+    private String name;
+    private String email;
+    private String password;
+    private String role;
+    private LocalDateTime createdAt;
+    private List<OrderDTO> orders;
+    private AddressDTO address;
+    private String creditCardLast4;
+}
+```
+
+Y se usa en todos lados:
+
+```java
+@RestController
+public class UserController {
+    @PostMapping("/users")
+    public UserDTO createUser(@RequestBody UserDTO dto) { ... }
+
+    @GetMapping("/users/{id}")
+    public UserDTO getUser(@PathVariable Long id) { ... }
+}
+
+@Service
+public class UserService {
+    public UserDTO createUser(UserDTO dto) { ... }
+    public UserDTO findById(Long id) { ... }
+}
+
+@Service
+public class OrderService {
+    public List<OrderDTO> getOrders(UserDTO user) { ... }
+}
+
+@Service
+public class NotificationService {
+    public void sendWelcome(UserDTO user) { ... }
+}
+
+@Service
+public class ReportService {
+    public Report generateUserReport(UserDTO user) { ... }
+}
+```
+
+Ahora renombras `name` a `fullName`. O eliminas `creditCardLast4` porque ya no lo necesitas en la respuesta. O agregas un campo.
+
+Todos esos servicios se rompen. El controller se rompe. Los tests se rompen. El frontend se rompe. Todo porque compartes **un objeto entre 5 capas con necesidades distintas**.
+
+El `OrderService` no necesita el password. El `NotificationService` no necesita las órdenes. El `ReportService` no necesita la tarjeta de crédito. Pero todos dependen del mismo DTO gigante.
+
+En TypeScript sería el mismo problema con una interfaz `User` compartida entre routes, middleware y services. En Python, un serializer con 15 campos que se usa para crear, listar y exportar. La tecnología cambia, el error no.
+
+## La solución: cada capa recibe lo que necesita
+
+import InArticleCTA from '../../components/InArticleCTA.astro';
+
+<InArticleCTA text="Antes de seguir: si sentís que tu arquitectura es un castillo de naipes, bajate el Blueprint con las Red Flags que salvan proyectos." />
+
+```java
+// Lo que el frontend envía para crear un usuario
+public record CreateUserRequest(
+    String name,
+    String email,
+    String password
+) {}
+
+// Lo que el endpoint devuelve
+public record UserResponse(
+    Long id,
+    String name,
+    String email,
+    String role,
+    LocalDateTime createdAt
+) {}
+
+// Lo que el servicio de notificaciones necesita
+public record UserNotificationInfo(
+    String name,
+    String email
+) {}
+
+// Lo que el servicio de reportes necesita
+public record UserReportData(
+    Long id,
+    String name,
+    String role,
+    LocalDateTime createdAt,
+    int totalOrders
+) {}
+```
+
+Cada clase recibe exactamente lo que necesita. Ni más, ni menos.
+
+```java
+@RestController
+public class UserController {
+    @PostMapping("/users")
+    public UserResponse createUser(@RequestBody CreateUserRequest request) { ... }
+
+    @GetMapping("/users/{id}")
+    public UserResponse getUser(@PathVariable Long id) { ... }
+}
+
+@Service
+public class NotificationService {
+    public void sendWelcome(UserNotificationInfo user) { ... }
+}
+```
+
+Ahora renombras un campo en `CreateUserRequest`. ¿Qué se rompe? Solo el controller y su test. Nada más. El servicio de notificaciones ni se entera. El de reportes sigue funcionando. Cero efecto dominó.
+
+## Los números
+
+| | Antes | Después |
+|---|---|---|
+| Clases afectadas por un cambio de DTO | 10+ | 1-2 |
+| Campos innecesarios viajando por la red | 5-6 | 0 |
+| Riesgo de exponer password en respuesta | Alto | Nulo |
+
+## La otra cara: cohesión
+
+Acoplamiento bajo sin cohesión alta no sirve de mucho. Mira esta clase:
+
+```java
+@Service
+public class UserService {
+    public User createUser(CreateUserRequest req) { ... }
+    public void sendWelcomeEmail(User user) { ... }
+    public Report generateMonthlyReport() { ... }
+    public void syncWithExternalCRM() { ... }
+    public byte[] exportToCsv() { ... }
+}
+```
+
+Crear usuarios, mandar mails, generar reportes, sincronizar con un CRM y exportar a CSV. ¿Qué tienen en común? Que involucran usuarios. Y eso no es suficiente para estar en la misma clase.
+
+Alta cohesión significa que todo lo que hace una clase está estrechamente relacionado. Los métodos trabajan sobre los mismos datos para el mismo propósito.
+
+```java
+@Service
+public class UserService {
+    public User create(CreateUserRequest req) { ... }
+    public User findById(Long id) { ... }
+    public User update(Long id, UpdateUserRequest req) { ... }
+    public void deactivate(Long id) { ... }
+}
+
+@Service
+public class UserNotificationService {
+    public void sendWelcomeEmail(User user) { ... }
+    public void sendDeactivationEmail(User user) { ... }
+}
+
+@Service
+public class UserExportService {
+    public byte[] exportToCsv(UserExportCriteria criteria) { ... }
+    public Report generateMonthlyReport() { ... }
+}
+```
+
+Cada clase tiene una razón para existir. Cada método trabaja con los mismos conceptos. Eso es cohesión alta.
+
+Si ayer leíste el artículo del God Object, esto te va a sonar familiar. SRP, acoplamiento y cohesión son tres formas de mirar el mismo problema: clases que hacen demasiado y están conectadas a todo.
+
+## La regla práctica
+
+Cuando necesitas hacer un cambio, hazte estas tres preguntas:
+
+1. **¿Cuántas clases tengo que tocar?** Si son más de 2 o 3, tienes acoplamiento alto.
+2. **¿Los métodos de esta clase cambian juntos?** Si no, tienes cohesión baja.
+3. **¿Estoy compartiendo un objeto entre capas que tienen necesidades diferentes?** Si sí, necesitas modelos separados.
+
+## El error de fondo
+
+El efecto dominó no es un problema de Spring, ni de Java, ni de ningún framework. Es un problema de diseño. Compartir objetos entre capas porque es "más rápido" y "menos código" funciona al principio. Después pagas el precio cada vez que tocas algo.
+
+Un poco de duplicación explícita (modelos separados por capa) es infinitamente mejor que un acoplamiento implícito que te explota en la cara cuando menos lo esperas.
+
+La próxima vez que vayas a compartir un DTO entre capas, hazte una pregunta: ¿realmente necesitan exactamente los mismos campos? Casi seguro que no.
+
+Día 14 de **#100ArchitectureDays**.
