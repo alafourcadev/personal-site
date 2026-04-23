@@ -41,7 +41,9 @@ async function publishToDevTo() {
       title: data.title,
       published: false, // Siempre como borrador para revisión final
       body_markdown: content,
-      tags: data.tags.slice(0, 4), // Dev.to permite max 4
+      tags: data.tags
+        .slice(0, 4)
+        .map(tag => tag.toLowerCase().replace(/[^a-z0-9]/g, '')), // Dev.to permite max 4 y sin espacios/especiales
       series: "100ArchitectureDays",
       canonical_url: `https://alafourca.dev/blog/${latestFile.replace(/\.(md|mdx)$/, '')}`,
       description: data.description,
