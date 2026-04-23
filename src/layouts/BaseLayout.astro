@@ -94,10 +94,52 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
     </script>
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "f2044e16dcba4f17ae6792df334e9d1b"}'></script>
     <script defer src="https://cloud.umami.is/script.js" data-website-id="7a77490e-3189-4843-84c2-b5971d0bbc81"></script>
+    <style>
+      #scroll-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 3px;
+        background: rgb(var(--accent));
+        z-index: 100;
+        transition: width 0.1s ease;
+      }
+      .copy-code-button {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        font-family: 'JetBrains Mono', monospace;
+        color: rgb(var(--txt-muted));
+        background: rgb(var(--bg-surface));
+        border: 1px solid rgb(var(--border-subtle));
+        border-radius: 4px;
+        cursor: pointer;
+        opacity: 0;
+        transition: all 0.2s ease;
+      }
+      pre:hover .copy-code-button {
+        opacity: 1;
+      }
+      .copy-code-button:hover {
+        color: rgb(var(--accent));
+        border-color: rgb(var(--accent));
+      }
+      .copy-code-button.copied {
+        color: rgb(var(--accent));
+        background: rgba(var(--accent), 0.1);
+      }
+      pre {
+        position: relative;
+      }
+    </style>
   </head>
   <body
     class="bg-bg-deep text-txt-primary font-sans antialiased overflow-x-hidden"
   >
+    <div id="scroll-progress"></div>
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-accent focus:text-bg-deep focus:rounded-lg focus:font-bold">
       Saltar al contenido
     </a>
@@ -109,6 +151,47 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
       </main>
       {footerVariant === 'full' ? <FooterFull /> : <FooterSimple />}
     </div>
+
+    <script is:inline>
+      // Reading Progress Bar
+      window.addEventListener('scroll', () => {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        document.getElementById('scroll-progress').style.width = scrolled + '%';
+      });
+
+      // Code Copy Button
+      document.addEventListener('DOMContentLoaded', () => {
+        const codeBlocks = document.querySelectorAll('pre');
+        
+        codeBlocks.forEach((block) => {
+          if (block.querySelector('.copy-code-button')) return;
+
+          const button = document.createElement('button');
+          button.className = 'copy-code-button';
+          button.innerText = 'Copy';
+          
+          block.appendChild(button);
+
+          button.addEventListener('click', async () => {
+            const code = block.querySelector('code').innerText;
+            try {
+              await navigator.clipboard.writeText(code);
+              button.innerText = 'Copied!';
+              button.classList.add('copied');
+              
+              setTimeout(() => {
+                button.innerText = 'Copy';
+                button.classList.remove('copied');
+              }, 2000);
+            } catch (err) {
+              console.error('Failed to copy: ', err);
+            }
+          });
+        });
+      });
+    </script>
   </body>
 </html>
 
