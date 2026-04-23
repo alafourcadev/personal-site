@@ -4,19 +4,19 @@ import Icon from "../../components/Icon.astro";
 import BlogCard from "../../components/BlogCard.astro";
 import Comments from "../../components/Comments.astro";
 import LeadMagnet from "../../components/LeadMagnet.astro";
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 import type { GetStaticPaths } from "astro";
 
 export const getStaticPaths = (async () => {
   const posts = await getCollection("blog", ({ data }) => !data.draft);
   return posts.map((post) => ({
-    params: { slug: post.slug },
+    params: { slug: post.id },
     props: { post },
   }));
 }) satisfies GetStaticPaths;
 
 const { post } = Astro.props;
-const { Content, headings } = await post.render();
+const { Content, headings } = await render(post);
 
 // Auto-calculate read time from word count
 const wordCount = post.body.split(/\s+/).length;
@@ -26,7 +26,7 @@ const readTimeText = `${readTime} min read`;
 // Get related posts (prioritize shared tags, then by date)
 const allPosts = await getCollection("blog", ({ data }) => !data.draft);
 const currentTags = post.data.tags;
-const otherPosts = allPosts.filter((p) => p.slug !== post.slug);
+const otherPosts = allPosts.filter((p) => p.id !== post.id);
 
 // Score posts by shared tags
 const scored = otherPosts.map((p) => ({
@@ -83,7 +83,7 @@ const tocItems = headings
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": `https://alafourca.dev/blog/${post.slug}`
+      "@id": `https://alafourca.dev/blog/${post.id}`
     }
   })} />
 
@@ -108,7 +108,7 @@ const tocItems = headings
         "@type": "ListItem",
         "position": 3,
         "name": post.data.title,
-        "item": `https://alafourca.dev/blog/${post.slug}`
+        "item": `https://alafourca.dev/blog/${post.id}`
       }
     ]
   })} />
@@ -267,7 +267,7 @@ const tocItems = headings
   </section>
 
   <!-- Comments -->
-  <Comments term={post.slug} />
+  <Comments term={post.id} />
 
   <!-- Related Posts -->
   <section

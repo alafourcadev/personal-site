@@ -111,7 +111,7 @@ const pageNumbers = Array.from({ length: page.lastPage }, (_, i) => i + 1);
               style={`animation-delay: ${i * 100}ms`}
             >
               <BlogCard
-                slug={post.slug}
+                slug={post.id}
                 title={post.data.title}
                 description={post.data.description}
                 tags={post.data.tags}
