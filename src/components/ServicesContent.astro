@@ -1,0 +1,185 @@
+---
+import Icon from './Icon.astro';
+
+const services = [
+  {
+    id: 'consultoria',
+    title: 'Consultoría Técnica 1:1',
+    description: 'Sesión individual por videollamada para resolver dudas técnicas puntuales, validar decisiones de arquitectura o resolver problemas de diseño.',
+    duration: '60 minutos',
+    price: 'USD $75',
+    icon: 'message-circle',
+    includes: [
+      'Sesión grabada (opcional)',
+      'Resumen escrito con puntos clave',
+      'Acceso a canal de seguimiento por 7 días',
+    ],
+    cta: 'Agendar Sesión',
+    href: 'https://cal.com/alafourcadev/consultoria-tecnica-1-1'
+  },
+  {
+    id: 'auditoria',
+    title: 'Auditoría de Arquitectura',
+    description: 'Revisión profunda de tu repositorio. Análisis de calidad, patrones, deuda técnica y performance. Recibís un informe con recomendaciones priorizadas.',
+    duration: '3-5 días',
+    price: 'Desde USD $500',
+    icon: 'search',
+    includes: [
+      'Informe escrito de 10-20 páginas',
+      'Diagrama de arquitectura actual',
+      'Propuesta de arquitectura mejorada',
+      'Sesión de presentación de 60 min',
+    ],
+    cta: 'Solicitar Auditoría',
+    href: 'https://cal.com/alafourcadev/discovery-call'
+  },
+  {
+    id: 'mentoria',
+    title: 'Mentoría Técnica Mensual',
+    description: 'Acompañamiento recurrente para desarrolladores que quieren crecer como seniors o staff engineers. Guía de carrera y revisión de código.',
+    duration: 'Mensual',
+    price: 'Desde USD $200/mes',
+    icon: 'user',
+    includes: [
+      'Sesiones por videollamada',
+      'Canal de Telegram para dudas async',
+      'Revisión de PRs y código crítico',
+      'Plan de desarrollo profesional',
+    ],
+    cta: 'Aplicar a Mentoría',
+    href: 'https://cal.com/alafourcadev/mentoria-tecnica'
+  },
+  {
+    id: 'fractional',
+    title: 'Fractional CTO',
+    description: 'Liderazgo técnico de alto nivel para startups que no necesitan un CTO full-time. Dirección de arquitectura, revisión de decisiones y mentoría de equipo.',
+    duration: 'Retainer mensual',
+    price: 'A cotizar',
+    icon: 'shield',
+    includes: [
+      'Participación en sprint planning',
+      'Acceso directo por Slack/Telegram',
+      'Revisión de decisiones críticas',
+      'Informe mensual de estado técnico',
+    ],
+    cta: 'Hablemos de tu Startup',
+    href: 'https://cal.com/alafourcadev/discovery-call'
+  },
+  {
+    id: 'workshop',
+    title: 'Workshops para Equipos',
+    description: 'Capacitación práctica para equipos de desarrollo. Temas: DDD, Microservicios, Migración de Monolitos, IA Aplicada o Java Moderno.',
+    duration: '3-6 horas',
+    price: 'Desde USD $600',
+    icon: 'users',
+    includes: [
+      'Material de presentación',
+      'Ejercicios prácticos con código real',
+      'Certificado de participación',
+      'Soporte grupal post-workshop',
+    ],
+    cta: 'Cotizar Workshop',
+    href: 'https://cal.com/alafourcadev/discovery-call'
+  },
+  {
+    id: 'ia',
+    title: 'Consultoría de IA Aplicada',
+    description: 'Diseño e implementación de soluciones de IA: RAG sobre documentación interna, agentes de voz o workflows automatizados con n8n.',
+    duration: 'Por proyecto',
+    price: 'A cotizar',
+    icon: 'cpu',
+    includes: [
+      'Diseño de arquitectura de la solución',
+      'Implementación del sistema (RAG/n8n)',
+      'Documentación técnica completa',
+      'Entrenamiento al equipo',
+    ],
+    cta: 'Consultar por IA',
+    href: 'https://cal.com/alafourcadev/discovery-call'
+  }
+];
+---
+
+<section class="relative px-4 sm:px-6 md:px-10 lg:px-20 pt-16 pb-20 overflow-hidden">
+  <!-- Decorative gradient orbs -->
+  <div class="absolute top-20 -left-32 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[128px] pointer-events-none"></div>
+  <div class="absolute bottom-10 right-0 w-[400px] h-[400px] bg-teal-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+  <div class="relative z-10">
+    <div class="max-w-3xl mb-16 space-y-4">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent/20 bg-accent/5 text-accent text-xs font-mono uppercase tracking-wider">
+        Servicios Profesionales
+      </div>
+      <h1 class="font-heading text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-txt-primary leading-tight">
+        Llevá tu ingeniería al <span class="hero-gradient text-accent">siguiente nivel.</span>
+      </h1>
+      <p class="text-lg sm:text-xl text-txt-secondary leading-relaxed">
+        No vendo humo. Te ayudo a tomar decisiones de arquitectura que no vas a lamentar en 6 meses. Consultoría, mentoría y dirección técnica basada en +10 años de experiencia real en producción.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+      {services.map((service) => (
+        <div class="group p-8 rounded-2xl bg-bg-surface border border-border-subtle hover:border-accent/30 hover:shadow-[0_0_40px_rgba(52,211,153,0.05)] transition-all duration-300 flex flex-col h-full">
+          <div class="mb-6 w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
+            <Icon name={service.icon} size={24} />
+          </div>
+          
+          <div class="flex-1 space-y-4">
+            <h3 class="text-xl sm:text-2xl font-bold text-txt-primary group-hover:text-accent transition-colors">
+              {service.title}
+            </h3>
+            <p class="text-sm text-txt-secondary leading-relaxed">
+              {service.description}
+            </p>
+            
+            <div class="flex items-center gap-4 text-xs font-mono text-txt-muted uppercase tracking-tighter">
+              <span class="flex items-center gap-1">
+                <Icon name="clock" size={14} />
+                {service.duration}
+              </span>
+              <span class="w-1 h-1 rounded-full bg-border-subtle"></span>
+              <span class="text-accent font-bold">
+                {service.price}
+              </span>
+            </div>
+
+            <ul class="space-y-2 pt-4 border-t border-border-subtle/50">
+              {service.includes.map((item) => (
+                <li class="flex items-start gap-2 text-xs sm:text-sm text-txt-secondary">
+                  <Icon name="check" size={16} class="text-accent shrink-0 mt-0.5" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <a 
+            href={service.href}
+            target="_blank"
+            class="mt-8 w-full py-3 px-6 rounded-xl bg-bg-deep border border-border-subtle text-txt-primary font-bold text-center hover:bg-accent hover:text-bg-deep hover:border-accent transition-all duration-300"
+          >
+            {service.cta}
+          </a>
+        </div>
+      ))}
+    </div>
+
+    <!-- Bottom CTA -->
+    <div class="mt-20 p-8 sm:p-12 rounded-3xl bg-accent/5 border border-accent/20 text-center space-y-6">
+      <h2 class="text-2xl sm:text-3xl font-bold text-txt-primary">
+        ¿Tenés un desafío que no encaja en estas categorías?
+      </h2>
+      <p class="text-lg text-txt-secondary max-w-2xl mx-auto">
+        Agendá una discovery call gratuita de 15 minutos y busquemos la mejor forma de trabajar juntos.
+      </p>
+      <a 
+        href="https://cal.com/alafourcadev/discovery-call"
+        target="_blank"
+        class="inline-block px-10 py-4 rounded-xl bg-accent text-bg-deep font-bold hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-1 transition-all"
+      >
+        Agendar Discovery Call
+      </a>
+    </div>
+  </div>
+</section>

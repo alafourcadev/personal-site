@@ -9,12 +9,14 @@ const { variant = 'home' } = Astro.props;
 const currentPath = Astro.url.pathname;
 
 const homeLinks = [
+  { label: 'Servicios', href: '/servicios' },
   { label: 'Sobre Mí', href: '/sobre-mi' },
   { label: 'Blog', href: '/blog' },
   { label: 'Mi Setup', href: '/uses' },
 ];
 
 const blogLinks = [
+  { label: 'Servicios', href: '/servicios' },
   { label: 'Sobre Mí', href: '/sobre-mi' },
   { label: 'Blog', href: '/blog' },
   { label: 'Mi Setup', href: '/uses' },
@@ -28,6 +30,7 @@ function isActive(href: string): boolean {
   if (href === '/blog') return currentPath.startsWith('/blog');
   if (href === '/sobre-mi') return currentPath === '/sobre-mi';
   if (href === '/uses') return currentPath === '/uses';
+  if (href === '/servicios') return currentPath === '/servicios';
   return currentPath === href;
 }
 ---
