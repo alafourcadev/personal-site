@@ -1,6 +1,6 @@
 ---
 title: "Día 16: El if nuevo que rompió 5 features"
-description: "Cada canal nuevo obligaba a abrir NotificationService y rezar. Sprint 4 rompió EMAIL. Sprint 7, lo mismo al agregar SLACK. Open/Closed Principle — extender sin tocar lo que ya anda. Día 16 de #100ArchitectureDays."
+description: "Cada canal nuevo obligaba a abrir NotificationService y rezar. Sprint 4 rompió EMAIL. Sprint 7, lo mismo al agregar SLACK. Open/Closed Principle: extender sin tocar lo que ya anda. Día 16 de #100ArchitectureDays."
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-05-18
 readTime: "7 min read"
@@ -63,13 +63,13 @@ public class NotificationService {
 
 Cinco canales, cinco ramas de código viviendo en el mismo método. Cada vez que el negocio quería un canal nuevo, alguien tenía que abrir esta clase, operar en código que ya funcionaba, y esperar no romper nada en el proceso.
 
-El costo real: cada feature nueva arrastra sesiones de testing manual para verificar que los canales previos siguen andando. Las regresiones son solo cuestión de tiempo porque el mecanismo que las produce está incorporado al diseño. Modificar código existente siempre tiene probabilidad de romper comportamiento existente — no por impericia, sino por la física del código acoplado.
+El costo real: cada feature nueva arrastra sesiones de testing manual para verificar que los canales previos siguen andando. Las regresiones son solo cuestión de tiempo porque el mecanismo que las produce está incorporado al diseño. Modificar código existente siempre tiene probabilidad de romper comportamiento existente, no por impericia, sino por la física del código acoplado.
 
 ## La trampa
 
 El arreglo obvio cuando aparece un canal nuevo es justo lo que hicieron: agregar un `else if`. Es rápido, es localizado, parece inofensivo.
 
-El problema es que eso escala linealmente con el número de canales. Cinco canales, cinco ramas. Diez canales, diez ramas. Y cada rama nueva es territorio que los canales anteriores no pedían transitar. El riesgo de regresión no disminuye con cada sprint — crece.
+El problema es que eso escala linealmente con el número de canales. Cinco canales, cinco ramas. Diez canales, diez ramas. Y cada rama nueva es territorio que los canales anteriores no pedían transitar. El riesgo de regresión no disminuye con cada sprint. Crece.
 
 La alternativa inmediata que se considera después es extraer cada canal a su propio método privado dentro de la misma clase. `sendEmail()`, `sendSms()`, `sendPush()`. El despacho central sigue siendo el mismo switch statement, solo más organizado. La clase sigue creciendo con cada canal. Sigue siendo necesario abrirla para agregar comportamiento nuevo. El problema de raíz no se mueve.
 
@@ -112,7 +112,7 @@ public class NotificationService {
 }
 ```
 
-No hay un solo `if` sobre el canal. Spring inyecta todos los `@Component` que implementen `NotificationSender` — `NotificationService` no los conoce por nombre, solo los usa.
+No hay un solo `if` sobre el canal. Spring inyecta todos los `@Component` que implementen `NotificationSender`. `NotificationService` no los conoce por nombre, solo los usa.
 
 Cada canal vive en su propia clase:
 
@@ -136,15 +136,15 @@ public class EmailNotificationSender implements NotificationSender {
 
 Agregar WhatsApp en el sprint 11 se reduce a crear `WhatsappNotificationSender implements NotificationSender`. `NotificationService` no se toca. `EmailNotificationSender` no se toca. `SmsNotificationSender` no se toca. Sus tests no se tocan.
 
-**El trade-off es real**: el diseño anterior tenía una clase y un archivo. El nuevo tiene una interfaz más una clase por canal. Más archivos, más estructura inicial que entender. Si hay dos canales y el producto ya está estable, la complejidad extra puede no valer. El diseño con interfaz paga su costo cuando el número de variantes crece y cuando esas variantes las agregan personas distintas en momentos distintos. Eso es exactamente lo que pasaba con los sprints de canales nuevos — y es donde el `if` creciente tiene el mayor potencial de daño colateral.
+**El trade-off es real**: el diseño anterior tenía una clase y un archivo. El nuevo tiene una interfaz más una clase por canal. Más archivos, más estructura inicial que entender. Si hay dos canales y el producto ya está estable, la complejidad extra puede no valer. El diseño con interfaz paga su costo cuando el número de variantes crece y cuando esas variantes las agregan personas distintas en momentos distintos. Eso es exactamente lo que pasaba con los sprints de canales nuevos, y es donde el `if` creciente tiene el mayor potencial de daño colateral.
 
-Lo que se sacrifica a cambio de la extensibilidad: mayor fricción para entender el flow completo (ahora requiere conocer que Spring inyecta la lista), y más archivos que mantener. Lo que se gana: tocar `EmailNotificationSender` no puede romper `SmsNotificationSender` — son clases independientes sin código compartido entre ellas.
+Lo que se sacrifica a cambio de la extensibilidad: mayor fricción para entender el flow completo (ahora requiere conocer que Spring inyecta la lista), y más archivos que mantener. Lo que se gana: tocar `EmailNotificationSender` no puede romper `SmsNotificationSender`. Son clases independientes sin código compartido entre ellas.
 
 ## La regla
 
 Este es el Open/Closed Principle: una clase debe estar abierta para extensión y cerrada para modificación.
 
-No significa "nunca editá ese archivo". Significa que agregar comportamiento nuevo no debería requerir modificar comportamiento existente. Si cada feature nueva te obliga a abrir la misma clase, esa clase es un cuello de botella de cambio — y el riesgo de regresión está estructuralmente incorporado al proceso.
+No significa "nunca editá ese archivo". Significa que agregar comportamiento nuevo no debería requerir modificar comportamiento existente. Si cada feature nueva te obliga a abrir la misma clase, esa clase es un cuello de botella de cambio, y el riesgo de regresión está estructuralmente incorporado al proceso.
 
 La señal de alerta en código es un método que crece con `else if` por tipo: por canal, por formato, por proveedor, por rol. Cuando el método crece con cada caso nuevo, el diseño no está cerrado. Está abierto en el lugar equivocado.
 
@@ -154,7 +154,7 @@ La pregunta que hay que hacerse antes de agregar el `else if` siguiente:
 
 **¿Necesito modificar esta clase para agregar este comportamiento, o puedo extenderla sin tocarla?**
 
-Si la respuesta es "tengo que modificarla", ese es el momento de rediseñar — no después del sprint 7.
+Si la respuesta es "tengo que modificarla", ese es el momento de rediseñar. No después del sprint 7.
 
 ---
 
