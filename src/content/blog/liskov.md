@@ -8,7 +8,17 @@ image: "/blog/liskov.png"
 day: 17
 ---
 
-`BirdFlightService` recibe una `List<Bird>`, itera, y llama `fly()` en cada elemento. El contrato lo promete. El cliente lo asume con razón. Todo funciona en el happy path.
+Los principios SOLID están en todos los cursos. En todas las entrevistas técnicas. Si llevás algunos años en esto, alguien te los preguntó, los memorizaste y los explicaste con soltura.
+
+Lo que nadie te contó es lo que pasa después: llegás a un equipo real, abrís el código, y el problema que Liskov lleva décadas describiendo está ahí. Sin que nadie lo haya llamado así. Sin que nadie lo haya reconocido. Y generalmente ya explotó en producción al menos una vez.
+
+A mí me pasó más veces de las que recuerdo. El nombre cambia: `Animal`, `Vehicle`, `Document`, `Shape`. El patrón es siempre el mismo.
+
+Una clase base que promete un comportamiento. Una subclase que no puede cumplir esa promesa. Y un desarrollador que el lunes a las 10am está mirando un `UnsupportedOperationException` sin entender por qué el compilador no le avisó nada.
+
+---
+
+El escenario concreto: `BirdFlightService` recibe una `List<Bird>`, itera, y llama `fly()` en cada elemento. El contrato lo promete. El cliente lo asume con razón. Todo funciona en el happy path.
 
 Hasta que alguien agrega un `Penguin` a la lista.
 
@@ -17,21 +27,6 @@ public void flyAll(List<Bird> birds) {
     for (Bird bird : birds) {
         bird.fly(); // UnsupportedOperationException si bird es Penguin
     }
-}
-```
-
-El test lo documenta exactamente:
-
-```java
-@Test
-@DisplayName("ANTES: adding a Penguin to the list explodes at runtime -- LSP violation")
-void penguinExplodesAtRuntime() {
-    List<Bird> birds = List.of(new Sparrow(), new Eagle(), new Penguin());
-
-    assertThrows(
-            UnsupportedOperationException.class,
-            () -> service.flyAll(birds)
-    );
 }
 ```
 
