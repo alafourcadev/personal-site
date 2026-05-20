@@ -160,4 +160,4 @@ Si la respuesta es "tengo que modificarla", ese es el momento de rediseñar. No 
 
 Día 16 de **#100ArchitectureDays**. El código completo antes/después está en el repo con los tests incluidos.
 
-⭐ Si el contenido te resulta útil, una estrella en [github.com/alafourca/100-architecture-days](https://github.com/alafourca/100-architecture-days) ayuda a que más gente lo encuentre.
+⭐ Si el contenido te resulta útil, una estrella en [github.com/alafourcadev/100-architecture-days](https://github.com/alafourcadev/100-architecture-days) ayuda a que más gente lo encuentre.
