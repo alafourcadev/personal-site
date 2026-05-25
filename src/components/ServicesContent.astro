@@ -7,7 +7,6 @@ const services = [
     title: 'Consultoría Técnica 1:1',
     description: 'Sesión individual por videollamada para resolver dudas técnicas puntuales, validar decisiones de arquitectura o resolver problemas de diseño.',
     duration: '60 minutos',
-    price: 'USD $75',
     icon: 'message-circle',
     includes: [
       'Sesión grabada (opcional)',
@@ -22,7 +21,6 @@ const services = [
     title: 'Auditoría de Arquitectura',
     description: 'Revisión profunda de tu repositorio. Análisis de calidad, patrones, deuda técnica y performance. Recibís un informe con recomendaciones priorizadas.',
     duration: '3-5 días',
-    price: 'Desde USD $500',
     icon: 'search',
     includes: [
       'Informe escrito de 10-20 páginas',
@@ -38,7 +36,6 @@ const services = [
     title: 'Mentoría Técnica Mensual',
     description: 'Acompañamiento recurrente para desarrolladores que quieren crecer como seniors o staff engineers. Guía de carrera y revisión de código.',
     duration: 'Mensual',
-    price: 'Desde USD $200/mes',
     icon: 'user',
     includes: [
       'Sesiones por videollamada',
@@ -54,7 +51,6 @@ const services = [
     title: 'Fractional CTO',
     description: 'Liderazgo técnico de alto nivel para startups que no necesitan un CTO full-time. Dirección de arquitectura, revisión de decisiones y mentoría de equipo.',
     duration: 'Retainer mensual',
-    price: 'A cotizar',
     icon: 'shield',
     includes: [
       'Participación en sprint planning',
@@ -70,7 +66,6 @@ const services = [
     title: 'Workshops para Equipos',
     description: 'Capacitación práctica para equipos de desarrollo. Temas: DDD, Microservicios, Migración de Monolitos, IA Aplicada o Java Moderno.',
     duration: '3-6 horas',
-    price: 'Desde USD $600',
     icon: 'users',
     includes: [
       'Material de presentación',
@@ -86,7 +81,6 @@ const services = [
     title: 'Consultoría de IA Aplicada',
     description: 'Diseño e implementación de soluciones de IA: RAG sobre documentación interna, agentes de voz o workflows automatizados con n8n.',
     duration: 'Por proyecto',
-    price: 'A cotizar',
     icon: 'cpu',
     includes: [
       'Diseño de arquitectura de la solución',
@@ -137,10 +131,6 @@ const services = [
               <span class="flex items-center gap-1">
                 <Icon name="clock" size={14} />
                 {service.duration}
-              </span>
-              <span class="w-1 h-1 rounded-full bg-border-subtle"></span>
-              <span class="text-accent font-bold">
-                {service.price}
               </span>
             </div>
 
