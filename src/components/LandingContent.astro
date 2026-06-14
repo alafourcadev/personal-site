@@ -1,407 +1,250 @@
 ---
+import type { CollectionEntry } from 'astro:content';
 import { getCollection } from 'astro:content';
+import Container from './Container.astro';
+import SectionHeader from './SectionHeader.astro';
+import ManifestoBlock from './ManifestoBlock.astro';
+import PillarCard from './PillarCard.astro';
+import Card from './Card.astro';
+import BlogCard from './BlogCard.astro';
+import ServiceCard from './ServiceCard.astro';
 import Icon from './Icon.astro';
-import SkillsMarquee from './SkillsMarquee.astro';
 
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
-const latestPosts = allPosts
-  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
-  .slice(0, 3);
+const sorted = allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const latestPosts = sorted.slice(0, 6);
+
+// #100ArchitectureDays progress — derived from content so it never goes stale.
+const dayPosts = allPosts
+  .filter((p) => typeof p.data.day === 'number')
+  .sort((a, b) => (b.data.day ?? 0) - (a.data.day ?? 0));
+const latestDay = dayPosts.length ? dayPosts[0].data.day ?? 0 : 0;
+const lastDayPost = dayPosts[0];
+const TOTAL_DAYS = 110;
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-const socialLinks = [
-  { icon: 'twitter', label: 'Twitter/X', href: 'https://x.com/alafourcadev' },
-  { icon: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/in/alafourcadedespaigne/' },
-  { icon: 'github', label: 'GitHub', href: 'https://github.com/alafourcadev' },
+function readTimeOf(post: CollectionEntry<'blog'>): string {
+  const words = (post.body ?? '').split(/\s+/).length;
+  return `${Math.max(1, Math.ceil(words / 200))} min read`;
+}
+
+const pillars = [
+  { icon: 'layers', title: 'Arquitectura sin filtros', description: 'Diseñá límites, módulos, APIs y sistemas que no dependan de magia ni slogans.', href: '/blog' },
+  { icon: 'server', title: 'Producción sin filtros', description: 'Lo que pasa después del deploy: logs, métricas, incidentes, performance y decisiones que duelen.', href: '/blog' },
+  { icon: 'cpu', title: 'IA sin filtros', description: 'Usá IA como ingeniero, no como copiador profesional.', href: '/blog' },
+  { icon: 'git-branch', title: 'Carrera sin filtros', description: 'La parte que no sale en los tutoriales: liderazgo, presión, estimaciones y crecimiento real.', href: '/blog' },
 ];
 
-const workExperience = [
-  { company: 'Paraguay', role: 'Líder Técnico', period: '2025—Actualidad', logo: '🇵🇾' },
-  { company: 'México', role: 'Principal Engineer', period: '2023—2024', logo: '🇲🇽' },
-  { company: 'Chile', role: 'Staff Engineer', period: '2021—2024', logo: '🇨🇱' },
-  { company: 'Colombia / EEUU', role: 'Senior Backend Engineer', period: '2021—2023', logo: '🇨🇴🇺🇸' },
-  { company: 'España', role: 'IT Consultant', period: '2020—2021', logo: '🇪🇸' },
-  { company: 'México', role: 'Chief Engineer', period: '2018—2021', logo: '🇲🇽' },
-  { company: 'Paraguay', role: 'Backend Engineer', period: '2016—2018', logo: '🇵🇾' },
-  { company: 'Venezuela', role: 'L3 Support Lead', period: '2014—2016', logo: '🇻🇪' },
-  { company: 'Cuba', role: 'Junior Software Engineer', period: '2011—2014', logo: '🇨🇺' },
+const services = [
+  { icon: 'shield', title: 'Auditoría de arquitectura', description: 'Detectamos riesgos, deuda crítica y problemas de diseño antes de que exploten en producción.' },
+  { icon: 'server', title: 'Revisión de backend / APIs', description: 'Diagnóstico de Spring Boot, capas, seguridad, performance y mantenibilidad.' },
+  { icon: 'cpu', title: 'IA aplicada para equipos', description: 'Agentes y workflows para incorporar IA sin convertir tu sistema en una caja negra.' },
 ];
 
+const REPO_URL = 'https://github.com/alafourcadev/100-architecture-days';
+const BUTTONDOWN_ACTION = 'https://buttondown.email/api/emails/embed-subscribe/alafourcadedespaigne';
 ---
 
-<!-- Hero Section -->
-<section class="relative px-4 sm:px-6 md:px-10 lg:px-20 pt-16 pb-6 overflow-hidden">
-  <!-- Decorative gradient orbs -->
-  <div class="absolute top-20 -left-32 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[128px] pointer-events-none" />
-  <div class="absolute bottom-10 right-0 w-[400px] h-[400px] bg-teal-500/5 rounded-full blur-[100px] pointer-events-none" />
-
-  <div class="relative z-10">
-    <!-- Top: Badge + Photo + Heading + Bio + Social (full width) -->
-    <div class="flex flex-col items-start gap-5 mb-6">
-      <!-- Badge + Photo inline -->
-      <div class="flex flex-wrap items-center gap-3 sm:gap-4">
-        <div class="relative w-14 h-14 sm:w-16 sm:h-16 shrink-0">
-          <div class="absolute -inset-1 bg-gradient-to-r from-accent via-teal-400 to-accent rounded-full animate-spin-slow opacity-60 blur-sm" />
-          <img
-            src="/profile-64.webp"
-            alt="Alejandro Lafourcade"
-            width="64"
-            height="64"
-            class="relative w-full h-full rounded-full object-cover border-2 border-bg-deep"
-            loading="eager"
-          />
-        </div>
-        <div class="inline-flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 rounded-full border border-accent/20 bg-accent/5">
-          <span class="relative flex h-2 w-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
-          </span>
-          <span class="text-accent text-xs sm:text-sm font-medium">Disponible para consultoría</span>
-        </div>
-      </div>
-
-      <!-- Heading (full width) -->
-      <h1 class="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight leading-snug sm:leading-relaxed max-w-5xl">
-        Ingeniero de Software.
-        <span class="hero-gradient">
-          +10 años. 8 países.
-        </span>
-        Construyendo sistemas que aguanten la presión.
-      </h1>
-
-      <!-- Bio (wider) -->
-      <p class="text-base sm:text-lg lg:text-xl text-txt-secondary leading-relaxed max-w-2xl">
-        Hola 👋, soy Alejandro Lafourcade. Llevo más de una década diseñando y
-        escalando sistemas en producción — aprendiendo de cada error en el camino.
-        Cubano 🇨🇺 de raíz y paraguayo 🇵🇾 de corazón. Creé este espacio para
-        documentar lo que aprendo y compartirlo: lo que me ha funcionado, lo que no,
-        y las decisiones técnicas que nadie te enseña. Si algún artículo te ahorra
-        un dolor de cabeza, misión cumplida.
-      </p>
-
-      <!-- Social Links -->
-      <div class="flex items-center gap-3">
-        {socialLinks.map(({ icon, href, label }) => (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="p-3 rounded-xl bg-bg-surface border border-border-subtle text-txt-secondary hover:text-accent hover:border-accent/40 hover:bg-accent/5 transition-all duration-300 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label={label}
-          >
-            <Icon name={icon} size={20} />
-          </a>
-        ))}
-      </div>
+<!-- 1. Hero manifiesto -->
+<section>
+  <Container width="wide" class="flex flex-col items-start gap-6 py-20 md:py-28">
+    <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">
+      Ingeniería real para la era de la IA
+    </span>
+    <h1 class="font-heading text-3xl font-extrabold leading-[1.1] tracking-tight text-txt-primary md:text-5xl lg:text-6xl max-w-4xl">
+      Aprendé a diseñar software que aguante producción, no solo demos para LinkedIn.
+    </h1>
+    <p class="text-base leading-relaxed text-txt-secondary md:text-lg max-w-2xl">
+      Soy Alejandro Lafourcade. Escribo sobre arquitectura, backend, producción, liderazgo
+      técnico e IA aplicada desde las cicatrices reales de construir sistemas que tenían que funcionar.
+    </p>
+    <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <a href="/blog" class="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+        Empezá por acá
+        <Icon name="arrow-right" size={16} />
+      </a>
+      <a href="/blog/tags/100ArchitectureDays" class="inline-flex items-center justify-center rounded-md border border-border-subtle px-6 py-3 font-semibold text-txt-primary transition-colors hover:border-accent hover:text-accent">
+        Leer #100ArchitectureDays
+      </a>
+      <a href="#newsletter" class="inline-flex items-center px-2 py-3 font-mono text-sm text-txt-secondary underline-offset-4 transition-colors hover:text-accent hover:underline">
+        Suscribirme a la Bitácora
+      </a>
     </div>
+  </Container>
+</section>
 
-    <!-- Skills Marquee — full width below social links -->
-    <div class="hidden md:block border-t border-border-subtle pt-6">
-      <SkillsMarquee />
-    </div>
-    <div class="md:hidden flex flex-wrap gap-2 pt-4 border-t border-border-subtle">
-      {['Java', 'Go', 'Spring Boot', 'Microservicios', 'DDD', 'AWS', 'Docker', 'Kubernetes', 'PostgreSQL', 'Kafka', 'AI / RAG'].map((skill) => (
-        <span class="text-xs px-3 py-1.5 rounded-full bg-bg-surface text-txt-secondary border border-border-subtle">
-          {skill}
-        </span>
+<!-- 2. Manifiesto corto -->
+<section class="border-t border-border-subtle">
+  <Container width="wide" class="py-16 md:py-20">
+    <ManifestoBlock
+      eyebrow="El problema"
+      statement="La industria está copiando más código que nunca. Entender sistemas sigue siendo el diferencial."
+      supporting="La IA aceleró el desarrollo, pero amplificó un problema viejo: mucha gente genera código sin entender las decisiones que lo sostienen. Ingeniería sin filtros existe para volver al centro — arquitectura, producción, trade-offs, debugging, observabilidad y criterio. No se trata de odiar la IA: se trata de usarla sin entregar el volante."
+    />
+  </Container>
+</section>
+
+<!-- 3. Pilares editoriales -->
+<section class="border-t border-border-subtle">
+  <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+    <SectionHeader
+      eyebrow="Qué vas a aprender"
+      title="Cuatro pilares, sin filtros"
+      description="Cada pilar es una ruta de criterio técnico, no una lista de tutoriales."
+    />
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {pillars.map((pillar) => (
+        <PillarCard icon={pillar.icon} title={pillar.title} description={pillar.description} href={pillar.href} />
       ))}
     </div>
-  </div>
+  </Container>
 </section>
 
-<!-- Blog + Trayectoria -->
-<section class="px-4 sm:px-6 md:px-10 lg:px-20 pt-12 pb-20 lg:pt-16 lg:pb-28 reveal-section">
-  <!-- Two columns: Blog (wider) + Trayectoria (narrower) -->
-  <div class="grid grid-cols-1 md:grid-cols-[1fr_320px] lg:grid-cols-[1fr_380px] gap-10 md:gap-10 lg:gap-20 items-start">
-    <!-- Left: Latest articles -->
-    <div>
-      <div class="flex items-center justify-between pb-6 border-b border-border-subtle">
-        <h2 class="font-heading text-xl font-bold text-txt-primary">Últimos artículos</h2>
-        <a href="/blog" class="inline-flex items-center gap-1.5 text-accent text-sm font-medium hover:gap-2.5 transition-all duration-300">
-          Ver todos
-          <Icon name="arrow-right" size={14} />
+<!-- 4. #100ArchitectureDays -->
+<section class="border-t border-border-subtle">
+  <Container width="wide" class="flex flex-col gap-8 py-16 md:py-20">
+    <SectionHeader
+      eyebrow="Serie principal"
+      title="#100ArchitectureDays"
+      description="100 días para entrenar criterio de arquitectura con problemas reales, decisiones incómodas y código cuando hace falta."
+    />
+    <Card tone="series" variant="featured" class="gap-6">
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="rounded-md bg-accent/10 px-3 py-1 font-mono text-sm text-accent">Día {latestDay} de {TOTAL_DAYS}</span>
+        {lastDayPost && (
+          <span class="font-mono text-xs text-txt-muted">
+            Último publicado: <a href={`/blog/${lastDayPost.id}`} class="text-txt-secondary underline-offset-4 hover:text-accent hover:underline">Día {lastDayPost.data.day} — {lastDayPost.data.title}</a>
+          </span>
+        )}
+      </div>
+      <div class="h-1.5 w-full overflow-hidden rounded-full bg-bg-deep" role="progressbar" aria-valuenow={latestDay} aria-valuemin={0} aria-valuemax={TOTAL_DAYS} aria-label="Progreso de la serie">
+        <div class="h-full rounded-full bg-accent" style={`width: ${Math.round((latestDay / TOTAL_DAYS) * 100)}%`}></div>
+      </div>
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <a href="/blog/100-architecture-days-intro" class="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-5 py-2.5 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+          Empezar desde el día 1
+        </a>
+        <a href="/blog/tags/100ArchitectureDays" class="inline-flex items-center justify-center rounded-md border border-border-subtle px-5 py-2.5 font-semibold text-txt-primary transition-colors hover:border-accent hover:text-accent">
+          Ver últimos días
+        </a>
+        <a href={REPO_URL} target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 rounded-md border border-border-subtle px-5 py-2.5 font-semibold text-txt-primary transition-colors hover:border-accent hover:text-accent">
+          <Icon name="github" size={16} />
+          Ver repo en GitHub
         </a>
       </div>
-      <div class="flex flex-col divide-y divide-border-subtle">
-        {latestPosts.map((post) => {
-          const postWordCount = (post.body ?? '').split(/\s+/).length;
-          const postReadTime = `${Math.max(1, Math.ceil(postWordCount / 200))} min read`;
-          return (
-          <article class="group py-8 first:pt-8">
-            <div class="flex flex-col gap-3">
-              <div class="flex items-center gap-3 text-xs text-txt-muted tracking-wide uppercase">
-                <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
-                <span class="w-1 h-1 rounded-full bg-txt-muted" />
-                <span>{postReadTime}</span>
-              </div>
-              <a href={`/blog/${post.id}`} class="group/link flex flex-col gap-2">
-                <h3 class="text-lg font-bold text-txt-primary leading-snug group-hover/link:text-accent transition-colors duration-200">
-                  {post.data.title}
-                </h3>
-                <p class="text-[15px] text-txt-secondary leading-relaxed line-clamp-2">
-                  {post.data.description}
-                </p>
-              </a>
-              <a href={`/blog/${post.id}`} class="inline-flex items-center gap-1 text-sm font-medium text-accent hover:gap-2 transition-all duration-200 mt-1 cursor-pointer">
-                Leer artículo
-                <Icon name="arrow-right" size={14} />
-              </a>
-            </div>
-          </article>
-        );})}
-      </div>
-    </div>
-
-    <!-- Right: Timeline (sticky) -->
-    <div class="md:sticky md:top-20">
-      <div class="bg-bg-surface/50 backdrop-blur-sm border border-border-subtle rounded-xl p-7">
-        <div class="flex items-center gap-2.5 pb-5 border-b border-border-subtle mb-5">
-          <Icon name="briefcase" size={18} class="text-accent" />
-          <h2 class="font-bold text-txt-primary text-sm uppercase tracking-wider">Trayectoria</h2>
-        </div>
-        <div class="flex flex-col gap-5">
-          {workExperience.map(({ company, role, period, logo }) => (
-            <div class="flex items-start gap-3.5 group cursor-default">
-              <div class={`w-9 h-9 rounded-lg bg-bg-deep border border-border-subtle flex items-center justify-center shrink-0 group-hover:border-accent/30 transition-colors duration-200 ${logo.length > 2 ? 'text-xs' : 'text-base'}`}>
-                {logo}
-              </div>
-              <div class="flex-1 min-w-0 pt-0.5">
-                <div class="font-medium text-txt-primary text-[13px] leading-tight group-hover:text-accent transition-colors duration-200">{role}</div>
-                <div class="text-txt-muted text-xs mt-0.5">{company} · {period}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </div>
+    </Card>
+  </Container>
 </section>
 
-<!-- CTA Mentoría -->
-<section class="px-4 sm:px-6 md:px-10 lg:px-20 py-12 lg:py-16 reveal-section">
-  <div class="relative rounded-2xl sm:rounded-3xl overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-br from-accent/15 via-transparent to-teal-500/10" />
-    <div class="absolute inset-0 border border-accent/20 rounded-2xl sm:rounded-3xl" />
+<!-- 5. Últimos artículos -->
+<section class="border-t border-border-subtle">
+  <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <SectionHeader eyebrow="Lectura" title="Últimos artículos" />
+      <a href="/blog" class="inline-flex items-center gap-1.5 font-medium text-accent transition-all hover:gap-2.5">
+        Ver todos
+        <Icon name="arrow-right" size={16} />
+      </a>
+    </div>
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {latestPosts.map((post) => (
+        <BlogCard
+          slug={post.id}
+          title={post.data.title}
+          description={post.data.description}
+          tags={post.data.tags}
+          date={formatDate(post.data.date)}
+          readTime={readTimeOf(post)}
+          image={post.data.image}
+        />
+      ))}
+    </div>
+  </Container>
+</section>
 
-    <div class="relative px-5 py-10 sm:px-8 sm:py-14 lg:px-16 lg:py-20 text-center">
-      <h2 class="font-heading text-xl sm:text-2xl lg:text-3xl font-bold text-txt-primary leading-tight mb-4">
-        ¿Necesitás mentoría o consultoría
-        <span class="hero-gradient">técnica</span>?
+<!-- 6. Newsletter — La Bitácora Sin Filtros -->
+<section id="newsletter" class="border-t border-border-subtle scroll-mt-24">
+  <Container width="default" class="py-16 md:py-20">
+    <div class="flex flex-col items-start gap-5 rounded-xl border border-accent/30 bg-accent/5 p-8 md:p-12">
+      <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">La Bitácora Sin Filtros</span>
+      <h2 class="font-heading text-2xl font-extrabold leading-tight text-txt-primary md:text-3xl max-w-2xl">
+        Una lección de arquitectura, producción e IA por semana. La que no aprendés copiando código.
       </h2>
-      <p class="text-base sm:text-lg text-txt-secondary leading-relaxed max-w-lg mx-auto mb-8 sm:mb-10">
-        Sesiones 1:1, arquitectura de sistemas, code review y acompañamiento
-        técnico. Sin humo — solo experiencia real.
+      <p class="text-txt-secondary leading-relaxed max-w-xl">
+        Historias reales, decisiones técnicas, errores comunes, trade-offs y reglas senior para construir software con criterio.
       </p>
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-        <a
-          href="/servicios"
-          class="w-full sm:w-auto text-center px-8 py-3.5 min-h-[44px] bg-accent text-bg-deep font-bold rounded-xl hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5 transition-all duration-300"
-        >
-          Ver Servicios
-        </a>
-        <a
-          href="https://cal.com/alafourcadev/consultoria-tecnica-1-1"
-          class="w-full sm:w-auto text-center px-8 py-3.5 min-h-[44px] border border-border-subtle text-txt-secondary font-medium rounded-xl hover:border-accent/40 hover:text-txt-primary transition-all duration-300"
-        >
-          Agendar 1:1
+      <form action={BUTTONDOWN_ACTION} method="post" target="_blank" class="flex w-full max-w-md flex-col gap-3 sm:flex-row">
+        <label class="sr-only" for="newsletter-email">Tu email</label>
+        <input
+          id="newsletter-email"
+          type="email"
+          name="email"
+          required
+          placeholder="tu@email.com"
+          class="flex-1 rounded-md border border-border-subtle bg-bg-deep px-4 py-3 text-txt-primary placeholder:text-txt-muted focus:border-accent focus:outline-none"
+        />
+        <input type="hidden" name="embed" value="1" />
+        <button type="submit" class="inline-flex items-center justify-center rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+          Suscribirme gratis
+        </button>
+      </form>
+      <p class="font-mono text-xs text-txt-muted">Sin spam. Sin humo. Solo ingeniería real.</p>
+    </div>
+  </Container>
+</section>
+
+<!-- 7. Trabaja conmigo -->
+<section class="border-t border-border-subtle">
+  <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+    <SectionHeader
+      eyebrow="Trabaja conmigo"
+      title="¿Necesitás criterio técnico para una decisión importante?"
+      description="Reviso arquitectura, diagnostico deuda técnica, ordeno un backend, diseño un MVP serio o incorporo IA sin convertir tu sistema en una caja negra."
+    />
+    <div class="grid gap-4 md:grid-cols-3">
+      {services.map((service) => (
+        <ServiceCard icon={service.icon} title={service.title} description={service.description} />
+      ))}
+    </div>
+    <a href="/servicios" class="inline-flex w-fit items-center gap-2 rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+      Ver cómo podemos trabajar juntos
+      <Icon name="arrow-right" size={16} />
+    </a>
+  </Container>
+</section>
+
+<!-- 8. Sobre Alejandro -->
+<section class="border-t border-border-subtle">
+  <Container width="wide" class="py-16 md:py-20">
+    <div class="grid items-center gap-8 md:grid-cols-[160px_1fr] md:gap-12">
+      <img
+        src="/profile-320.webp"
+        alt="Alejandro Lafourcade"
+        width="160"
+        height="160"
+        loading="lazy"
+        class="h-32 w-32 rounded-xl border border-border-subtle object-cover md:h-40 md:w-40"
+      />
+      <div class="flex flex-col items-start gap-5">
+        <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">Sobre Alejandro</span>
+        <p class="text-lg leading-relaxed text-txt-primary md:text-xl max-w-2xl">
+          Arquitecto y líder técnico con más de 10 años construyendo backend, APIs, microservicios,
+          CI/CD y sistemas que tenían que operar en serio.
+        </p>
+        <p class="leading-relaxed text-txt-secondary max-w-2xl">
+          Ingeniería sin filtros nació para enseñar lo que normalmente se aprende a golpes: trade-offs,
+          errores de producción, decisiones de arquitectura y criterio técnico en una época donde la IA
+          hace que todo parezca más fácil de lo que realmente es.
+        </p>
+        <a href="/sobre-mi" class="inline-flex items-center gap-1.5 font-medium text-accent transition-all hover:gap-2.5">
+          Conocer mi historia
+          <Icon name="arrow-right" size={16} />
         </a>
       </div>
     </div>
-  </div>
+  </Container>
 </section>
 
-<!-- Particle Network Canvas -->
-<canvas id="particle-canvas" class="fixed inset-0 z-0 pointer-events-none" aria-hidden="true" role="presentation"></canvas>
-
-<script>
-  // Scroll Reveal
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('revealed');
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
-  );
-  document.querySelectorAll('.reveal-section').forEach((el) => observer.observe(el));
-
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Particle Network
-  (function initParticles() {
-    // Skip on mobile — decorative effect not worth the CPU cost
-    if (window.innerWidth < 768) return;
-
-    const canvas = document.getElementById('particle-canvas') as HTMLCanvasElement;
-    const ctx = canvas.getContext('2d')!;
-    let mouse = { x: -999, y: -999 };
-    let animationId: number;
-    let particles: { x: number; y: number; vx: number; vy: number; size: number; opacity: number }[] = [];
-
-    function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-
-    function createParticles() {
-      const count = Math.floor((canvas.width * canvas.height) / 30000);
-      particles = [];
-      for (let i = 0; i < count; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 0.25,
-          vy: (Math.random() - 0.5) * 0.25,
-          size: Math.random() * 1.5 + 0.5,
-          opacity: Math.random() * 0.3 + 0.05,
-        });
-      }
-    }
-
-    function getAccentColor() {
-      return document.documentElement.classList.contains('dark') ? '52, 211, 153' : '16, 185, 129';
-    }
-
-    function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const accent = getAccentColor();
-      const connectionDist = 120;
-      const mouseDist = 200;
-
-      for (const p of particles) {
-        const dxM = mouse.x - p.x;
-        const dyM = mouse.y - p.y;
-        const distM = Math.sqrt(dxM * dxM + dyM * dyM);
-
-        if (distM < mouseDist && distM > 1) {
-          const force = (1 - distM / mouseDist) * 0.015;
-          p.vx += (dxM / distM) * force;
-          p.vy += (dyM / distM) * force;
-        }
-
-        p.vx *= 0.98;
-        p.vy *= 0.98;
-        const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-        if (speed > 1) { p.vx /= speed; p.vy /= speed; }
-
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-
-        const glowFactor = distM < mouseDist ? (1 - distM / mouseDist) * 0.4 : 0;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size + glowFactor * 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${accent}, ${Math.min(p.opacity + glowFactor, 0.6)})`;
-        ctx.fill();
-      }
-
-      for (let i = 0; i < particles.length; i++) {
-        const a = particles[i];
-        const dxA = a.x - mouse.x;
-        const dyA = a.y - mouse.y;
-        const distMA = Math.sqrt(dxA * dxA + dyA * dyA);
-
-        if (distMA < mouseDist) {
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(mouse.x, mouse.y);
-          ctx.strokeStyle = `rgba(${accent}, ${(1 - distMA / mouseDist) * 0.2})`;
-          ctx.lineWidth = 0.3;
-          ctx.stroke();
-
-          for (let j = i + 1; j < particles.length; j++) {
-            const b = particles[j];
-            const dx = a.x - b.x;
-            const dy = a.y - b.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < connectionDist) {
-              ctx.beginPath();
-              ctx.moveTo(a.x, a.y);
-              ctx.lineTo(b.x, b.y);
-              ctx.strokeStyle = `rgba(${accent}, ${(1 - dist / connectionDist) * (1 - distMA / mouseDist) * 0.35})`;
-              ctx.lineWidth = 0.4;
-              ctx.stroke();
-            }
-          }
-        }
-      }
-
-      animationId = requestAnimationFrame(animate);
-    }
-
-    if (!prefersReducedMotion) {
-      // Throttle mousemove via rAF — avoids updating on every single event
-      let mouseMoveQueued = false;
-      window.addEventListener('mousemove', (e) => {
-        if (mouseMoveQueued) return;
-        mouseMoveQueued = true;
-        requestAnimationFrame(() => {
-          mouse.x = e.clientX;
-          mouse.y = e.clientY;
-          mouseMoveQueued = false;
-        });
-      });
-
-      // Pause animation when tab is not visible — zero CPU when hidden
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-          cancelAnimationFrame(animationId);
-        } else {
-          animationId = requestAnimationFrame(animate);
-        }
-      });
-
-      window.addEventListener('resize', () => { resize(); createParticles(); });
-      resize();
-      createParticles();
-      animate();
-    }
-  })();
-
-</script>
-
-<style>
-  .hero-gradient {
-    background: linear-gradient(135deg, #059669, #0d9488);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  :global(html.dark) .hero-gradient {
-    background: linear-gradient(135deg, #34d399, #5eead4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .reveal-section {
-    opacity: 0.15;
-    transform: translateY(20px);
-    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-  }
-
-  .reveal-section.revealed {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-</style>
