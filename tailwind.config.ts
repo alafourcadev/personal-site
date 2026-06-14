@@ -14,9 +14,13 @@ export default {
         accent: {
           DEFAULT: 'rgb(var(--accent) / <alpha-value>)',
           dark: '#10b981',
+          strong: 'rgb(var(--accent-strong) / <alpha-value>)',
           dim: 'rgb(var(--accent) / 0.08)',
           glow: 'rgb(var(--accent) / 0.15)',
         },
+        'accent-amber': 'rgb(var(--accent-amber) / <alpha-value>)',
+        'accent-red': 'rgb(var(--accent-red) / <alpha-value>)',
+        'accent-blue': 'rgb(var(--accent-blue) / <alpha-value>)',
         'tag-bg': 'rgb(var(--tag-bg) / <alpha-value>)',
         'tag-text': 'rgb(var(--tag-text) / <alpha-value>)',
         'txt-primary': 'rgb(var(--txt-primary) / <alpha-value>)',

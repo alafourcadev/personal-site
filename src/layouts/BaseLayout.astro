@@ -127,8 +127,8 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
         opacity: 1;
       }
       .copy-code-button:hover {
-        color: rgb(var(--accent));
-        border-color: rgb(var(--accent));
+        color: rgb(var(--accent-strong));
+        border-color: rgb(var(--accent-strong));
         background: rgb(var(--bg-surface-hover));
         transform: scale(1.05);
       }
@@ -136,9 +136,9 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
         transform: scale(0.95);
       }
       .copy-code-button.copied {
-        color: rgb(var(--accent));
-        border-color: rgb(var(--accent));
-        background: rgba(var(--accent), 0.1);
+        color: rgb(var(--accent-strong));
+        border-color: rgb(var(--accent-strong));
+        background: rgb(var(--accent-strong) / 0.1);
       }
       pre {
         position: relative;
@@ -228,6 +228,10 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
     --txt-secondary: 71 85 105;
     --txt-muted: 148 163 184;
     --accent: 16 185 129;
+    --accent-strong: 5 150 105;
+    --accent-amber: 217 119 6;
+    --accent-red: 220 38 38;
+    --accent-blue: 37 99 235;
     --tag-bg: 236 253 245;
     --tag-text: 4 120 87;
     --nav-bg: rgba(255, 255, 255, 0.8);
@@ -246,7 +250,11 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
     --txt-primary: 226 232 240;
     --txt-secondary: 148 163 184;
     --txt-muted: 124 141 181;
-    --accent: 52 211 153;
+    --accent: 16 185 129;
+    --accent-strong: 52 211 153;
+    --accent-amber: 251 191 36;
+    --accent-red: 248 113 113;
+    --accent-blue: 96 165 250;
     --tag-bg: 6 78 59;
     --tag-text: 110 231 183;
     --nav-bg: rgba(15, 23, 42, 0.8);
@@ -292,6 +300,66 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
   }
   html.dark .card-hover-shadow:hover {
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Editorial blocks — rendered from `:::name` directives in .md/.mdx posts.
+     See src/plugins/remark-editorial-blocks.mjs */
+  .ed-block {
+    margin: 2rem 0;
+    padding: 1.25rem 1.5rem;
+    border-left: 3px solid rgb(var(--txt-muted));
+    border-radius: 0 0.75rem 0.75rem 0;
+    background: rgb(var(--bg-surface));
+  }
+  .ed-block::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--txt-muted));
+  }
+  .ed-block > :first-of-type {
+    margin-top: 0;
+  }
+  .ed-block > :last-child {
+    margin-bottom: 0;
+  }
+
+  .ed-problema-real { border-left-color: rgb(var(--accent-red)); }
+  .ed-problema-real::before { color: rgb(var(--accent-red)); }
+  .ed-la-trampa { border-left-color: rgb(var(--accent-amber)); }
+  .ed-la-trampa::before { color: rgb(var(--accent-amber)); }
+  .ed-la-decision { border-left-color: rgb(var(--accent)); }
+  .ed-la-decision::before { color: rgb(var(--accent)); }
+  .ed-regla-senior { border-left-color: rgb(var(--accent-blue)); }
+  .ed-regla-senior::before { color: rgb(var(--accent-blue)); }
+  .ed-checklist-produccion { border-left-color: rgb(var(--accent)); }
+  .ed-checklist-produccion::before { color: rgb(var(--accent)); }
+
+  /* Checklist: custom unchecked-box markers, non-interactive by default */
+  .ed-checklist-produccion ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+  .ed-checklist-produccion li {
+    position: relative;
+    padding-left: 1.75rem;
+    margin: 0.45rem 0;
+  }
+  .ed-checklist-produccion li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.25em;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgb(var(--accent));
+    border-radius: 0.25rem;
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -1,0 +1,26 @@
+---
+// Reusable editorial section header: mono eyebrow + heading + optional lede.
+interface Props {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  align?: 'left' | 'center';
+  as?: 'h2' | 'h3';
+}
+
+const { eyebrow, title, description, align = 'left', as = 'h2' } = Astro.props;
+const Tag = as;
+const alignClass = align === 'center' ? 'items-center text-center mx-auto' : 'items-start text-left';
+---
+
+<header class:list={['flex flex-col gap-3 max-w-2xl', alignClass]}>
+  {eyebrow && (
+    <span class="font-mono text-xs uppercase tracking-[0.15em] text-accent">{eyebrow}</span>
+  )}
+  <Tag class="font-heading font-extrabold text-3xl md:text-4xl leading-tight text-txt-primary">
+    {title}
+  </Tag>
+  {description && (
+    <p class="text-base md:text-lg leading-relaxed text-txt-secondary">{description}</p>
+  )}
+</header>
