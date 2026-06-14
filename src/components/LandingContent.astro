@@ -8,6 +8,7 @@ import PillarCard from './PillarCard.astro';
 import Card from './Card.astro';
 import BlogCard from './BlogCard.astro';
 import ServiceCard from './ServiceCard.astro';
+import QuoteBlock from './QuoteBlock.astro';
 import Icon from './Icon.astro';
 
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
@@ -36,6 +37,7 @@ const pillars = [
   { icon: 'server', title: 'Producción sin filtros', description: 'Lo que pasa después del deploy: logs, métricas, incidentes, performance y decisiones que duelen.', href: '/blog' },
   { icon: 'cpu', title: 'IA sin filtros', description: 'Usá IA como ingeniero, no como copiador profesional.', href: '/blog' },
   { icon: 'git-branch', title: 'Carrera sin filtros', description: 'La parte que no sale en los tutoriales: liderazgo, presión, estimaciones y crecimiento real.', href: '/blog' },
+  { icon: 'zap', title: 'Laboratorio sin filtros', description: 'Construir en público: productos, prototipos y arquitectura real, con las decisiones a la vista.', href: '/blog' },
 ];
 
 const services = [
@@ -58,8 +60,9 @@ const BUTTONDOWN_ACTION = 'https://buttondown.email/api/emails/embed-subscribe/a
       Aprendé a diseñar software que aguante producción, no solo demos para LinkedIn.
     </h1>
     <p class="text-base leading-relaxed text-txt-secondary md:text-lg max-w-2xl">
-      Soy Alejandro Lafourcade. Escribo sobre arquitectura, backend, producción, liderazgo
-      técnico e IA aplicada desde las cicatrices reales de construir sistemas que tenían que funcionar.
+      La IA hace que copiar código sea trivial. El criterio para decidir arquitectura y sostenerla
+      en producción, no. Acá, Alejandro Lafourcade escribe sobre arquitectura, producción e IA
+      aplicada desde las cicatrices de sistemas que tenían que funcionar.
     </p>
     <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
       <a href="/blog" class="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
@@ -92,10 +95,10 @@ const BUTTONDOWN_ACTION = 'https://buttondown.email/api/emails/embed-subscribe/a
   <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
     <SectionHeader
       eyebrow="Qué vas a aprender"
-      title="Cuatro pilares, sin filtros"
+      title="Cinco pilares, sin filtros"
       description="Cada pilar es una ruta de criterio técnico, no una lista de tutoriales."
     />
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
       {pillars.map((pillar) => (
         <PillarCard icon={pillar.icon} title={pillar.title} description={pillar.description} href={pillar.href} />
       ))}
@@ -107,11 +110,15 @@ const BUTTONDOWN_ACTION = 'https://buttondown.email/api/emails/embed-subscribe/a
 <section class="border-t border-border-subtle">
   <Container width="wide" class="flex flex-col gap-8 py-16 md:py-20">
     <SectionHeader
-      eyebrow="Serie principal"
+      eyebrow="Ruta de aprendizaje"
       title="#100ArchitectureDays"
-      description="100 días para entrenar criterio de arquitectura con problemas reales, decisiones incómodas y código cuando hace falta."
+      description="No es un reto de contenido: es una ruta para aprender arquitectura como decisiones. 100 días de problemas reales, trade-offs y código cuando hace falta."
     />
     <Card tone="series" variant="featured" class="gap-6">
+      <p class="text-txt-secondary leading-relaxed max-w-2xl">
+        Cada día es una decisión de arquitectura con su contexto, sus trade-offs y su porqué.
+        Seguidos, son un camino de junior a criterio senior — no una lista de posts.
+      </p>
       <div class="flex flex-wrap items-center gap-3">
         <span class="rounded-md bg-accent/10 px-3 py-1 font-mono text-sm text-accent">Día {latestDay} de {TOTAL_DAYS}</span>
         {lastDayPost && (
@@ -136,6 +143,16 @@ const BUTTONDOWN_ACTION = 'https://buttondown.email/api/emails/embed-subscribe/a
         </a>
       </div>
     </Card>
+  </Container>
+</section>
+
+<!-- Editorial break -->
+<section class="border-t border-border-subtle bg-bg-surface">
+  <Container width="default" class="py-16 md:py-24">
+    <QuoteBlock
+      quote="El código ya lo escribe la IA. El criterio para decidir qué construir, cómo sostenerlo en producción y por qué, todavía lo construís vos."
+      attribution="Ingeniería sin filtros"
+    />
   </Container>
 </section>
 
@@ -169,12 +186,13 @@ const BUTTONDOWN_ACTION = 'https://buttondown.email/api/emails/embed-subscribe/a
 <section id="newsletter" class="border-t border-border-subtle scroll-mt-24">
   <Container width="default" class="py-16 md:py-20">
     <div class="flex flex-col items-start gap-5 rounded-xl border border-accent/30 bg-accent/5 p-8 md:p-12">
-      <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">La Bitácora Sin Filtros</span>
-      <h2 class="font-heading text-2xl font-extrabold leading-tight text-txt-primary md:text-3xl max-w-2xl">
-        Una lección de arquitectura, producción e IA por semana. La que no aprendés copiando código.
+      <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">Newsletter</span>
+      <h2 class="font-heading text-3xl font-extrabold leading-tight text-txt-primary md:text-4xl max-w-2xl">
+        La Bitácora Sin Filtros
       </h2>
       <p class="text-txt-secondary leading-relaxed max-w-xl">
-        Historias reales, decisiones técnicas, errores comunes, trade-offs y reglas senior para construir software con criterio.
+        Una vez por semana: una decisión técnica real, sus trade-offs, el porqué detrás y una regla
+        práctica que podés aplicar el lunes. Sin resúmenes, sin humo.
       </p>
       <form action={BUTTONDOWN_ACTION} method="post" target="_blank" class="flex w-full max-w-md flex-col gap-3 sm:flex-row">
         <label class="sr-only" for="newsletter-email">Tu email</label>
