@@ -103,7 +103,7 @@ const pageNumbers = Array.from({ length: page.lastPage }, (_, i) => i + 1);
     >
       {
         page.data.map((post, i) => {
-          const wordCount = post.body.split(/\s+/).length;
+          const wordCount = (post.body ?? '').split(/\s+/).length;
           const readTime = `${Math.max(1, Math.ceil(wordCount / 200))} min read`;
           return (
             <div

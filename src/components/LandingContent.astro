@@ -131,7 +131,7 @@ const workExperience = [
       </div>
       <div class="flex flex-col divide-y divide-border-subtle">
         {latestPosts.map((post) => {
-          const postWordCount = post.body.split(/\s+/).length;
+          const postWordCount = (post.body ?? '').split(/\s+/).length;
           const postReadTime = `${Math.max(1, Math.ceil(postWordCount / 200))} min read`;
           return (
           <article class="group py-8 first:pt-8">
