@@ -1,0 +1,25 @@
+---
+// Editorial pull-quote for emphasis inside articles. Attribution is optional.
+// For testimonials with social proof, use TestimonialCard instead.
+interface Props {
+  quote: string;
+  attribution?: string;
+  role?: string;
+}
+
+const { quote, attribution, role } = Astro.props;
+---
+
+<figure class="my-10 border-l-2 border-accent pl-6 md:pl-8">
+  <blockquote>
+    <p class="font-heading text-xl font-semibold leading-snug text-txt-primary md:text-2xl">
+      {quote}
+    </p>
+  </blockquote>
+  {attribution && (
+    <figcaption class="mt-4 text-sm text-txt-muted">
+      <span class="font-medium text-txt-secondary">{attribution}</span>
+      {role && <span> — {role}</span>}
+    </figcaption>
+  )}
+</figure>

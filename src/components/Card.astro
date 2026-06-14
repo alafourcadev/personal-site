@@ -1,0 +1,40 @@
+---
+// Base card shell. Owns the surface, border, padding and hover so the specialized
+// cards (PillarCard, SeriesCard, ServiceCard) never duplicate it.
+// Renders as <a> when href is set, otherwise <div>.
+interface Props {
+  href?: string;
+  variant?: 'compact' | 'default' | 'featured';
+  tone?: 'editorial' | 'series' | 'service' | 'cta';
+  interactive?: boolean;
+  class?: string;
+}
+
+const { href, variant = 'default', tone = 'editorial', interactive, class: className = '' } = Astro.props;
+const Tag = href ? 'a' : 'div';
+const isInteractive = interactive ?? Boolean(href);
+
+const variantClass = {
+  compact: 'p-4 gap-2',
+  default: 'p-6 gap-3',
+  featured: 'p-6 gap-4 md:p-8',
+}[variant];
+
+const toneClass = {
+  editorial: 'border-border-subtle bg-bg-surface',
+  service: 'border-border-subtle bg-bg-surface',
+  series: 'border-accent/20 bg-accent/5',
+  cta: 'border-accent/30 bg-accent/5',
+}[tone];
+
+const hoverClass = isInteractive
+  ? 'transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 card-hover-shadow'
+  : '';
+---
+
+<Tag
+  href={href}
+  class:list={['group flex flex-col rounded-xl border', variantClass, toneClass, hoverClass, className]}
+>
+  <slot />
+</Tag>

@@ -1,0 +1,21 @@
+---
+// Width container primitive. Centralizes the three editorial reading widths
+// so pages don't hardcode max-w values.
+interface Props {
+  width?: 'narrow' | 'default' | 'wide';
+  as?: string;
+  class?: string;
+}
+
+const { width = 'default', as: Tag = 'div', class: className = '' } = Astro.props;
+
+const widths: Record<'narrow' | 'default' | 'wide', string> = {
+  narrow: 'max-w-2xl', // ~672px — comfortable reading measure
+  default: 'max-w-5xl', // ~1024px — standard content
+  wide: 'max-w-7xl', // ~1280px — galleries / wide grids
+};
+---
+
+<Tag class:list={['mx-auto w-full px-6', widths[width as keyof typeof widths], className]}>
+  <slot />
+</Tag>

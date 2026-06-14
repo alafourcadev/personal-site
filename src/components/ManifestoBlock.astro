@@ -1,0 +1,24 @@
+---
+// Bold editorial statement block — for hero manifestos and section intros.
+interface Props {
+  eyebrow?: string;
+  statement: string;
+  supporting?: string;
+  align?: 'left' | 'center';
+}
+
+const { eyebrow, statement, supporting, align = 'left' } = Astro.props;
+const alignClass = align === 'center' ? 'items-center text-center mx-auto' : 'items-start text-left';
+---
+
+<section class:list={['flex max-w-3xl flex-col gap-5', alignClass]}>
+  {eyebrow && (
+    <span class="font-mono text-xs uppercase tracking-[0.15em] text-accent">{eyebrow}</span>
+  )}
+  <p class="font-heading text-2xl font-extrabold leading-tight text-txt-primary md:text-4xl">
+    {statement}
+  </p>
+  {supporting && (
+    <p class="text-base leading-relaxed text-txt-secondary md:text-lg">{supporting}</p>
+  )}
+</section>

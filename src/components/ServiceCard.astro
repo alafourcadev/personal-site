@@ -1,0 +1,31 @@
+---
+// A result-oriented service offering. Renders as a link when href is provided.
+import Card from './Card.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  href?: string;
+  ctaLabel?: string;
+  icon?: string;
+}
+
+const { title, description, href, ctaLabel = 'Más información', icon } = Astro.props;
+---
+
+<Card href={href} tone="service" variant="default">
+  {icon && (
+    <span class="flex h-11 w-11 items-center justify-center rounded-md bg-accent/10 text-accent">
+      <Icon name={icon} size={22} />
+    </span>
+  )}
+  <h3 class="font-heading text-lg font-bold text-txt-primary md:text-xl">{title}</h3>
+  <p class="flex-1 text-sm leading-relaxed text-txt-secondary md:text-base">{description}</p>
+  {href && (
+    <span class="inline-flex items-center gap-1.5 pt-2 font-mono text-xs uppercase tracking-wider text-txt-secondary transition-colors group-hover:text-accent">
+      {ctaLabel}
+      <Icon name="arrow-right" size={14} />
+    </span>
+  )}
+</Card>

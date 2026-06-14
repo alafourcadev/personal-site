@@ -1,20 +1,42 @@
 ---
-// Reusable call-to-action section with a primary and optional secondary action.
+// Reusable call-to-action section: optional eyebrow, title, description,
+// primary action and optional secondary action. Center or left aligned.
 interface Props {
+  eyebrow?: string;
   title: string;
   description?: string;
   primaryLabel: string;
   primaryHref: string;
   secondaryLabel?: string;
   secondaryHref?: string;
+  align?: 'center' | 'left';
 }
 
-const { title, description, primaryLabel, primaryHref, secondaryLabel, secondaryHref } = Astro.props;
+const {
+  eyebrow,
+  title,
+  description,
+  primaryLabel,
+  primaryHref,
+  secondaryLabel,
+  secondaryHref,
+  align = 'center',
+} = Astro.props;
+
+const alignClass = align === 'center' ? 'items-center text-center' : 'items-start text-left';
 ---
 
 <section class="my-16">
-  <div class="flex flex-col items-center gap-6 rounded-xl border border-border-subtle bg-bg-surface px-6 py-12 text-center md:px-12 md:py-16">
-    <h2 class="font-heading font-extrabold text-2xl md:text-3xl leading-tight text-txt-primary max-w-2xl">
+  <div
+    class:list={[
+      'flex flex-col gap-6 rounded-xl border border-border-subtle bg-bg-surface px-6 py-12 md:px-12 md:py-16',
+      alignClass,
+    ]}
+  >
+    {eyebrow && (
+      <span class="font-mono text-xs uppercase tracking-[0.15em] text-accent">{eyebrow}</span>
+    )}
+    <h2 class="font-heading text-2xl md:text-3xl font-extrabold leading-tight text-txt-primary max-w-2xl">
       {title}
     </h2>
     {description && (

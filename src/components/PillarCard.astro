@@ -1,0 +1,30 @@
+---
+// One content pillar: icon + title + short description, linking to its articles.
+import Card from './Card.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  href: string;
+  icon?: string;
+}
+
+const { title, description, href, icon } = Astro.props;
+---
+
+<Card href={href} tone="editorial" variant="default">
+  {icon && (
+    <span class="flex h-10 w-10 items-center justify-center rounded-md bg-accent/10 text-accent transition-colors group-hover:bg-accent/20">
+      <Icon name={icon} size={20} />
+    </span>
+  )}
+  <h3 class="font-heading text-lg font-bold text-txt-primary transition-colors group-hover:text-accent">
+    {title}
+  </h3>
+  <p class="text-sm leading-relaxed text-txt-secondary">{description}</p>
+  <span class="mt-auto inline-flex items-center gap-1 pt-2 font-mono text-xs uppercase tracking-wider text-txt-secondary transition-colors group-hover:text-accent">
+    Ver artículos
+    <Icon name="arrow-right" size={14} />
+  </span>
+</Card>
