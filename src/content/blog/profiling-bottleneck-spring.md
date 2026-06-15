@@ -4,7 +4,7 @@ description: "Optimizás a ciegas porque nunca mediste. Profiling con Actuator y
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-07
 readTime: "7 min read"
-image: "/blog/profiling-bottleneck-spring.webp"
+image: "/blog/day-007-profiling-bottleneck-spring-v2.webp"
 day: 7
 ---
 

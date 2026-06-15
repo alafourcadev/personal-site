@@ -4,7 +4,7 @@ description: "EXPLAIN ANALYZE es tu mejor amigo. Aprende a leer un query plan an
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-03-29
 readTime: "7 min read"
-image: "/blog/query-analysis-spring.webp"
+image: "/blog/day-003-query-analysis-spring-v2.webp"
 day: 3
 ---
 

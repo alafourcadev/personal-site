@@ -4,7 +4,7 @@ description: "El código se lee 10x más de lo que se escribe. Cada nombre vago 
 tags: ["Java", "Architecture", "100ArchitectureDays"]
 date: 2026-05-25
 readTime: "7 min read"
-image: "/blog/naming.png"
+image: "/blog/day-019-naming-v2.webp"
 day: 19
 ---
 

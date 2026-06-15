@@ -4,7 +4,7 @@ description: "7 clases para un solo método de pago. PayPal y Crypto: TODO. Borr
 tags: ["Java", "Architecture", "100ArchitectureDays"]
 date: 2026-06-03
 readTime: "7 min read"
-image: "/blog/yagni.png"
+image: "/blog/day-020-yagni-v2.webp"
 day: 20
 ---
 

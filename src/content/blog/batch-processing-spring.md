@@ -4,7 +4,7 @@ description: "HTTP no fue diseñado para operaciones de minutos. Batch processin
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-08
 readTime: "8 min read"
-image: "/blog/batch-processing-spring.webp"
+image: "/blog/day-008-batch-processing-spring-v2.webp"
 day: 8
 ---
 

@@ -4,7 +4,7 @@ description: "De 10.7s a 1.3s de startup. El problema no es Spring Boot — es c
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-03-26
 readTime: "8 min read"
-image: "/blog/cold-start-spring-boot.webp"
+image: "/blog/day-001-cold-start-spring-boot-v2.webp"
 day: 1
 ---
 

@@ -4,7 +4,7 @@ description: "Para mostrar 50 usuarios hacés 250 queries a la base de datos. Tu
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-01
 readTime: "7 min read"
-image: "/blog/n-plus-one-queries-spring.webp"
+image: "/blog/day-005-n-plus-one-queries-spring-v2.webp"
 day: 5
 ---
 

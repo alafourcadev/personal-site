@@ -4,7 +4,7 @@ description: "Los índices no son gratis. Cada uno acelera una lectura pero fren
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-10
 readTime: "8 min read"
-image: "/blog/indices-database.webp"
+image: "/blog/day-010-indices-database-v2.webp"
 day: 10
 ---
 

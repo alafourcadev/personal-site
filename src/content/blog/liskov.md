@@ -4,7 +4,7 @@ description: "Penguin extends Bird. En runtime, fly() explota. LSP: la herencia 
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-05-20
 readTime: "7 min read"
-image: "/blog/liskov.png"
+image: "/blog/day-017-liskov-v2.webp"
 day: 17
 ---
 

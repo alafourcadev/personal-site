@@ -4,7 +4,7 @@ description: "Arranco un reto de 110 días donde resuelvo un problema real de ar
 tags: ["Architecture", "Spring Boot", "100ArchitectureDays"]
 date: 2026-03-26
 readTime: "5 min read"
-image: "/blog/100-architecture-days-intro.webp"
+image: "/blog/100-architecture-days-intro-v2.webp"
 ---
 
 Tengo una frustración que me viene carcomiendo hace años.

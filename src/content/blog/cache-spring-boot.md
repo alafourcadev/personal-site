@@ -4,7 +4,7 @@ description: "Pusiste @Cacheable en todo y la app sigue lenta. El problema no es
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-06
 readTime: "7 min read"
-image: "/blog/cache-spring-boot.webp"
+image: "/blog/day-006-cache-spring-boot-v2.webp"
 day: 6
 ---
 

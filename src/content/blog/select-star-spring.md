@@ -4,7 +4,7 @@ description: "Tu API responde en 10 segundos porque estás trayendo columnas que
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-03-27
 readTime: "7 min read"
-image: "/blog/select-star-spring.webp"
+image: "/blog/day-002-select-star-spring-v2.webp"
 day: 2
 ---
 

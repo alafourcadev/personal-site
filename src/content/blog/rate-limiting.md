@@ -4,7 +4,7 @@ description: "Tu API no tiene límites. Cualquiera puede hacer las requests que 
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-14
 readTime: "8 min read"
-image: "/blog/rate-limiting.webp"
+image: "/blog/day-012-rate-limiting-v2.webp"
 day: 12
 ---
 

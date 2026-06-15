@@ -4,7 +4,7 @@ description: "ReportService ten√≠a el proveedor hardcodeado. Cambiar a SMS exig√
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-05-21
 readTime: "7 min read"
-image: "/blog/dependency-inversion.png"
+image: "/blog/day-018-dependency-inversion-v2.webp"
 day: 18
 ---
 

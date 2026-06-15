@@ -4,7 +4,7 @@ description: "Cada canal nuevo obligaba a abrir NotificationService y rezar. Spr
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-05-18
 readTime: "7 min read"
-image: "/blog/open-closed.png"
+image: "/blog/day-016-open-closed-v2.webp"
 day: 16
 ---
 

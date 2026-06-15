@@ -4,7 +4,7 @@ description: "Dos funciones parecidas no son la misma función. La abstracción 
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-24
 readTime: "7 min read"
-image: "/blog/wrong-abstraction.webp"
+image: "/blog/day-015-wrong-abstraction-v2.webp"
 day: 15
 ---
 

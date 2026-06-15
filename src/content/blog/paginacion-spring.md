@@ -4,7 +4,7 @@ description: "Offset vs cursor pagination: cuándo usar cada una y por qué tu a
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-03-31
 readTime: "7 min read"
-image: "/blog/paginacion-spring.webp"
+image: "/blog/day-004-paginacion-spring-v2.webp"
 day: 4
 ---
 

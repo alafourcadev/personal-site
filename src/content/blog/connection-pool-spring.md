@@ -4,7 +4,7 @@ description: "Connection pools, leaks silenciosos y la matemática de por qué 9
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-09
 readTime: "8 min read"
-image: "/blog/connection-pool-spring.webp"
+image: "/blog/day-009-connection-pool-spring-v2.webp"
 day: 9
 ---
 

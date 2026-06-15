@@ -4,7 +4,7 @@ description: "Tus logs son ruido puro. Sin timestamp, sin nivel, sin contexto. A
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-13
 readTime: "8 min read"
-image: "/blog/logging-strategy.webp"
+image: "/blog/day-011-logging-strategy-v2.webp"
 day: 11
 ---
 

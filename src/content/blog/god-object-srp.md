@@ -4,7 +4,7 @@ description: "Ese OrderService, UserManager o PedidoController que todos tocan y
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-21
 readTime: "7 min read"
-image: "/blog/god-object-srp.webp"
+image: "/blog/day-013-god-object-srp-v2.webp"
 day: 13
 ---
 
