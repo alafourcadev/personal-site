@@ -1,0 +1,349 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Container from '../components/Container.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import PillarCard from '../components/PillarCard.astro';
+import Card from '../components/Card.astro';
+import BlogCard from '../components/BlogCard.astro';
+import CTASection from '../components/CTASection.astro';
+import AnchorNav from '../components/AnchorNav.astro';
+import Icon from '../components/Icon.astro';
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const latestPosts = allPosts
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function readTimeOf(post: CollectionEntry<'blog'>): string {
+  const words = (post.body ?? '').split(/\s+/).length;
+  return `${Math.max(1, Math.ceil(words / 200))} min read`;
+}
+
+const pillars = [
+  { icon: 'layers', title: 'Arquitectura sin filtros', description: 'Diseño, límites, modularidad, APIs, DDD, microservicios, monolitos modulares y trade-offs reales.', href: '/blog' },
+  { icon: 'server', title: 'Producción sin filtros', description: 'Logs, métricas, incidentes, performance, bases de datos, debugging y CI/CD — lo que aparece cuando deja de ser demo.', href: '/blog' },
+  { icon: 'cpu', title: 'IA sin filtros', description: 'Usar IA para construir mejor sin perder criterio ni convertirte en copiador profesional.', href: '/blog' },
+  { icon: 'git-branch', title: 'Carrera sin filtros', description: 'Liderazgo técnico, comunicación, presión, entrevistas, seniority y crecimiento real.', href: '/blog' },
+  { icon: 'zap', title: 'Laboratorio sin filtros', description: 'Construir en público: productos, prototipos y arquitectura real, con las decisiones a la vista.', href: '/blog' },
+];
+
+const intentRoutes = [
+  { icon: 'layers', title: 'Si venís por arquitectura', reason: 'Empezá por acá si querés entender cómo se toman decisiones técnicas sin caer en dogmas.', href: '/blog/tags/Architecture' },
+  { icon: 'server', title: 'Si venís por producción', reason: 'Empezá por acá si querés entender por qué un sistema que compila igual puede fallar horrible en producción.', href: '/blog' },
+  { icon: 'cpu', title: 'Si venís por IA', reason: 'Empezá por acá si querés usar IA sin perder fundamentos ni criterio de ingeniería.', href: '/blog' },
+  { icon: 'git-branch', title: 'Si venís por carrera técnica', reason: 'Empezá por acá si querés crecer como developer, tech lead o arquitecto sin comprar humo de gurú.', href: '/blog' },
+];
+
+const profileRoutes = [
+  { icon: 'code', title: 'Developer junior / mid', reason: 'Querés subir de nivel y dejar de consumir recetas sueltas. Empezá por los pilares y la ruta por intención.', href: '#rutas', cta: 'Ver rutas' },
+  { icon: 'layers', title: 'Senior / tech lead', reason: 'Buscás criterio, contraste y argumentos para defender decisiones. El blog y #100ArchitectureDays son tu lugar.', href: '/blog', cta: 'Ir al blog' },
+  { icon: 'briefcase', title: 'Equipos / empresas', reason: 'Necesitás arquitectura, producción o IA aplicada con criterio. Puedo ayudarte directamente.', href: '/servicios', cta: 'Trabaja conmigo' },
+];
+
+const checklist = [
+  'Sentís que la IA te acelera, pero no siempre te hace pensar mejor.',
+  'Querés entender arquitectura desde producción, no desde definiciones.',
+  'Estás creciendo hacia senior/lead y necesitás mejor criterio.',
+  'Querés escribir, revisar y defender decisiones técnicas con más claridad.',
+];
+
+const BUTTONDOWN_ACTION = 'https://buttondown.email/api/emails/embed-subscribe/alafourcadedespaigne';
+const REPO_URL = 'https://github.com/alafourcadev/100-architecture-days';
+---
+
+<BaseLayout
+  title="Empieza aquí | Ingeniería sin filtros"
+  description="Una guía para empezar a leer Ingeniería sin filtros: arquitectura, producción, IA y criterio técnico para developers que quieren construir software real."
+  navVariant="home"
+  footerVariant="full"
+>
+  <!-- 1. Hero -->
+  <section>
+    <Container width="wide" class="flex flex-col items-start gap-6 py-20 md:py-24">
+      <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">Empieza aquí</span>
+      <h1 class="font-heading text-3xl font-extrabold leading-[1.1] tracking-tight text-txt-primary md:text-5xl max-w-4xl">
+        Empezá por acá si querés aprender a pensar como ingeniero, no a copiar código.
+      </h1>
+      <p class="text-base leading-relaxed text-txt-secondary md:text-lg max-w-2xl">
+        Ingeniería sin filtros es una guía para developers que quieren diseñar, operar y discutir
+        sistemas reales con criterio propio en una época donde copiar código es demasiado fácil.
+      </p>
+      <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <a href="#rutas" class="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+          Ver ruta recomendada
+          <Icon name="arrow-right" size={16} />
+        </a>
+        <a href="/blog/tags/100ArchitectureDays" class="inline-flex items-center justify-center rounded-md border border-border-subtle px-6 py-3 font-semibold text-txt-primary transition-colors hover:border-accent hover:text-accent">
+          Leer #100ArchitectureDays
+        </a>
+      </div>
+    </Container>
+  </section>
+
+  <!-- In-page nav -->
+  <section class="border-t border-border-subtle">
+    <Container width="wide" class="py-8">
+      <AnchorNav items={[
+        { label: 'Esto es para vos', href: '#para-vos' },
+        { label: 'Pilares', href: '#pilares' },
+        { label: 'Rutas por intención', href: '#rutas' },
+        { label: 'Rutas por perfil', href: '#perfiles' },
+        { label: 'Para arrancar', href: '#arrancar' },
+        { label: '#100ArchitectureDays', href: '#serie' },
+        { label: 'Newsletter', href: '#newsletter' },
+      ]} />
+    </Container>
+  </section>
+
+  <!-- 2. Esto es para vos si... -->
+  <section id="para-vos" class="border-t border-border-subtle scroll-mt-24">
+    <Container width="wide" class="flex flex-col gap-8 py-16 md:py-20">
+      <SectionHeader
+        eyebrow="¿Es para vos?"
+        title="Este sitio es para vos si…"
+        description="Si te reconocés en esto, estás en el lugar correcto."
+      />
+      <ul class="grid gap-3 sm:grid-cols-2">
+        {checklist.map((item) => (
+          <li class="flex items-start gap-3 rounded-lg border border-border-subtle bg-bg-surface p-4">
+            <span class="mt-0.5 shrink-0 text-accent"><Icon name="chevron-right" size={18} /></span>
+            <span class="text-sm leading-relaxed text-txt-secondary">{item}</span>
+          </li>
+        ))}
+      </ul>
+    </Container>
+  </section>
+
+  <!-- 3. Pilares -->
+  <section id="pilares" class="border-t border-border-subtle scroll-mt-24">
+    <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+      <SectionHeader
+        eyebrow="Qué vas a encontrar"
+        title="Cinco pilares, sin filtros"
+        description="La propuesta editorial, ordenada. Cada pilar es una ruta de criterio, no una lista de tutoriales."
+      />
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {pillars.map((pillar) => (
+          <PillarCard icon={pillar.icon} title={pillar.title} description={pillar.description} href={pillar.href} />
+        ))}
+      </div>
+    </Container>
+  </section>
+
+  <!-- 4. Rutas por intención -->
+  <section id="rutas" class="border-t border-border-subtle scroll-mt-24">
+    <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+      <SectionHeader
+        eyebrow="Ruta recomendada"
+        title="¿Por dónde empezar? Según lo que buscás"
+        description="Elegí tu entrada. Cada ruta te lleva a los textos que mejor responden esa intención."
+      />
+      <div class="grid gap-4 sm:grid-cols-2">
+        {intentRoutes.map((route) => (
+          <Card href={route.href} tone="editorial" variant="default">
+            <span class="flex h-10 w-10 items-center justify-center rounded-md bg-accent/10 text-accent transition-colors group-hover:bg-accent/20">
+              <Icon name={route.icon} size={20} />
+            </span>
+            <h3 class="font-heading text-lg font-bold text-txt-primary transition-colors group-hover:text-accent">{route.title}</h3>
+            <p class="text-sm leading-relaxed text-txt-secondary">{route.reason}</p>
+            <span class="mt-auto inline-flex items-center gap-1 pt-2 font-mono text-xs uppercase tracking-wider text-txt-secondary transition-colors group-hover:text-accent">
+              Leer artículos
+              <Icon name="arrow-right" size={14} />
+            </span>
+          </Card>
+        ))}
+      </div>
+    </Container>
+  </section>
+
+  <!-- 5. Rutas por perfil -->
+  <section id="perfiles" class="border-t border-border-subtle scroll-mt-24">
+    <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+      <SectionHeader
+        eyebrow="Según tu perfil"
+        title="¿Dónde estás parado vos?"
+        description="No todos llegan al sitio desde el mismo lugar. Elegí la ruta que más se parezca a tu momento actual."
+      />
+      <div class="grid gap-4 md:grid-cols-3">
+        {profileRoutes.map((route) => (
+          <Card href={route.href} tone="service" variant="default">
+            <span class="flex h-11 w-11 items-center justify-center rounded-md bg-accent/10 text-accent">
+              <Icon name={route.icon} size={22} />
+            </span>
+            <h3 class="font-heading text-lg font-bold text-txt-primary md:text-xl">{route.title}</h3>
+            <p class="flex-1 text-sm leading-relaxed text-txt-secondary">{route.reason}</p>
+            <span class="inline-flex items-center gap-1.5 pt-2 font-mono text-xs uppercase tracking-wider text-txt-secondary transition-colors group-hover:text-accent">
+              {route.cta}
+              <Icon name="arrow-right" size={14} />
+            </span>
+          </Card>
+        ))}
+      </div>
+    </Container>
+  </section>
+
+  <!-- 6. Para arrancar -->
+  <section id="arrancar" class="border-t border-border-subtle scroll-mt-24">
+    <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <SectionHeader eyebrow="Lecturas" title="Para arrancar" description="Tres lecturas recientes para tomarle el pulso al sitio." />
+        <a href="/blog" class="inline-flex items-center gap-1.5 font-medium text-accent transition-all hover:gap-2.5">
+          Ver todos
+          <Icon name="arrow-right" size={16} />
+        </a>
+      </div>
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {latestPosts.map((post) => (
+          <BlogCard
+            slug={post.id}
+            title={post.data.title}
+            description={post.data.description}
+            tags={post.data.tags}
+            date={formatDate(post.data.date)}
+            readTime={readTimeOf(post)}
+            image={post.data.image}
+          />
+        ))}
+      </div>
+    </Container>
+  </section>
+
+  <!-- 7. #100ArchitectureDays -->
+  <section id="serie" class="border-t border-border-subtle scroll-mt-24">
+    <Container width="wide" class="flex flex-col gap-8 py-16 md:py-20">
+      <SectionHeader
+        eyebrow="Serie principal"
+        title="#100ArchitectureDays"
+        description="Una serie para entrenar criterio arquitectónico durante 100 días."
+      />
+      <Card tone="series" variant="featured" class="gap-6">
+        <p class="text-txt-secondary leading-relaxed max-w-2xl">
+          No es una colección de definiciones. Cada día parte de un problema real: algo que se hace
+          mal, por qué duele, cuál es la trampa, qué decisión técnica conviene tomar y qué regla
+          queda para la próxima vez.
+        </p>
+        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <a href="/blog/100-architecture-days-intro" class="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-5 py-2.5 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+            Entrar a #100ArchitectureDays
+          </a>
+          <a href="/blog/tags/100ArchitectureDays" class="inline-flex items-center justify-center rounded-md border border-border-subtle px-5 py-2.5 font-semibold text-txt-primary transition-colors hover:border-accent hover:text-accent">
+            Ver últimos días
+          </a>
+          <a href={REPO_URL} target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 rounded-md border border-border-subtle px-5 py-2.5 font-semibold text-txt-primary transition-colors hover:border-accent hover:text-accent">
+            <Icon name="github" size={16} />
+            Ver repo en GitHub
+          </a>
+        </div>
+      </Card>
+    </Container>
+  </section>
+
+  <!-- 8. Cómo leer este sitio -->
+  <section class="border-t border-border-subtle bg-bg-surface">
+    <Container width="default" class="flex flex-col gap-6 py-16 md:py-20">
+      <SectionHeader
+        eyebrow="Cómo leerlo"
+        title="No lo leas como una lista de tutoriales"
+        description="Leelo como una bitácora de decisiones técnicas. En cada artículo buscá tres cosas:"
+      />
+      <ol class="flex flex-col gap-4">
+        <li class="flex items-start gap-4">
+          <span class="font-mono text-sm text-accent">01</span>
+          <p class="text-txt-secondary leading-relaxed">Qué problema real aparece.</p>
+        </li>
+        <li class="flex items-start gap-4">
+          <span class="font-mono text-sm text-accent">02</span>
+          <p class="text-txt-secondary leading-relaxed">Qué decisión se tomó y por qué.</p>
+        </li>
+        <li class="flex items-start gap-4">
+          <span class="font-mono text-sm text-accent">03</span>
+          <p class="text-txt-secondary leading-relaxed">Qué regla podés llevarte a tu propio sistema.</p>
+        </li>
+      </ol>
+    </Container>
+  </section>
+
+  <!-- 9. Newsletter -->
+  <section id="newsletter" class="border-t border-border-subtle scroll-mt-24">
+    <Container width="default" class="py-16 md:py-20">
+      <div class="flex flex-col items-start gap-5 rounded-xl border border-accent/30 bg-accent/5 p-8 md:p-12">
+        <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">Newsletter</span>
+        <h2 class="font-heading text-3xl font-extrabold leading-tight text-txt-primary md:text-4xl max-w-2xl">
+          La Bitácora Sin Filtros
+        </h2>
+        <p class="text-txt-secondary leading-relaxed max-w-xl">
+          Una vez por semana: una decisión técnica real, sus trade-offs, el porqué detrás y una regla
+          práctica que podés aplicar el lunes. No es spam ni resumen genérico.
+        </p>
+        <form action={BUTTONDOWN_ACTION} method="post" target="_blank" class="flex w-full max-w-md flex-col gap-3 sm:flex-row">
+          <label class="sr-only" for="newsletter-email">Tu email</label>
+          <input
+            id="newsletter-email"
+            type="email"
+            name="email"
+            required
+            placeholder="tu@email.com"
+            class="flex-1 rounded-md border border-border-subtle bg-bg-deep px-4 py-3 text-txt-primary placeholder:text-txt-muted focus:border-accent focus:outline-none"
+          />
+          <input type="hidden" name="embed" value="1" />
+          <button type="submit" class="inline-flex items-center justify-center rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+            Suscribirme gratis
+          </button>
+        </form>
+        <p class="font-mono text-xs text-txt-muted">Sin spam. Sin humo. Solo ingeniería real.</p>
+      </div>
+    </Container>
+  </section>
+
+  <!-- 10. Quién escribe -->
+  <section class="border-t border-border-subtle">
+    <Container width="wide" class="py-16 md:py-20">
+      <div class="grid items-center gap-8 md:grid-cols-[160px_1fr] md:gap-12">
+        <img
+          src="/profile-320.webp"
+          alt="Alejandro Lafourcade"
+          width="160"
+          height="160"
+          loading="lazy"
+          class="h-32 w-32 rounded-xl border border-border-subtle object-cover md:h-40 md:w-40"
+        />
+        <div class="flex flex-col items-start gap-5">
+          <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">Quién escribe</span>
+          <p class="text-lg leading-relaxed text-txt-primary md:text-xl max-w-2xl">
+            Soy Alejandro Lafourcade, arquitecto y líder técnico con más de 10 años construyendo
+            backend, APIs, sistemas distribuidos y plataformas que tienen que funcionar bajo presión.
+          </p>
+          <p class="leading-relaxed text-txt-secondary max-w-2xl">
+            Escribo Ingeniería sin filtros para compartir lo que normalmente no entra en los
+            tutoriales: decisiones, errores, presión, trade-offs y criterio técnico.
+          </p>
+          <a href="/sobre-mi" class="inline-flex items-center gap-1.5 font-medium text-accent transition-all hover:gap-2.5">
+            Conocer más sobre Alejandro
+            <Icon name="arrow-right" size={16} />
+          </a>
+        </div>
+      </div>
+    </Container>
+  </section>
+
+  <!-- 11. CTA final -->
+  <section class="border-t border-border-subtle">
+    <Container width="wide">
+      <CTASection
+        eyebrow="Próximo paso"
+        title="No necesitás leer todo hoy."
+        description="Elegí una ruta, leé una decisión y empezá a mirar tus sistemas con otros ojos."
+        primaryLabel="Suscribirme a la Bitácora"
+        primaryHref="#newsletter"
+        secondaryLabel="Ver #100ArchitectureDays"
+        secondaryHref="/blog/tags/100ArchitectureDays"
+      />
+    </Container>
+  </section>
+</BaseLayout>
