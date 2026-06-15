@@ -1,0 +1,212 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Container from '../components/Container.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import Card from '../components/Card.astro';
+import Icon from '../components/Icon.astro';
+
+const BUTTONDOWN_ACTION = 'https://buttondown.email/api/emails/embed-subscribe/alafourcadedespaigne';
+
+const receives = [
+  { icon: 'terminal', title: 'Una historia técnica real', text: 'Un problema que parece menor hasta que producción lo cobra.' },
+  { icon: 'layers', title: 'Una decisión de arquitectura', text: 'No solo qué hacer, sino por qué hacerlo y qué estás sacrificando.' },
+  { icon: 'shield', title: 'Una regla senior', text: 'Un principio que podés llevarte directo a tu trabajo.' },
+  { icon: 'zap', title: 'Un extra exclusivo', text: 'Notas, trade-offs, errores y detrás de escena que no siempre entran al blog.' },
+  { icon: 'git-branch', title: 'Una pregunta práctica', text: 'Algo concreto para revisar en tu código, tu arquitectura o tu equipo.' },
+];
+
+const forYou = [
+  'Sos developer y querés subir de nivel técnico.',
+  'Estás cansado de contenido superficial.',
+  'Usás IA, pero no querés perder criterio.',
+  'Querés entender arquitectura desde producción.',
+  'Liderás o querés liderar decisiones técnicas.',
+  'Querés aprender con historias, código y trade-offs reales.',
+];
+
+const editions = [
+  'La IA no te está volviendo senior',
+  'Tu arquitectura no falló por Java, falló por límites borrosos',
+  'El log que no escribiste es el bug que no vas a poder explicar',
+  'No tenés deuda técnica, tenés decisiones sin dueño',
+  'Copilot escribió el código, producción te va a cobrar la factura',
+];
+---
+
+<BaseLayout
+  title="La Bitácora Sin Filtros | Newsletter de ingeniería real"
+  description="Newsletter semanal sobre arquitectura de software, producción e IA para developers que quieren tomar mejores decisiones técnicas."
+  navVariant="home"
+  footerVariant="full"
+>
+  <!-- 1. Hero + formulario -->
+  <section>
+    <Container width="wide" class="flex flex-col items-start gap-6 py-20 md:py-24">
+      <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">Newsletter</span>
+      <h1 class="font-heading text-4xl font-extrabold leading-[1.05] tracking-tight text-txt-primary md:text-6xl max-w-3xl">
+        La Bitácora Sin Filtros
+      </h1>
+      <p class="text-base leading-relaxed text-txt-secondary md:text-lg max-w-2xl">
+        Una newsletter semanal sobre arquitectura, producción e IA para developers que quieren dejar
+        de copiar código y empezar a tomar mejores decisiones técnicas.
+      </p>
+      <form action={BUTTONDOWN_ACTION} method="post" target="_blank" class="flex w-full max-w-md flex-col gap-3 sm:flex-row">
+        <label class="sr-only" for="nl-hero-email">Tu email</label>
+        <input
+          id="nl-hero-email"
+          type="email"
+          name="email"
+          required
+          placeholder="tu@email.com"
+          class="flex-1 rounded-md border border-border-subtle bg-bg-surface px-4 py-3 text-txt-primary placeholder:text-txt-muted focus:border-accent focus:outline-none"
+        />
+        <input type="hidden" name="embed" value="1" />
+        <button type="submit" class="inline-flex items-center justify-center rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+          Suscribirme gratis
+        </button>
+      </form>
+      <p class="font-mono text-xs text-txt-muted">Sin spam. Sin humo. Solo ingeniería real, una vez por semana.</p>
+    </Container>
+  </section>
+
+  <!-- 2. Qué vas a recibir -->
+  <section class="border-t border-border-subtle">
+    <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+      <SectionHeader
+        eyebrow="Qué vas a recibir"
+        title="Cada edición, una pieza de ingeniería real"
+        description="No es un resumen de novedades. Es criterio técnico para llevarte al trabajo."
+      />
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {receives.map((item) => (
+          <Card tone="editorial" variant="default" interactive={false}>
+            <span class="flex h-10 w-10 items-center justify-center rounded-md bg-accent/10 text-accent">
+              <Icon name={item.icon} size={20} />
+            </span>
+            <h3 class="font-heading text-base font-bold text-txt-primary">{item.title}</h3>
+            <p class="text-sm leading-relaxed text-txt-secondary">{item.text}</p>
+          </Card>
+        ))}
+      </div>
+    </Container>
+  </section>
+
+  <!-- 3. Por qué es diferente del blog -->
+  <section class="border-t border-border-subtle bg-bg-surface">
+    <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+      <SectionHeader
+        eyebrow="No es un resumen del blog"
+        title="El blog te da el artículo. La Bitácora te da el contexto."
+      />
+      <div class="grid gap-4 md:grid-cols-2">
+        <Card tone="editorial" variant="featured" interactive={false}>
+          <span class="font-mono text-xs uppercase tracking-wider text-txt-muted">El blog</span>
+          <p class="text-txt-secondary leading-relaxed">
+            El artículo completo, público, indexable. El qué y el cómo de cada decisión técnica.
+          </p>
+        </Card>
+        <Card tone="cta" variant="featured" interactive={false}>
+          <span class="font-mono text-xs uppercase tracking-wider text-accent">La Bitácora</span>
+          <p class="text-txt-secondary leading-relaxed">
+            El porqué de la decisión, el trade-off que no siempre entra al post, errores comunes,
+            notas de producción y preguntas para revisar tus propios sistemas.
+          </p>
+        </Card>
+      </div>
+    </Container>
+  </section>
+
+  <!-- 4. Para quién es / no es -->
+  <section class="border-t border-border-subtle">
+    <Container width="wide" class="grid gap-10 py-16 md:grid-cols-[1fr_auto] md:gap-16 md:py-20">
+      <div class="flex flex-col gap-6">
+        <SectionHeader eyebrow="Para quién es" title="Esta newsletter es para vos si…" />
+        <ul class="flex flex-col gap-3">
+          {forYou.map((item) => (
+            <li class="flex items-start gap-3">
+              <span class="mt-0.5 shrink-0 text-accent"><Icon name="chevron-right" size={18} /></span>
+              <span class="text-txt-secondary leading-relaxed">{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div class="flex max-w-sm flex-col gap-3 self-start rounded-xl border border-border-subtle bg-bg-surface p-6">
+        <span class="font-mono text-xs uppercase tracking-wider text-txt-muted">No es para vos si…</span>
+        <p class="text-sm leading-relaxed text-txt-secondary">
+          Buscás recetas mágicas, listas de herramientas o promesas de "aprendé arquitectura en
+          7 días". Acá no hay atajos.
+        </p>
+      </div>
+    </Container>
+  </section>
+
+  <!-- 5. Ejemplos de ediciones -->
+  <section class="border-t border-border-subtle">
+    <Container width="default" class="flex flex-col gap-8 py-16 md:py-20">
+      <SectionHeader
+        eyebrow="Prueba de valor"
+        title="Ejemplos de asuntos que vas a recibir"
+        description="Una idea fuerte por edición. Sin relleno."
+      />
+      <ul class="flex flex-col divide-y divide-border-subtle border-y border-border-subtle">
+        {editions.map((subject) => (
+          <li class="flex items-center gap-4 py-4">
+            <span class="shrink-0 text-accent"><Icon name="mail" size={18} /></span>
+            <span class="font-medium text-txt-primary">{subject}</span>
+          </li>
+        ))}
+      </ul>
+    </Container>
+  </section>
+
+  <!-- 6. Frecuencia + relación con #100ArchitectureDays -->
+  <section class="border-t border-border-subtle">
+    <Container width="wide" class="grid gap-6 py-16 md:grid-cols-2 md:gap-10 md:py-20">
+      <Card tone="editorial" variant="featured" interactive={false}>
+        <span class="font-mono text-xs uppercase tracking-wider text-accent">Frecuencia</span>
+        <h3 class="font-heading text-xl font-bold text-txt-primary">Una vez por semana</h3>
+        <p class="text-sm leading-relaxed text-txt-secondary">
+          Suficiente para mantener el ritmo. No tanto como para convertirse en ruido. Durante series
+          especiales puede haber entregas adicionales, siempre con valor técnico concreto.
+        </p>
+      </Card>
+      <Card tone="series" variant="featured" interactive={false}>
+        <span class="font-mono text-xs uppercase tracking-wider text-accent">Y #100ArchitectureDays</span>
+        <h3 class="font-heading text-xl font-bold text-txt-primary">Más allá de la serie</h3>
+        <p class="text-sm leading-relaxed text-txt-secondary">
+          Cuando hay una entrega de la serie, la Bitácora puede sumar una versión extendida con notas
+          extra y enlaces al código. Pero vive más allá: arquitectura, producción, carrera técnica e IA con criterio.
+        </p>
+      </Card>
+    </Container>
+  </section>
+
+  <!-- 7. CTA final + formulario -->
+  <section class="border-t border-border-subtle bg-bg-surface">
+    <Container width="default" class="flex flex-col items-start gap-6 py-16 md:py-24">
+      <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">Suscribite</span>
+      <h2 class="font-heading text-2xl font-extrabold leading-tight text-txt-primary md:text-4xl max-w-2xl">
+        La industria ya tiene demasiados atajos.
+      </h2>
+      <p class="text-txt-secondary leading-relaxed max-w-xl">
+        Si querés recibir una vez por semana una pieza de ingeniería real, suscribite a La Bitácora Sin Filtros.
+      </p>
+      <form action={BUTTONDOWN_ACTION} method="post" target="_blank" class="flex w-full max-w-md flex-col gap-3 sm:flex-row">
+        <label class="sr-only" for="nl-final-email">Tu email</label>
+        <input
+          id="nl-final-email"
+          type="email"
+          name="email"
+          required
+          placeholder="tu@email.com"
+          class="flex-1 rounded-md border border-border-subtle bg-bg-deep px-4 py-3 text-txt-primary placeholder:text-txt-muted focus:border-accent focus:outline-none"
+        />
+        <input type="hidden" name="embed" value="1" />
+        <button type="submit" class="inline-flex items-center justify-center rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+          Suscribirme gratis
+        </button>
+      </form>
+      <p class="font-mono text-xs text-txt-muted">Podés darte de baja cuando quieras. Pero probablemente te quedes por los trade-offs.</p>
+    </Container>
+  </section>
+</BaseLayout>

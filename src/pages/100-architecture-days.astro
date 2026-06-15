@@ -1,0 +1,329 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Container from '../components/Container.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import ManifestoBlock from '../components/ManifestoBlock.astro';
+import Card from '../components/Card.astro';
+import BlogCard from '../components/BlogCard.astro';
+import CTASection from '../components/CTASection.astro';
+import AnchorNav from '../components/AnchorNav.astro';
+import Icon from '../components/Icon.astro';
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const dayPosts = allPosts.filter((p) => typeof p.data.day === 'number');
+
+const TOTAL_DAYS = 110;
+const latestDay = dayPosts.length ? Math.max(...dayPosts.map((p) => p.data.day ?? 0)) : 0;
+
+// "Para empezar" — earliest days. "Últimos días" — most recently published.
+const firstDays = [...dayPosts].sort((a, b) => (a.data.day ?? 0) - (b.data.day ?? 0)).slice(0, 3);
+const recentDays = [...dayPosts].sort((a, b) => b.data.date.getTime() - a.data.date.getTime()).slice(0, 6);
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function readTimeOf(post: CollectionEntry<'blog'>): string {
+  const words = (post.body ?? '').split(/\s+/).length;
+  return `${Math.max(1, Math.ceil(words / 200))} min read`;
+}
+
+// Recorrido recomendado.
+const paths = [
+  { icon: 'terminal', title: 'Si estás empezando', text: 'Leé los días introductorios y los checkpoints. Te dan lenguaje y criterio para todo lo demás.' },
+  { icon: 'code', title: 'Si querés código', text: 'Buscá los días marcados como 🔧: ejercicios con versión antes/después y métricas.' },
+  { icon: 'workflow', title: 'Si querés decisiones', text: 'Buscá los días de trade-offs (⚖️) y ADRs (📐). Ahí vive el criterio arquitectónico.' },
+  { icon: 'server', title: 'Si venís por producción', text: 'Buscá logs, performance, resiliencia, bases de datos y observabilidad.' },
+];
+
+// Temporadas — fuente de verdad: roadmap-100-architecture-days.md (días 16–110).
+const seasons = [
+  { n: 1, name: 'Clean Code y principios de diseño', range: 'Días 16–23', start: 16, end: 23, blurb: 'Los principios que no caducan, aplicados a código real.', temas: ['Open/Closed', 'Liskov', 'Dependency Inversion', 'Naming', 'YAGNI'] },
+  { n: 2, name: 'Testing que de verdad importa', range: 'Días 24–31', start: 24, end: 31, blurb: 'Tests que atrapan bugs, no que inflan coverage.', temas: ['TDD', 'Test doubles', 'Testcontainers', 'Contract testing'] },
+  { n: 3, name: 'Modelar el dominio: DDD aplicado', range: 'Días 32–40', start: 32, end: 40, blurb: 'El dominio no es tu base de datos.', temas: ['Value Objects', 'Aggregates', 'Bounded Contexts', 'Domain Events'] },
+  { n: 4, name: 'Diseño de datos y persistencia', range: 'Días 41–48', start: 41, end: 48, blurb: 'Transacciones, aislamiento, migraciones e idempotencia.', temas: ['SQL vs NoSQL', 'Repository', '@Transactional', 'Deadlocks'] },
+  { n: 5, name: 'APIs y contratos', range: 'Días 49–55', start: 49, end: 55, blurb: 'El contrato como diseño, más allá del CRUD.', temas: ['REST', 'Versionado', 'Validación', 'gRPC vs GraphQL'] },
+  { n: 6, name: 'Estilos de arquitectura', range: 'Días 56–64', start: 56, end: 64, blurb: 'Monolito modular, hexagonal, event-driven, CQRS — con criterio.', temas: ['Hexagonal', 'Event-Driven', 'CQRS', 'Event Sourcing'] },
+  { n: 7, name: 'Resiliencia y sistemas distribuidos', range: 'Días 65–74', start: 65, end: 74, blurb: 'Diseñar para el fallo, no para el happy path.', temas: ['Timeouts', 'Circuit Breaker', 'Saga', 'Outbox'] },
+  { n: 8, name: 'Observabilidad y operación', range: 'Días 75–82', start: 75, end: 82, blurb: 'Logs, métricas y traces que responden preguntas reales.', temas: ['Tracing', 'RED/USE', 'SLO/SLI', 'Alertas'] },
+  { n: 9, name: 'CI/CD y entrega', range: 'Días 83–90', start: 83, end: 90, blurb: 'Entregar seguido y volver atrás sin miedo.', temas: ['Pipeline CI', 'Trunk-based', 'Feature flags', 'Rollback'] },
+  { n: 10, name: 'Seguridad para ingenieros', range: 'Días 91–96', start: 91, end: 96, blurb: 'Las vulnerabilidades que tu código tiene ahora.', temas: ['OWASP', 'AuthN/AuthZ', 'Secrets', 'Inyección'] },
+  { n: 11, name: 'Comunicación y decisiones técnicas', range: 'Días 97–103', start: 97, end: 103, blurb: 'Decidir, documentar y liderar sin ser el cuello de botella.', temas: ['ADR', 'Deuda técnica', 'Estimar', 'C4'] },
+  { n: 12, name: 'Ingeniería asistida por IA', range: 'Días 104–110', start: 104, end: 110, blurb: 'IA como herramienta, no como piloto. El finale.', temas: ['Prompting', 'Revisar código IA', 'RAG', 'Agentes/MCP'] },
+];
+
+// Temporada en curso: la que contiene el día publicado más alto (sin inventar datos).
+const currentSeason = seasons.find((s) => latestDay >= s.start && latestDay <= s.end);
+const otherSeasons = seasons.filter((s) => s !== currentSeason);
+
+const REPO_URL = 'https://github.com/alafourcadev/100-architecture-days';
+const INTRO_URL = '/blog/100-architecture-days-intro';
+const BUTTONDOWN_ACTION = 'https://buttondown.email/api/emails/embed-subscribe/alafourcadedespaigne';
+const progressPct = Math.round((latestDay / TOTAL_DAYS) * 100);
+---
+
+<BaseLayout
+  title="#100ArchitectureDays | Arquitectura de software desde decisiones reales"
+  description="100 días para aprender arquitectura de software desde decisiones reales, código, trade-offs, errores comunes y producción."
+  navVariant="home"
+  footerVariant="full"
+>
+  <!-- 1. Hero -->
+  <section>
+    <Container width="wide" class="flex flex-col items-start gap-6 py-20 md:py-24">
+      <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">Ruta de aprendizaje</span>
+      <h1 class="font-heading text-4xl font-extrabold leading-[1.05] tracking-tight text-txt-primary md:text-6xl max-w-4xl">
+        #100ArchitectureDays
+      </h1>
+      <p class="text-base leading-relaxed text-txt-secondary md:text-lg max-w-2xl">
+        100 días para aprender arquitectura de software desde decisiones reales: código, trade-offs,
+        errores comunes y sistemas que tienen que funcionar cuando dejan de ser una demo.
+      </p>
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <span class="rounded-md bg-accent/10 px-3 py-1 font-mono text-sm text-accent">Día {latestDay} de {TOTAL_DAYS}</span>
+        <div class="h-1.5 w-48 overflow-hidden rounded-full bg-bg-surface" role="progressbar" aria-valuenow={latestDay} aria-valuemin={0} aria-valuemax={TOTAL_DAYS} aria-label="Progreso de la serie">
+          <div class="h-full rounded-full bg-accent" style={`width: ${progressPct}%`}></div>
+        </div>
+      </div>
+      <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <a href={INTRO_URL} class="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+          Empezar desde el día 1
+          <Icon name="arrow-right" size={16} />
+        </a>
+        <a href="#ultimos" class="inline-flex items-center justify-center rounded-md border border-border-subtle px-6 py-3 font-semibold text-txt-primary transition-colors hover:border-accent hover:text-accent">
+          Ver últimos días
+        </a>
+        <a href={REPO_URL} target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 rounded-md border border-border-subtle px-6 py-3 font-semibold text-txt-primary transition-colors hover:border-accent hover:text-accent">
+          <Icon name="github" size={16} />
+          Ver el repo
+        </a>
+      </div>
+    </Container>
+  </section>
+
+  <!-- 2. Manifiesto -->
+  <section id="que-es" class="border-t border-border-subtle bg-bg-surface scroll-mt-24">
+    <Container width="wide" class="py-16 md:py-20">
+      <ManifestoBlock
+        eyebrow="Qué es"
+        statement="La arquitectura no se aprende memorizando patrones."
+        supporting="Se aprende entendiendo por qué una decisión parece buena al principio, cómo falla cuando el sistema crece y qué trade-off estás aceptando cuando la corregís. #100ArchitectureDays existe para eso: estudiar arquitectura desde problemas reales, no desde definiciones bonitas."
+      />
+    </Container>
+  </section>
+
+  <!-- In-page nav -->
+  <section class="border-t border-border-subtle">
+    <Container width="wide" class="py-8">
+      <AnchorNav items={[
+        { label: 'Qué es', href: '#que-es' },
+        { label: 'Cómo recorrerla', href: '#recorrer' },
+        { label: 'Temporadas', href: '#temporadas' },
+        { label: 'Para empezar', href: '#empezar' },
+        { label: 'Últimos días', href: '#ultimos' },
+        { label: 'Código', href: '#codigo' },
+        { label: 'Newsletter', href: '#newsletter' },
+      ]} />
+    </Container>
+  </section>
+
+  <!-- 3. Cómo recorrer la serie -->
+  <section id="recorrer" class="border-t border-border-subtle scroll-mt-24">
+    <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+      <SectionHeader
+        eyebrow="Cómo recorrerla"
+        title="No hace falta leerla en orden"
+        description="Elegí una ruta según tu problema actual: fundamentos, producción, código, liderazgo o IA. No estás obligado a completar los 100 días para llevarte valor."
+      />
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {paths.map((path) => (
+          <Card tone="editorial" variant="default" interactive={false}>
+            <span class="flex h-10 w-10 items-center justify-center rounded-md bg-accent/10 text-accent">
+              <Icon name={path.icon} size={20} />
+            </span>
+            <h3 class="font-heading text-base font-bold text-txt-primary">{path.title}</h3>
+            <p class="text-sm leading-relaxed text-txt-secondary">{path.text}</p>
+          </Card>
+        ))}
+      </div>
+    </Container>
+  </section>
+
+  <!-- 4. Temporadas -->
+  <section id="temporadas" class="border-t border-border-subtle scroll-mt-24">
+    <Container width="wide" class="flex flex-col gap-8 py-16 md:py-20">
+      <SectionHeader
+        eyebrow="La ruta completa"
+        title="12 temporadas, una columna vertebral"
+        description="La serie abrió con 15 días de fundamentos. A partir del día 16 se organiza en temporadas que van de los principios a la IA aplicada."
+      />
+      {currentSeason && (
+        <Card tone="series" variant="featured" interactive={false}>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <span class="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-accent">
+              <span class="relative flex h-2 w-2">
+                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75"></span>
+                <span class="relative inline-flex h-2 w-2 rounded-full bg-accent"></span>
+              </span>
+              Temporada {currentSeason.n} · En curso
+            </span>
+            <span class="font-mono text-xs text-txt-muted">{currentSeason.range}</span>
+          </div>
+          <h3 class="font-heading text-xl font-extrabold leading-snug text-txt-primary md:text-2xl">{currentSeason.name}</h3>
+          <p class="max-w-2xl text-sm leading-relaxed text-txt-secondary md:text-base">{currentSeason.blurb}</p>
+          <ul class="flex flex-wrap gap-1.5 pt-1">
+            {currentSeason.temas.map((tema) => (
+              <li class="rounded-md bg-bg-deep px-2 py-0.5 font-mono text-[11px] text-txt-muted">{tema}</li>
+            ))}
+          </ul>
+        </Card>
+      )}
+      <div class="flex flex-col gap-4">
+        <p class="font-mono text-xs uppercase tracking-wider text-txt-muted">El resto del recorrido</p>
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {otherSeasons.map((season) => (
+            <Card tone="editorial" variant="compact" interactive={false}>
+              <div class="flex items-baseline justify-between gap-2">
+                <span class="font-mono text-[11px] uppercase tracking-wider text-txt-muted">Temporada {season.n}</span>
+                <span class="font-mono text-[11px] text-txt-muted">{season.range}</span>
+              </div>
+              <h4 class="font-heading text-sm font-bold leading-snug text-txt-primary">{season.name}</h4>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </Container>
+  </section>
+
+  <!-- 5. Días destacados — Para empezar -->
+  <section id="empezar" class="border-t border-border-subtle scroll-mt-24">
+    <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+      <SectionHeader
+        eyebrow="Días destacados"
+        title="La ruta recomendada para empezar"
+        description="Si llegás por primera vez, estos tres días te dan el lenguaje base de la serie."
+      />
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-2">
+        {firstDays.map((post) => (
+          <BlogCard
+            slug={post.id}
+            title={post.data.title}
+            description={post.data.description}
+            tags={post.data.tags}
+            date={formatDate(post.data.date)}
+            readTime={readTimeOf(post)}
+            image={post.data.image}
+          />
+        ))}
+      </div>
+    </Container>
+  </section>
+
+  <!-- 6. Últimos días publicados -->
+  <section id="ultimos" class="border-t border-border-subtle scroll-mt-24">
+    <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <SectionHeader eyebrow="En vivo" title="Últimos días publicados" description="La serie está viva. Estas son las entregas más recientes." />
+        <a href="/blog/tags/100ArchitectureDays" class="inline-flex items-center gap-1.5 font-medium text-accent transition-all hover:gap-2.5">
+          Ver todos los días
+          <Icon name="arrow-right" size={16} />
+        </a>
+      </div>
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-2">
+        {recentDays.map((post) => (
+          <BlogCard
+            slug={post.id}
+            title={post.data.title}
+            description={post.data.description}
+            tags={post.data.tags}
+            date={formatDate(post.data.date)}
+            readTime={readTimeOf(post)}
+            image={post.data.image}
+          />
+        ))}
+      </div>
+    </Container>
+  </section>
+
+  <!-- 7. Código y ejercicios -->
+  <section id="codigo" class="border-t border-border-subtle bg-bg-surface scroll-mt-24">
+    <Container width="wide" class="py-16 md:py-20">
+      <div class="grid items-start gap-8 md:grid-cols-2 md:gap-12">
+        <div class="flex flex-col gap-5">
+          <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">Código y ejercicios</span>
+          <h2 class="font-heading text-2xl font-extrabold leading-tight text-txt-primary md:text-3xl">
+            No mostramos código perfecto. Mostramos una decisión mala y cómo se corrige.
+          </h2>
+          <p class="leading-relaxed text-txt-secondary max-w-xl">
+            Algunos días incluyen ejercicios con versión antes/después: una decisión que parece
+            buena, por qué duele cuando el sistema crece, y la corrección con su trade-off explícito.
+          </p>
+          <p class="text-sm leading-relaxed text-txt-muted max-w-xl">
+            Si la serie te ayuda, dejá una ⭐ en el repo. Ayuda a que más developers encuentren
+            ingeniería sin filtros.
+          </p>
+          <a href={REPO_URL} target="_blank" rel="noopener noreferrer" class="inline-flex w-fit items-center gap-2 rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+            <Icon name="github" size={16} />
+            Ver repo en GitHub
+          </a>
+        </div>
+        <div class="rounded-xl border border-border-subtle bg-bg-deep p-5 font-mono text-xs leading-relaxed text-txt-secondary">
+          <p class="text-txt-muted"># cada ejercicio sigue la misma forma</p>
+          <p><span class="text-accent">problema</span> → el síntoma en producción</p>
+          <p><span class="text-accent-red">antes</span>    → la decisión que parecía buena</p>
+          <p><span class="text-accent">después</span>  → la corrección, con su porqué</p>
+          <p><span class="text-accent-amber">métricas</span> → qué cambió, medido</p>
+        </div>
+      </div>
+    </Container>
+  </section>
+
+  <!-- 8. Newsletter -->
+  <section id="newsletter" class="border-t border-border-subtle scroll-mt-24">
+    <Container width="default" class="py-16 md:py-20">
+      <div class="flex flex-col items-start gap-5 rounded-xl border border-accent/30 bg-accent/5 p-8 md:p-12">
+        <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">Newsletter</span>
+        <h2 class="font-heading text-3xl font-extrabold leading-tight text-txt-primary md:text-4xl max-w-2xl">
+          Seguí la serie por email
+        </h2>
+        <p class="text-txt-secondary leading-relaxed max-w-xl">
+          La Bitácora Sin Filtros suma contexto adicional, decisiones detrás de escena y notas que
+          no siempre entran en el blog. No prometemos resúmenes: prometemos valor extra.
+        </p>
+        <form action={BUTTONDOWN_ACTION} method="post" target="_blank" class="flex w-full max-w-md flex-col gap-3 sm:flex-row">
+          <label class="sr-only" for="newsletter-email">Tu email</label>
+          <input
+            id="newsletter-email"
+            type="email"
+            name="email"
+            required
+            placeholder="tu@email.com"
+            class="flex-1 rounded-md border border-border-subtle bg-bg-deep px-4 py-3 text-txt-primary placeholder:text-txt-muted focus:border-accent focus:outline-none"
+          />
+          <input type="hidden" name="embed" value="1" />
+          <button type="submit" class="inline-flex items-center justify-center rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+            Suscribirme a La Bitácora
+          </button>
+        </form>
+        <p class="font-mono text-xs text-txt-muted">Sin spam. Sin humo. Solo ingeniería real.</p>
+      </div>
+    </Container>
+  </section>
+
+  <!-- 9. CTA final -->
+  <section class="border-t border-border-subtle">
+    <Container width="wide">
+      <CTASection
+        eyebrow="Empezá hoy"
+        title="La arquitectura no se aprende en una tarde."
+        description="Pero si leés una decisión por día, durante 100 días, vas a empezar a ver los sistemas de otra manera."
+        primaryLabel="Empezar desde el día 1"
+        primaryHref={INTRO_URL}
+        secondaryLabel="Ver el repo en GitHub"
+        secondaryHref={REPO_URL}
+      />
+    </Container>
+  </section>
+</BaseLayout>
