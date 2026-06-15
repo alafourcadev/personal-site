@@ -8,25 +8,15 @@ interface Props {
 const { variant = 'home' } = Astro.props;
 const currentPath = Astro.url.pathname;
 
-const homeLinks = [
+const headerLinks = [
   { label: 'Empieza aquí', href: '/empieza-aqui' },
   { label: 'Blog', href: '/blog' },
-  { label: 'Series', href: '/100-architecture-days' },
+  { label: 'Sobre mí', href: '/sobre-mi' },
   { label: 'Newsletter', href: '/newsletter' },
-  { label: 'Servicios', href: '/servicios' },
-  { label: 'Sobre Mí', href: '/sobre-mi' },
-  { label: 'Mi Setup', href: '/uses' },
 ];
 
-const blogLinks = [
-  { label: 'Empieza aquí', href: '/empieza-aqui' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Series', href: '/100-architecture-days' },
-  { label: 'Newsletter', href: '/newsletter' },
-  { label: 'Servicios', href: '/servicios' },
-  { label: 'Sobre Mí', href: '/sobre-mi' },
-  { label: 'Mi Setup', href: '/uses' },
-];
+const homeLinks = headerLinks;
+const blogLinks = headerLinks;
 
 const links = variant === 'blog' ? blogLinks : homeLinks;
 
