@@ -1,338 +1,206 @@
 ---
-import { cosasItems, testimonials } from '../data/content';
+import Container from './Container.astro';
+import SectionHeader from './SectionHeader.astro';
+import Card from './Card.astro';
+import PillarCard from './PillarCard.astro';
+import ManifestoBlock from './ManifestoBlock.astro';
 import Icon from './Icon.astro';
-import TestimonialCard from './TestimonialCard.astro';
 
 const socialLinks = [
-  { icon: 'twitter', label: 'Twitter/X', href: 'https://x.com/alafourcadev' },
-  {
-    icon: 'linkedin',
-    label: 'LinkedIn',
-    href: 'https://www.linkedin.com/in/alafourcadedespaigne/',
-  },
   { icon: 'github', label: 'GitHub', href: 'https://github.com/alafourcadev' },
+  { icon: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/in/alafourcadedespaigne/' },
+  { icon: 'twitter', label: 'X', href: 'https://x.com/alafourcadev' },
 ];
 
-const bioParagraphs = [
-  'Soy Ingeniero de Software. Cubano de raíz, paraguayo de corazón. Durante más de 10 años — y en 8 países distintos — me tocó diseñar, construir, escalar y sostener los sistemas detrás de operaciones que no pueden fallar. No porque sea el más brillante de la sala — sino porque nunca dejé de prepararme para estar ahí.',
-  'Creo que en esta industria sobra hype y faltan voces honestas. Que los que más experiencia tenemos somos los que menos compartimos. Y que eso tiene que cambiar.',
-  'Por eso creé Ingeniería sin filtros: un espacio donde comparto todo lo que aprendí — lo bueno, lo difícil y lo que nadie te cuenta — para que la próxima generación de developers no tenga que descubrirlo sola.',
-  'Fuera del código, soy padre. Y si algo te enseña la paternidad, es que nada que valga la pena viene con manual de instrucciones — igual que el software.',
+const principles = [
+  { icon: 'code', title: 'Ninguna decisión sin su porqué', text: 'No alcanza con decir "usá esto". Hay que explicar qué problema resuelve y qué costo introduce.' },
+  { icon: 'layers', title: 'Arquitectura antes que frameworks', text: 'El framework cambia. Los límites, dependencias y responsabilidades mal pensadas se quedan.' },
+  { icon: 'server', title: 'Producción como juez final', text: 'Un sistema no está bien porque compila. Está bien cuando se puede operar, observar, mantener y explicar.' },
+  { icon: 'cpu', title: 'IA con criterio', text: 'La IA puede acelerar mucho. Pero si no sabés revisar, preguntar y limitar, también acelera tus malas decisiones.' },
+  { icon: 'zap', title: 'Menos humo, más oficio', text: 'No todo necesita microservicios, Kafka, Kubernetes o RAG. A veces necesita nombres mejores, límites más claros y logs que sirvan.' },
 ];
 
-const caminoParagraphs = [
-  'Mi camino en la tecnología no empezó con un plan perfecto. Empecé con curiosidad — quería entender cómo funcionaban las cosas por dentro. No la interfaz bonita, no el botón que el usuario ve — lo que pasa después del clic. La lógica. La arquitectura. El sistema.',
-  'Siendo cubano-paraguayo, aprendí algo que me sirvió más que cualquier curso: a adaptarme. A construir con lo que hay y no esperar condiciones perfectas. Esa mentalidad me llevó a trabajar en equipos chicos donde hacías de todo y en equipos grandes donde la especialización era clave. Diseñé APIs, peleé con sistemas legacy, migré monolitos a microservicios (y aprendí que no siempre era buena idea), y sobre todo, aprendí a tomar decisiones técnicas que van más allá del código.',
-  "No todo fue en línea recta. Hubo momentos en que sentí que no sabía lo suficiente — el famoso síndrome del impostor. Pero lejos de frenarme, se convirtió en lo que me mantiene aprendiendo. Hasta que un día me hice una pregunta simple: '¿Por qué los que más sabemos somos los que menos compartimos?' Los seniors escriben código, no artículos. Los juniors se quedan sin referentes auténticos.",
-  'Hoy estoy construyendo con IA — no porque sea tendencia, sino porque me obsesiona entender las herramientas que van a cambiar cómo hacemos software. Igual que siempre en mi carrera: no miro desde afuera.',
-  'Ingeniería sin filtros nació de todo eso. No es un curso. No es una marca corporativa. Es mi forma de devolver lo que esta industria me dio.',
+const pillars = [
+  { icon: 'layers', title: 'Arquitectura sin filtros', description: 'Decisiones, límites, trade-offs, modularidad, DDD, APIs y sistemas que crecen.', href: '/blog' },
+  { icon: 'server', title: 'Producción sin filtros', description: 'Logs, métricas, observabilidad, performance, incidentes y debugging real.', href: '/blog' },
+  { icon: 'cpu', title: 'IA sin filtros', description: 'Agentes, workflows, RAG y desarrollo asistido por IA sin perder criterio técnico.', href: '/blog' },
+  { icon: 'git-branch', title: 'Carrera sin filtros', description: 'Liderazgo, comunicación, crecimiento senior, entrevistas, equipos y oficio.', href: '/blog' },
+  { icon: 'workflow', title: 'Laboratorio sin filtros', description: 'Proyectos, experimentos, productos y decisiones construidas en público.', href: '/blog' },
 ];
 
-const algoParagraphs = [
-  'Crecí admirando a Kobe Bryant. No solo por el básquet — por la mentalidad. La Mamba Mentality es algo que aplico todos los días sin darme cuenta: obsesión por mejorar, no buscar atajos, y entender que el talento sin disciplina no alcanza.',
-  "En ingeniería es igual. No existe el atajo. No existe el framework mágico — ni el modelo de IA — que te salve de entender los fundamentos. Existe el trabajo constante, la curiosidad de preguntarte '¿por qué funciona así?' y la humildad de saber que siempre hay algo nuevo por aprender.",
-  "Pero si algo descubrí en todos estos años, es que ser buen ingeniero no es solo escribir buen código. Es hacer que los que trabajan con vos también crezcan. Es tener la humildad de decir 'no sé' y las ganas de decir 'pero lo averiguamos juntos'.",
-  'Si algo de lo que escribo acá le ahorra a alguien un error, una frustración, o simplemente le hace sentir que no está solo en esto — entonces todo esto valió la pena.',
+const camino = [
+  'Mi camino no empezó con un plan perfecto. Empecé con curiosidad: quería entender qué pasa después del clic — la lógica, la arquitectura, el sistema. No la interfaz bonita.',
+  'Cubano de raíz, paraguayo de corazón, aprendí algo que me sirvió más que cualquier curso: a adaptarme, a construir con lo que hay. Hubo síndrome del impostor, claro. Pero lejos de frenarme, me mantuvo aprendiendo — hasta una pregunta simple: ¿por qué los que más sabemos somos los que menos compartimos?',
+  'Fuera del código, soy padre. Y si algo enseña la paternidad es que nada que valga la pena viene con manual — igual que el software.',
 ];
 ---
 
-<!-- Hero -->
-<section
-  class="section-animate flex flex-col md:flex-row gap-10 md:gap-10 lg:gap-20 px-4 sm:px-6 md:px-10 lg:px-[120px] pt-8 pb-2 lg:pt-12 lg:pb-4"
->
-  <div class="flex flex-col gap-6 flex-1 min-w-0 max-w-[680px]">
-    <h1
-      class="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-txt-primary leading-tight tracking-tight"
-    >
-      Hola <span class="inline-block animate-wave">👋</span>, soy Alejandro Lafourcade.
-    </h1>
-    {
-      bioParagraphs.map((p, i) => (
-        <p
-          class="text-base sm:text-lg text-txt-secondary leading-[1.8] tracking-[-0.2px] paragraph-animate"
-          style={`animation-delay: ${i * 100 + 200}ms`}
-        >
-          {p}
-        </p>
-      ))
-    }
-  </div>
-  <div class="flex flex-col gap-6 shrink-0 md:w-64 lg:w-80">
-    <div
-      class="profile-image-container w-full h-[300px] sm:h-[400px] rounded-2xl border border-border-subtle overflow-hidden bg-bg-surface relative group"
-    >
-      <img
-        src="/profile-320.webp"
-        alt="Alejandro Lafourcade"
-        width="320"
-        height="439"
-        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-        loading="eager"
-      />
-      <div
-        class="absolute inset-0 bg-gradient-to-t from-bg-deep/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-      >
+<!-- 1. Hero personal -->
+<section>
+  <Container width="wide" class="grid items-center gap-10 py-16 md:grid-cols-[1fr_280px] md:gap-16 md:py-20">
+    <div class="flex flex-col items-start gap-6">
+      <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">Sobre mí</span>
+      <h1 class="font-heading font-extrabold tracking-tight text-txt-primary">
+        <span class="block text-4xl leading-[1.05] md:text-6xl">Soy Alejandro Lafourcade.</span>
+        <span class="mt-3 block text-2xl leading-tight text-txt-secondary md:text-3xl">Escribo sobre ingeniería real, sin filtros.</span>
+      </h1>
+      <p class="text-base leading-relaxed text-txt-secondary md:text-lg max-w-2xl">
+        Arquitecto, líder técnico y backend engineer. Escribo para developers que quieren aprender a
+        diseñar, operar y discutir sistemas con más criterio en una época donde copiar código es demasiado fácil.
+      </p>
+      <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <a href="/blog" class="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+          Leer Ingeniería sin filtros
+          <Icon name="arrow-right" size={16} />
+        </a>
+        <a href="/servicios" class="inline-flex items-center justify-center rounded-md border border-border-subtle px-6 py-3 font-semibold text-txt-primary transition-colors hover:border-accent hover:text-accent">
+          Trabajar conmigo
+        </a>
+      </div>
+      <div class="flex items-center gap-3 pt-2">
+        {socialLinks.map(({ icon, label, href }) => (
+          <a href={href} target="_blank" rel="noopener noreferrer" aria-label={label} class="flex h-10 w-10 items-center justify-center rounded-md border border-border-subtle text-txt-secondary transition-colors hover:border-accent/40 hover:text-accent">
+            <Icon name={icon} size={18} />
+          </a>
+        ))}
       </div>
     </div>
-    <div class="flex flex-col gap-3">
-      {
-        socialLinks.map(({ icon, label, href }, i) => (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="social-link flex items-center gap-2.5 min-h-[44px] text-txt-secondary hover:text-accent transition-all duration-300 group"
-            style={`animation-delay: ${i * 50 + 400}ms`}
-          >
-            <span class="p-2.5 rounded-lg bg-bg-surface group-hover:bg-accent/10 transition-colors duration-300">
-              <Icon name={icon} size={18} />
-            </span>
-            <span class="text-[15px] group-hover:translate-x-1 transition-transform duration-300">
-              {label}
-            </span>
-          </a>
-        ))
-      }
+    <img
+      src="/profile-320.webp"
+      alt="Alejandro Lafourcade"
+      width="320"
+      height="320"
+      loading="eager"
+      class="hidden h-[280px] w-[280px] rounded-xl border border-border-subtle object-cover md:block"
+    />
+  </Container>
+</section>
+
+<!-- 2. Por qué existe Ingeniería sin filtros -->
+<section class="border-t border-border-subtle bg-bg-surface">
+  <Container width="default" class="flex flex-col gap-6 py-16 md:py-20">
+    <SectionHeader eyebrow="Por qué existe" title="Ingeniería sin filtros nació de una incomodidad" />
+    <div class="flex flex-col gap-4 text-txt-secondary leading-relaxed max-w-2xl">
+      <p>
+        Cada vez hay más contenido técnico, más herramientas, más IA, más frameworks y más promesas
+        rápidas. Pero también veo más developers copiando soluciones sin entender el problema que están resolviendo.
+      </p>
+      <p>
+        Y siempre vuelvo a la misma pregunta: <span class="text-txt-primary">¿por qué los que más sabemos somos los que menos compartimos?</span>
+      </p>
+      <p>
+        Este sitio existe para volver a lo importante: criterio, fundamentos, trade-offs, producción y
+        decisiones técnicas explicadas con su porqué. No se trata de odiar la IA — es poderosa. Pero sin
+        criterio, amplifica errores.
+      </p>
     </div>
-  </div>
+  </Container>
 </section>
 
-<!-- Mi Camino -->
-<section
-  class="section-animate px-4 sm:px-6 md:px-10 lg:px-[120px] pt-4 pb-10 lg:pt-6 lg:pb-[60px] flex flex-col gap-6 sm:gap-8"
->
-  <h2
-    class="font-heading text-xl sm:text-2xl lg:text-3xl font-bold text-txt-primary tracking-[-0.8px] flex items-center gap-3"
-  >
-    <span class="text-accent">•</span>
-    Mi Camino
-  </h2>
-  {
-    caminoParagraphs.map((p, i) => (
-      <p
-        class="text-[15px] sm:text-[17px] text-txt-secondary leading-[1.8] tracking-[-0.2px] max-w-[680px] paragraph-animate"
-        style={`animation-delay: ${i * 80}ms`}
-      >
-        {p}
-      </p>
-    ))
-  }
-</section>
-
-<!-- Algo que siempre me acompañó -->
-<section class="section-animate px-4 sm:px-6 md:px-10 lg:px-[120px] pt-4 pb-10 lg:pt-6 lg:pb-[60px] flex flex-col gap-6 sm:gap-8">
-  <h2
-    class="font-heading text-xl sm:text-2xl lg:text-3xl font-bold text-txt-primary tracking-[-0.8px] flex items-center gap-3"
-  >
-    <span class="text-accent">•</span>
-    Algo que siempre me acompañó
-  </h2>
-  {
-    algoParagraphs.map((p, i) => (
-      <p
-        class="text-[15px] sm:text-[17px] text-txt-secondary leading-[1.8] tracking-[-0.2px] max-w-[680px] paragraph-animate"
-        style={`animation-delay: ${i * 80}ms`}
-      >
-        {p}
-      </p>
-    ))
-  }
-</section>
-
-<!-- Algunas cosas sobre mí -->
-<section class="section-animate px-4 sm:px-6 md:px-10 lg:px-[120px] py-12 md:py-16 lg:py-20 flex flex-col gap-9">
-  <h2
-    class="font-heading text-xl sm:text-2xl lg:text-3xl font-bold text-txt-primary tracking-[-0.8px] flex items-center gap-3"
-  >
-    <span class="text-accent">•</span>
-    Algunas cosas sobre mí
-  </h2>
-  <div class="flex flex-col gap-4 max-w-[680px]">
-    {
-      cosasItems.map((item, i) => (
-        <div
-          class="cosa-item flex items-center gap-3 bg-bg-surface rounded-lg p-4 border border-transparent hover:border-accent/30 hover:bg-bg-surface-hover transition-all duration-300 cursor-default"
-          style={`animation-delay: ${i * 60}ms`}
-        >
-          <span class="text-accent text-lg font-bold shrink-0 transition-transform duration-300 group-hover:scale-110">
-            →
+<!-- 3. Qué defiendo -->
+<section class="border-t border-border-subtle">
+  <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+    <SectionHeader eyebrow="Qué defiendo" title="Cinco convicciones, no slogans" />
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {principles.map((p) => (
+        <Card tone="editorial" variant="default" interactive={false}>
+          <span class="flex h-10 w-10 items-center justify-center rounded-md bg-accent/10 text-accent">
+            <Icon name={p.icon} size={20} />
           </span>
-          <span class="text-base text-txt-primary tracking-[-0.2px]">
-            {item}
-          </span>
-        </div>
-      ))
-    }
-  </div>
+          <h3 class="font-heading text-base font-bold text-txt-primary">{p.title}</h3>
+          <p class="text-sm leading-relaxed text-txt-secondary">{p.text}</p>
+        </Card>
+      ))}
+    </div>
+  </Container>
 </section>
 
-<!-- Testimonials -->
-<section
-  class="section-animate px-4 sm:px-6 md:px-10 lg:px-[120px] py-12 sm:py-16 md:py-20 lg:py-[100px] flex flex-col gap-8 sm:gap-12"
->
-  <div class="flex flex-col gap-3">
-    <h2
-      class="font-heading text-xl sm:text-2xl lg:text-3xl font-bold text-txt-primary tracking-[-1px]"
-    >
-      No me creas a mí.
-    </h2>
-    <p class="text-base sm:text-lg text-txt-secondary tracking-[-0.2px]">
-      Preguntale a los que me conocen.
+<!-- 4. De dónde vengo -->
+<section class="border-t border-border-subtle">
+  <Container width="default" class="flex flex-col gap-6 py-16 md:py-20">
+    <SectionHeader
+      eyebrow="De dónde vengo"
+      title="No me construí desde conferencias perfectas"
+      description="Me construí trabajando en sistemas reales, con restricciones reales, equipos reales, fechas reales y errores que había que resolver aunque no estuvieran en el tutorial."
+    />
+    <div class="flex flex-col gap-4 text-txt-secondary leading-relaxed max-w-2xl">
+      {camino.map((p) => <p>{p}</p>)}
+    </div>
+  </Container>
+</section>
+
+<!-- 5. Qué he hecho -->
+<section class="border-t border-border-subtle bg-bg-surface">
+  <Container width="default" class="flex flex-col gap-6 py-16 md:py-20">
+    <SectionHeader eyebrow="Qué he hecho" title="Más de 10 años, 8 países, sistemas que tenían que funcionar" />
+    <p class="text-txt-secondary leading-relaxed max-w-2xl">
+      Diseño y sostengo sistemas en producción: desde infraestructura digital gubernamental hasta
+      sistemas de alta disponibilidad y negocio crítico. Backend, arquitectura, liderazgo técnico, APIs,
+      microservicios, CI/CD, seguridad y observabilidad — y equipos de hasta diez ingenieros en
+      contextos multinacionales. Sigo escribiendo código, revisando PRs y rompiendo producción a las 2am.
     </p>
-  </div>
-  <div class="flex flex-col gap-5">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-      {
-        testimonials.slice(0, 3).map((t, i) => (
-          <div class="testimonial-card" style={`animation-delay: ${i * 100}ms`}>
-            <TestimonialCard quote={t.quote} attribution={t.attribution} />
-          </div>
-        ))
-      }
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-      {
-        testimonials.slice(3).map((t, i) => (
-          <div
-            class="testimonial-card"
-            style={`animation-delay: ${(i + 3) * 100}ms`}
-          >
-            <TestimonialCard quote={t.quote} attribution={t.attribution} />
-          </div>
-        ))
-      }
-    </div>
-  </div>
+    <p class="font-mono text-sm leading-relaxed text-txt-muted max-w-2xl">
+      Java · Spring Boot · Go · PostgreSQL · Kafka · AWS · Kubernetes · DDD · arquitectura hexagonal · IA aplicada al desarrollo.
+    </p>
+    <p class="text-sm leading-relaxed text-txt-secondary max-w-2xl">
+      La autoridad no viene de una pared de logos. Viene del criterio que se construye con años, errores y sistemas reales.
+    </p>
+  </Container>
 </section>
 
-<!-- CTA -->
-<section class="px-4 sm:px-6 md:px-10 lg:px-[120px] py-12 lg:py-16 section-animate">
-  <div class="relative rounded-2xl sm:rounded-3xl overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-br from-accent/15 via-transparent to-teal-500/10" />
-    <div class="absolute inset-0 border border-accent/20 rounded-2xl sm:rounded-3xl" />
-    <div class="relative px-5 py-10 sm:px-8 sm:py-14 lg:px-16 lg:py-20 text-center">
-      <h2 class="font-heading text-xl sm:text-2xl lg:text-3xl font-bold text-txt-primary leading-tight mb-4">
-        ¿Querés trabajar <span class="text-accent">conmigo</span>?
-      </h2>
-      <p class="text-base sm:text-lg text-txt-secondary leading-relaxed max-w-lg mx-auto mb-8 sm:mb-10">
-        Arquitectura de sistemas, decisiones técnicas, code review o mentoría.
-        Agendá una sesión 1:1 y hablemos sin vueltas.
-      </p>
-      <a
-        href="https://cal.com/alafourcadev/consultoria-tecnica-1-1"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-block w-full sm:w-auto text-center px-8 py-3.5 min-h-[44px] bg-accent text-bg-deep font-bold rounded-xl hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5 transition-all duration-300"
-      >
-        Agendar Consultoría
+<!-- 6. Para quién escribo -->
+<section class="border-t border-border-subtle">
+  <Container width="default" class="flex flex-col gap-6 py-16 md:py-20">
+    <SectionHeader eyebrow="Para quién escribo" title="Para developers que ya se cansaron de respuestas fáciles" />
+    <p class="text-txt-secondary leading-relaxed max-w-2xl">
+      Para quienes quieren entender por qué una arquitectura se rompe, por qué una abstracción duele,
+      por qué un log mal puesto te deja ciego, por qué una IA puede ayudarte o confundirte, y por qué el
+      senior no es el que sabe más herramientas, sino el que sabe tomar mejores decisiones.
+    </p>
+  </Container>
+</section>
+
+<!-- 7. Qué vas a encontrar -->
+<section class="border-t border-border-subtle">
+  <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+    <SectionHeader eyebrow="Qué vas a encontrar" title="Cinco pilares, sin filtros" />
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      {pillars.map((pillar) => (
+        <PillarCard icon={pillar.icon} title={pillar.title} description={pillar.description} href={pillar.href} />
+      ))}
+    </div>
+  </Container>
+</section>
+
+<!-- 8. Manifiesto breve -->
+<section class="border-t border-border-subtle bg-bg-surface">
+  <Container width="wide" class="py-16 md:py-20">
+    <ManifestoBlock
+      eyebrow="Manifiesto"
+      statement="No creo en la ingeniería decorativa."
+      supporting="Creo en sistemas que se entienden, decisiones que se pueden defender, equipos que aprenden y código que no necesita una misa para ser explicado. Ingeniería sin filtros es mi forma de documentar ese oficio."
+    />
+  </Container>
+</section>
+
+<!-- 9. CTA final -->
+<section class="border-t border-border-subtle">
+  <Container width="wide" class="flex flex-col items-start gap-6 py-16 md:py-24">
+    <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">Próximo paso</span>
+    <h2 class="font-heading text-2xl font-extrabold leading-tight text-txt-primary md:text-4xl max-w-2xl">
+      Si querés aprender a mirar sistemas con más criterio, empezá por acá.
+    </h2>
+    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+      <a href="/empieza-aqui" class="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+        Empieza aquí
+        <Icon name="arrow-right" size={16} />
+      </a>
+      <a href="/newsletter" class="inline-flex items-center justify-center rounded-md border border-border-subtle px-6 py-3 font-semibold text-txt-primary transition-colors hover:border-accent hover:text-accent">
+        Suscribirme a La Bitácora
+      </a>
+      <a href="/servicios" class="inline-flex items-center justify-center rounded-md border border-border-subtle px-6 py-3 font-semibold text-txt-primary transition-colors hover:border-accent hover:text-accent">
+        Hablemos
       </a>
     </div>
-  </div>
+  </Container>
 </section>
-
-<style>
-  /* Wave animation for emoji */
-  @keyframes wave {
-    0%,
-    100% {
-      transform: rotate(0deg);
-    }
-    25% {
-      transform: rotate(20deg);
-    }
-    75% {
-      transform: rotate(-15deg);
-    }
-  }
-
-  .animate-wave {
-    animation: wave 2s ease-in-out infinite;
-    transform-origin: 70% 70%;
-  }
-
-  /* Section fade-in on scroll */
-  .section-animate {
-    opacity: 0;
-    transform: translateY(30px);
-    animation: sectionFadeIn 0.8s ease-out forwards;
-  }
-
-  @keyframes sectionFadeIn {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* Paragraph stagger */
-  .paragraph-animate {
-    opacity: 0;
-    animation: fadeInUp 0.6s ease-out forwards;
-  }
-
-  @keyframes fadeInUp {
-    to {
-      opacity: 1;
-    }
-  }
-
-  /* Social links */
-  .social-link {
-    opacity: 0;
-    animation: slideIn 0.4s ease-out forwards;
-  }
-
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateX(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  /* Cosa items */
-  .cosa-item {
-    opacity: 0;
-    animation: fadeScale 0.4s ease-out forwards;
-  }
-
-  @keyframes fadeScale {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  /* Testimonial cards */
-  .testimonial-card {
-    opacity: 0;
-    animation: cardReveal 0.5s ease-out forwards;
-  }
-
-  @keyframes cardReveal {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* Profile image glow on hover */
-  .profile-image-container {
-    transition: box-shadow 0.3s ease;
-  }
-
-  .profile-image-container:hover {
-    box-shadow: 0 0 40px rgba(52, 211, 153, 0.15);
-  }
-</style>
