@@ -1,175 +1,282 @@
 ---
+import Container from './Container.astro';
+import SectionHeader from './SectionHeader.astro';
+import Card from './Card.astro';
 import Icon from './Icon.astro';
 
-const services = [
+const CAL_DISCOVERY = 'https://cal.com/alafourcadev/discovery-call';
+const CAL_MENTORIA = 'https://cal.com/alafourcadev/mentoria-tecnica';
+
+const problemas = [
+  { icon: 'layers', title: 'Arquitectura confusa', text: 'El sistema creció y ahora nadie sabe dónde poner la lógica nueva.' },
+  { icon: 'server', title: 'Backend difícil de mantener', text: 'Cada cambio rompe otra cosa, los límites son borrosos y el código está lleno de parches.' },
+  { icon: 'zap', title: 'Performance y producción', text: 'Anda en local, pero en producción aparecen lentitud, errores intermitentes y falta de trazabilidad.' },
+  { icon: 'cpu', title: 'IA sin dirección técnica', text: 'El equipo quiere usar IA, agentes o RAG, pero no sabe cómo integrarlo sin crear deuda nueva.' },
+  { icon: 'database', title: 'Deuda técnica acumulada', text: 'Todos saben que hay problemas, pero nadie tiene un mapa claro de riesgos y prioridades.' },
+  { icon: 'git-branch', title: 'Equipos sin criterio común', text: 'Cada developer resuelve distinto y no hay estándares claros de arquitectura, testing o entrega.' },
+];
+
+const servicios = [
   {
-    id: 'consultoria',
-    title: 'Consultoría Técnica 1:1',
-    description: 'Sesión individual por videollamada para resolver dudas técnicas puntuales, validar decisiones de arquitectura o resolver problemas de diseño.',
-    duration: '60 minutos',
-    icon: 'message-circle',
-    includes: [
-      'Sesión grabada (opcional)',
-      'Resumen escrito con puntos clave',
-      'Acceso a canal de seguimiento por 7 días',
-    ],
-    cta: 'Agendar Sesión',
-    href: 'https://cal.com/alafourcadev/consultoria-tecnica-1-1'
-  },
-  {
-    id: 'auditoria',
-    title: 'Auditoría de Arquitectura',
-    description: 'Revisión profunda de tu repositorio. Análisis de calidad, patrones, deuda técnica y performance. Recibís un informe con recomendaciones priorizadas.',
-    duration: '3-5 días',
     icon: 'search',
-    includes: [
-      'Informe escrito de 10-20 páginas',
-      'Diagrama de arquitectura actual',
-      'Propuesta de arquitectura mejorada',
-      'Sesión de presentación de 60 min',
-    ],
-    cta: 'Solicitar Auditoría',
-    href: 'https://cal.com/alafourcadev/discovery-call'
+    title: 'Auditoría de arquitectura',
+    text: 'Revisión técnica para detectar riesgos, deuda, acoplamiento, límites borrosos y problemas de escalabilidad.',
+    entregables: ['Mapa de riesgos técnicos', 'Diagnóstico de arquitectura', 'Deuda crítica priorizada', 'Roadmap de mejora accionable'],
+    idealPara: 'Equipos cuyo sistema crece más rápido que su arquitectura.',
   },
   {
-    id: 'mentoria',
-    title: 'Mentoría Técnica Mensual',
-    description: 'Acompañamiento recurrente para desarrolladores que quieren crecer como seniors o staff engineers. Guía de carrera y revisión de código.',
-    duration: 'Mensual',
-    icon: 'user',
-    includes: [
-      'Sesiones por videollamada',
-      'Canal de Telegram para dudas async',
-      'Revisión de PRs y código crítico',
-      'Plan de desarrollo profesional',
-    ],
-    cta: 'Aplicar a Mentoría',
-    href: 'https://cal.com/alafourcadev/mentoria-tecnica'
+    icon: 'server',
+    title: 'Revisión de backend / API',
+    text: 'Análisis de backend, APIs, módulos, seguridad, persistencia, testing y mantenibilidad.',
+    entregables: ['Revisión de estructura y capas', 'Análisis de APIs y contratos', 'Riesgos de seguridad y performance', 'Plan de refactor incremental'],
+    idealPara: 'Backend Java/Spring Boot, Node/NestJS o plataformas API-first.',
   },
   {
-    id: 'fractional',
-    title: 'Fractional CTO',
-    description: 'Liderazgo técnico de alto nivel para startups que no necesitan un CTO full-time. Dirección de arquitectura, revisión de decisiones y mentoría de equipo.',
-    duration: 'Retainer mensual',
-    icon: 'shield',
-    includes: [
-      'Participación en sprint planning',
-      'Acceso directo por Slack/Telegram',
-      'Revisión de decisiones críticas',
-      'Informe mensual de estado técnico',
-    ],
-    cta: 'Hablemos de tu Startup',
-    href: 'https://cal.com/alafourcadev/discovery-call'
+    icon: 'monitor',
+    title: 'Producción y observabilidad',
+    text: 'Diseño o mejora de trazabilidad: logs, métricas, errores, alertas y diagnóstico de incidentes.',
+    entregables: ['Estrategia de logging', 'Métricas clave', 'Recomendaciones de dashboards', 'Plan de incident response técnico'],
+    idealPara: 'Equipos que no pueden reproducir errores ni entender qué pasa en producción.',
   },
   {
-    id: 'workshop',
-    title: 'Workshops para Equipos',
-    description: 'Capacitación práctica para equipos de desarrollo. Temas: DDD, Microservicios, Migración de Monolitos, IA Aplicada o Java Moderno.',
-    duration: '3-6 horas',
-    icon: 'users',
-    includes: [
-      'Material de presentación',
-      'Ejercicios prácticos con código real',
-      'Certificado de participación',
-      'Soporte grupal post-workshop',
-    ],
-    cta: 'Cotizar Workshop',
-    href: 'https://cal.com/alafourcadev/discovery-call'
-  },
-  {
-    id: 'ia',
-    title: 'Consultoría de IA Aplicada',
-    description: 'Diseño e implementación de soluciones de IA: RAG sobre documentación interna, agentes de voz o workflows automatizados con n8n.',
-    duration: 'Por proyecto',
     icon: 'cpu',
-    includes: [
-      'Diseño de arquitectura de la solución',
-      'Implementación del sistema (RAG/n8n)',
-      'Documentación técnica completa',
-      'Entrenamiento al equipo',
-    ],
-    cta: 'Consultar por IA',
-    href: 'https://cal.com/alafourcadev/discovery-call'
-  }
+    title: 'IA aplicada para equipos',
+    text: 'Agentes, workflows AI-first, RAG y automatización técnica sin perder control ni criterio.',
+    entregables: ['Diagnóstico de oportunidades', 'Casos de uso priorizados', 'Arquitectura propuesta', 'Riesgos, límites y plan'],
+    idealPara: 'Equipos que quieren usar IA en serio, no solo meter un chatbot.',
+  },
+  {
+    icon: 'briefcase',
+    title: 'Mentoring técnico senior',
+    text: 'Acompañamiento para developers, tech leads o equipos que necesitan mejor criterio y mejores decisiones.',
+    entregables: ['Sesiones técnicas', 'Revisión de decisiones y código', 'Preparación de arquitectura', 'Plan de crecimiento técnico'],
+    idealPara: 'Developers senior/semisenior, tech leads nuevos o equipos que necesitan alinear criterio.',
+    href: CAL_MENTORIA,
+  },
+];
+
+const proceso = [
+  { n: '01', title: 'Contexto', text: 'Entendemos el problema, el sistema y la presión real.' },
+  { n: '02', title: 'Diagnóstico', text: 'Reviso arquitectura, código, flujos, documentación o incidentes según el caso.' },
+  { n: '03', title: 'Decisiones', text: 'Separo síntomas de causas y propongo opciones con trade-offs claros.' },
+  { n: '04', title: 'Plan', text: 'Entrego una ruta priorizada, realista y ejecutable.' },
+  { n: '05', title: 'Acompañamiento', text: 'Si hace falta, ayudo a implementar, revisar o guiar al equipo.' },
+];
+
+const principios = [
+  'Ninguna recomendación sin su porqué.',
+  'Nada de reescribir todo si se puede mejorar incrementalmente.',
+  'Nada de vender microservicios cuando el problema es modularidad.',
+  'Nada de IA donde una regla simple resuelve mejor.',
+  'Nada de dashboards bonitos sin preguntas operativas.',
+  'Nada de arquitectura que el equipo no pueda mantener.',
+];
+
+const paraSi = [
+  'Startups que están pasando de MVP a sistema serio.',
+  'Equipos técnicos con deuda acumulada.',
+  'Empresas que necesitan estabilizar backend o producción.',
+  'Líderes que necesitan una segunda mirada técnica.',
+  'Equipos que quieren incorporar IA sin desordenarse.',
+];
+
+const paraNo = [
+  'Solo necesitás "alguien que pique tickets".',
+  'Buscás una receta mágica sin revisar contexto.',
+  'Querés meter IA aunque no resuelva un problema real.',
+  'No querés discutir trade-offs.',
+  'Ya decidiste la solución y solo querés que alguien la valide.',
 ];
 ---
 
-<section class="relative px-4 sm:px-6 md:px-10 lg:px-20 pt-16 pb-20 overflow-hidden">
-  <!-- Decorative gradient orbs -->
-  <div class="absolute top-20 -left-32 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[128px] pointer-events-none"></div>
-  <div class="absolute bottom-10 right-0 w-[400px] h-[400px] bg-teal-500/5 rounded-full blur-[100px] pointer-events-none"></div>
-
-  <div class="relative z-10">
-    <div class="max-w-3xl mb-16 space-y-4">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent/20 bg-accent/5 text-accent text-xs font-mono uppercase tracking-wider">
-        Servicios Profesionales
-      </div>
-      <h1 class="font-heading text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-txt-primary leading-tight">
-        Llevá tu ingeniería al <span class="hero-gradient text-accent">siguiente nivel.</span>
-      </h1>
-      <p class="text-lg sm:text-xl text-txt-secondary leading-relaxed">
-        No vendo humo. Te ayudo a tomar decisiones de arquitectura que no vas a lamentar en 6 meses. Consultoría, mentoría y dirección técnica basada en +10 años de experiencia real en producción.
-      </p>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-      {services.map((service) => (
-        <div class="group p-8 rounded-2xl bg-bg-surface border border-border-subtle hover:border-accent/30 hover:shadow-[0_0_40px_rgba(52,211,153,0.05)] transition-all duration-300 flex flex-col h-full">
-          <div class="mb-6 w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
-            <Icon name={service.icon} size={24} />
-          </div>
-          
-          <div class="flex-1 space-y-4">
-            <h3 class="text-xl sm:text-2xl font-bold text-txt-primary group-hover:text-accent transition-colors">
-              {service.title}
-            </h3>
-            <p class="text-sm text-txt-secondary leading-relaxed">
-              {service.description}
-            </p>
-            
-            <div class="flex items-center gap-4 text-xs font-mono text-txt-muted uppercase tracking-tighter">
-              <span class="flex items-center gap-1">
-                <Icon name="clock" size={14} />
-                {service.duration}
-              </span>
-            </div>
-
-            <ul class="space-y-2 pt-4 border-t border-border-subtle/50">
-              {service.includes.map((item) => (
-                <li class="flex items-start gap-2 text-xs sm:text-sm text-txt-secondary">
-                  <Icon name="check" size={16} class="text-accent shrink-0 mt-0.5" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <a 
-            href={service.href}
-            target="_blank"
-            class="mt-8 w-full py-3 px-6 rounded-xl bg-bg-deep border border-border-subtle text-txt-primary font-bold text-center hover:bg-accent hover:text-bg-deep hover:border-accent transition-all duration-300"
-          >
-            {service.cta}
-          </a>
-        </div>
-      ))}
-    </div>
-
-    <!-- Bottom CTA -->
-    <div class="mt-20 p-8 sm:p-12 rounded-3xl bg-accent/5 border border-accent/20 text-center space-y-6">
-      <h2 class="text-2xl sm:text-3xl font-bold text-txt-primary">
-        ¿Tenés un desafío que no encaja en estas categorías?
-      </h2>
-      <p class="text-lg text-txt-secondary max-w-2xl mx-auto">
-        Agendá una discovery call gratuita de 15 minutos y busquemos la mejor forma de trabajar juntos.
-      </p>
-      <a 
-        href="https://cal.com/alafourcadev/discovery-call"
-        target="_blank"
-        class="inline-block px-10 py-4 rounded-xl bg-accent text-bg-deep font-bold hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)] hover:-translate-y-1 transition-all"
-      >
-        Agendar Discovery Call
+<!-- 1. Hero -->
+<section>
+  <Container width="wide" class="flex flex-col items-start gap-6 py-20 md:py-24">
+    <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">Trabaja conmigo</span>
+    <h1 class="font-heading text-3xl font-extrabold leading-[1.1] tracking-tight text-txt-primary md:text-5xl max-w-4xl">
+      Trabajemos en sistemas que aguanten algo más que una demo.
+    </h1>
+    <p class="text-base leading-relaxed text-txt-secondary md:text-lg max-w-2xl">
+      Ayudo a equipos técnicos a ordenar arquitectura, backend, producción e IA aplicada para
+      convertir sistemas difíciles de mantener en decisiones claras y ejecutables.
+    </p>
+    <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <a href={CAL_DISCOVERY} target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+        Contarme tu problema
+        <Icon name="arrow-right" size={16} />
+      </a>
+      <a href="#servicios" class="inline-flex items-center justify-center rounded-md border border-border-subtle px-6 py-3 font-semibold text-txt-primary transition-colors hover:border-accent hover:text-accent">
+        Ver cómo puedo ayudar
       </a>
     </div>
-  </div>
+    <p class="font-mono text-xs text-txt-muted">No necesitás tener la solución clara. Necesitás explicar bien el problema.</p>
+  </Container>
+</section>
+
+<!-- 2. Problemas que resuelve -->
+<section class="border-t border-border-subtle bg-bg-surface">
+  <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+    <SectionHeader
+      eyebrow="Problemas que resuelvo"
+      title="Si algo de esto te suena, podemos trabajar"
+      description="Casi nunca el problema es la tecnología. Es que nadie ordenó la decisión a tiempo."
+    />
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {problemas.map((p) => (
+        <Card tone="editorial" variant="default" interactive={false}>
+          <span class="flex h-10 w-10 items-center justify-center rounded-md bg-accent/10 text-accent">
+            <Icon name={p.icon} size={20} />
+          </span>
+          <h3 class="font-heading text-base font-bold text-txt-primary">{p.title}</h3>
+          <p class="text-sm leading-relaxed text-txt-secondary">{p.text}</p>
+        </Card>
+      ))}
+    </div>
+  </Container>
+</section>
+
+<!-- 3. Servicios principales -->
+<section id="servicios" class="border-t border-border-subtle scroll-mt-24">
+  <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+    <SectionHeader
+      eyebrow="Servicios"
+      title="Resultados, no horas"
+      description="Cada servicio es un paquete con entregables concretos. Sabés qué te llevás antes de empezar."
+    />
+    <div class="grid gap-4 md:grid-cols-2">
+      {servicios.map((s) => (
+        <Card tone="editorial" variant="featured" interactive={false}>
+          <span class="flex h-11 w-11 items-center justify-center rounded-md bg-accent/10 text-accent">
+            <Icon name={s.icon} size={22} />
+          </span>
+          <h3 class="font-heading text-lg font-bold text-txt-primary md:text-xl">{s.title}</h3>
+          <p class="text-sm leading-relaxed text-txt-secondary">{s.text}</p>
+          <ul class="flex flex-col gap-2 border-t border-border-subtle pt-4">
+            {s.entregables.map((e) => (
+              <li class="flex items-start gap-2 text-sm leading-relaxed text-txt-secondary">
+                <span class="mt-0.5 shrink-0 text-accent"><Icon name="chevron-right" size={16} /></span>
+                {e}
+              </li>
+            ))}
+          </ul>
+          <p class="text-sm leading-relaxed text-txt-muted">
+            <span class="font-mono text-xs uppercase tracking-wider text-txt-secondary">Ideal para:</span> {s.idealPara}
+          </p>
+        </Card>
+      ))}
+    </div>
+  </Container>
+</section>
+
+<!-- 4. Cómo trabajo -->
+<section class="border-t border-border-subtle bg-bg-surface">
+  <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
+    <SectionHeader
+      eyebrow="Cómo trabajo"
+      title="No empiezo proponiendo una tecnología"
+      description="Empiezo entendiendo el problema, las restricciones, el equipo, el negocio y el costo real de equivocarse."
+    />
+    <ol class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      {proceso.map((step) => (
+        <li class="flex flex-col gap-2 rounded-xl border border-border-subtle bg-bg-deep p-5">
+          <span class="font-mono text-sm text-accent">{step.n}</span>
+          <span class="font-heading font-bold text-txt-primary">{step.title}</span>
+          <span class="text-sm leading-relaxed text-txt-secondary">{step.text}</span>
+        </li>
+      ))}
+    </ol>
+  </Container>
+</section>
+
+<!-- 5. Principios -->
+<section class="border-t border-border-subtle">
+  <Container width="default" class="flex flex-col gap-8 py-16 md:py-20">
+    <SectionHeader eyebrow="Principios de trabajo" title="Lo que no vas a encontrar acá" />
+    <ul class="flex flex-col divide-y divide-border-subtle border-y border-border-subtle">
+      {principios.map((p) => (
+        <li class="flex items-start gap-3 py-4">
+          <span class="mt-0.5 shrink-0 text-accent"><Icon name="chevron-right" size={18} /></span>
+          <span class="text-txt-secondary leading-relaxed">{p}</span>
+        </li>
+      ))}
+    </ul>
+  </Container>
+</section>
+
+<!-- 6. Para quién es / para quién no -->
+<section class="border-t border-border-subtle">
+  <Container width="wide" class="grid gap-4 py-16 md:grid-cols-2 md:py-20">
+    <Card tone="cta" variant="featured" interactive={false}>
+      <span class="font-mono text-xs uppercase tracking-wider text-accent">Trabajo mejor con</span>
+      <ul class="flex flex-col gap-2.5">
+        {paraSi.map((i) => (
+          <li class="flex items-start gap-2 text-sm text-txt-secondary">
+            <span class="mt-0.5 shrink-0 text-accent"><Icon name="chevron-right" size={16} /></span>
+            {i}
+          </li>
+        ))}
+      </ul>
+    </Card>
+    <Card tone="editorial" variant="featured" interactive={false}>
+      <span class="font-mono text-xs uppercase tracking-wider text-txt-muted">No soy la mejor opción si</span>
+      <ul class="flex flex-col gap-2.5">
+        {paraNo.map((i) => (
+          <li class="flex items-start gap-2 text-sm text-txt-muted">
+            <span class="mt-0.5 shrink-0 text-txt-muted"><Icon name="x" size={16} /></span>
+            {i}
+          </li>
+        ))}
+      </ul>
+    </Card>
+  </Container>
+</section>
+
+<!-- 7. Prueba de autoridad -->
+<section class="border-t border-border-subtle bg-bg-surface">
+  <Container width="default" class="flex flex-col gap-5 py-16 md:py-20">
+    <SectionHeader eyebrow="Por qué yo" title="Criterio construido en sistemas reales" />
+    <p class="text-txt-secondary leading-relaxed max-w-2xl">
+      Más de 10 años construyendo backend, APIs, arquitectura y sistemas en producción — desde
+      infraestructura digital gubernamental hasta sistemas de alta disponibilidad y negocio crítico,
+      en equipos multinacionales de hasta diez ingenieros.
+    </p>
+    <p class="font-mono text-sm leading-relaxed text-txt-muted max-w-2xl">
+      Java · Spring Boot · Go · microservicios · arquitectura hexagonal · CI/CD · observabilidad · seguridad · cloud · IA aplicada.
+    </p>
+    <a href="/sobre-mi" class="inline-flex w-fit items-center gap-1.5 font-medium text-accent transition-all hover:gap-2.5">
+      Conocer más sobre Alejandro
+      <Icon name="arrow-right" size={16} />
+    </a>
+  </Container>
+</section>
+
+<!-- 8. Contacto -->
+<section class="border-t border-border-subtle">
+  <Container width="default" class="flex flex-col items-start gap-5 py-16 md:py-20">
+    <span class="font-mono text-xs uppercase tracking-[0.18em] text-accent">Contacto</span>
+    <h2 class="font-heading text-2xl font-extrabold leading-tight text-txt-primary md:text-3xl max-w-2xl">
+      Contame qué problema técnico estás tratando de resolver
+    </h2>
+    <p class="text-txt-secondary leading-relaxed max-w-xl">
+      No hace falta que tengas todo ordenado. Si el problema es real, lo podemos ordenar juntos.
+      Agendá una discovery call y hablemos sin vueltas.
+    </p>
+    <a href={CAL_DISCOVERY} target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+      Agendar discovery call
+      <Icon name="arrow-right" size={16} />
+    </a>
+  </Container>
+</section>
+
+<!-- 9. CTA final -->
+<section class="border-t border-border-subtle bg-bg-surface">
+  <Container width="wide" class="flex flex-col items-start gap-6 py-16 md:py-24">
+    <h2 class="font-heading text-2xl font-extrabold leading-tight text-txt-primary md:text-4xl max-w-3xl">
+      Los sistemas no se rompen de golpe. Se rompen por decisiones pequeñas que nadie revisó a tiempo.
+    </h2>
+    <a href={CAL_DISCOVERY} target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 font-semibold text-bg-deep transition-colors hover:bg-accent-strong">
+      Hablemos de tu sistema
+      <Icon name="arrow-right" size={16} />
+    </a>
+  </Container>
 </section>
