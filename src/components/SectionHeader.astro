@@ -13,7 +13,7 @@ const Tag = as;
 const alignClass = align === 'center' ? 'items-center text-center mx-auto' : 'items-start text-left';
 ---
 
-<header class:list={['flex flex-col gap-3 max-w-2xl', alignClass]}>
+<div class:list={['flex flex-col gap-3 max-w-2xl', alignClass]}>
   {eyebrow && (
     <span class="font-mono text-xs uppercase tracking-[0.15em] text-accent">{eyebrow}</span>
   )}
@@ -23,4 +23,4 @@ const alignClass = align === 'center' ? 'items-center text-center mx-auto' : 'it
   {description && (
     <p class="text-base md:text-lg leading-relaxed text-txt-secondary">{description}</p>
   )}
-</header>
+</div>

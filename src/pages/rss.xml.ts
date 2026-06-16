@@ -7,7 +7,7 @@ export async function GET(context: APIContext) {
   const sortedPosts = posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
   return rss({
-    title: 'alafourca.dev — Ingeniería sin filtros',
+    title: 'Ingeniería sin filtros',
     description: 'Alejandro Lafourcade — Ingeniero de Software. Artículos sobre arquitectura, Java, Go y decisiones técnicas reales.',
     site: context.site!,
     items: sortedPosts.map((post) => ({

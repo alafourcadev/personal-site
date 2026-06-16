@@ -10,9 +10,11 @@ import Icon from "./Icon.astro";
       method="post"
       class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto w-full"
     >
+      <label class="sr-only" for="footer-email">Suscribite al newsletter</label>
       <input
         type="email"
         name="email"
+        id="footer-email"
         placeholder="Suscribite al newsletter — tu@email.com"
         required
         class="flex-1 px-4 py-3 min-h-[44px] rounded-xl bg-bg-deep border border-border-subtle text-txt-primary placeholder:text-txt-muted text-sm focus:outline-none focus:border-accent/50 transition-colors"

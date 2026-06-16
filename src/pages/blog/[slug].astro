@@ -162,7 +162,7 @@ const tocItems = headings
     )}
     <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-sm">
       <div class="flex items-center gap-2.5">
-        <img src="/profile.jpg" alt="Alejandro Lafourcade" class="w-8 h-8 rounded-full object-cover" />
+        <img src="/profile-64.webp" alt="Alejandro Lafourcade" width="32" height="32" loading="lazy" class="w-8 h-8 rounded-full object-cover" />
         <span class="text-txt-primary font-medium text-xs sm:text-sm">Alejandro Lafourcade</span>
       </div>
       <span class="w-1 h-1 rounded-full bg-txt-muted hidden sm:block"></span>
@@ -197,7 +197,7 @@ const tocItems = headings
             Contenido
           </h3>
           <div class="h-px bg-border-subtle" />
-          <nav class="flex flex-col">
+          <nav aria-label="Tabla de contenidos" class="flex flex-col">
             {tocItems.map((item, i) => (
               <a
                 href={`#${item.id}`}
@@ -259,6 +259,7 @@ const tocItems = headings
           >
           <button
             id="share-twitter"
+            type="button"
             aria-label="Compartir en Twitter"
             class="w-11 h-11 rounded-lg bg-bg-surface border border-border-subtle flex items-center justify-center text-txt-muted hover:text-txt-primary hover:border-txt-muted transition-colors"
           >
@@ -266,6 +267,7 @@ const tocItems = headings
           </button>
           <button
             id="share-linkedin"
+            type="button"
             aria-label="Compartir en LinkedIn"
             class="w-11 h-11 rounded-lg bg-bg-surface border border-border-subtle flex items-center justify-center text-txt-muted hover:text-txt-primary hover:border-txt-muted transition-colors"
           >
@@ -273,6 +275,7 @@ const tocItems = headings
           </button>
           <button
             id="share-copy"
+            type="button"
             aria-label="Copiar enlace"
             class="w-11 h-11 rounded-lg bg-bg-surface border border-border-subtle flex items-center justify-center text-txt-muted hover:text-txt-primary hover:border-txt-muted transition-colors"
           >

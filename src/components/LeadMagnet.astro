@@ -56,11 +56,12 @@ const {
           target="popupwindow" 
           class="flex flex-col sm:flex-row gap-3"
         >
-          <input 
-            type="email" 
-            name="email" 
-            id="bd-email" 
-            placeholder="tu@email.com" 
+          <label class="sr-only" for="bd-email">Tu email</label>
+          <input
+            type="email"
+            name="email"
+            id="bd-email"
+            placeholder="tu@email.com"
             required 
             class="min-w-0 flex-1 px-4 py-3 rounded-lg bg-bg-surface border border-border-subtle focus:ring-2 focus:ring-accent focus:border-accent outline-none text-txt-primary transition-all"
           />

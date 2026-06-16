@@ -2,12 +2,13 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<BaseLayout 
-  title="¡Casi listo! — Ingeniería sin filtros" 
+<BaseLayout
+  title="¡Casi listo! — Ingeniería sin filtros"
   description="Confirmá tu suscripción para recibir el Blueprint de Arquitectura."
   navVariant="blog"
   footerVariant="simple"
 >
+  <meta name="robots" content="noindex,nofollow" slot="head" />
   <section class="min-h-[70vh] flex flex-col items-center justify-center px-4 py-20 relative overflow-hidden">
     <!-- Brand elements -->
     <div class="absolute top-0 right-0 w-96 h-96 bg-accent/5 rounded-full blur-[120px] -mr-48 -mt-48"></div>
