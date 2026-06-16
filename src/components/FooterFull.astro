@@ -45,7 +45,7 @@ const columns = [
               <li>
                 <a
                   href={l.href}
-                  {...(l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  {...('external' in l && l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                   class="text-sm text-txt-secondary transition-colors duration-200 hover:text-accent"
                 >
                   {l.label}

@@ -40,6 +40,18 @@ const relatedPosts = scored
   .slice(0, 3)
   .map((s) => s.post);
 
+// Prev/next within #100ArchitectureDays — inferred from the `day` field, no frontmatter changes
+let prevDay: typeof post | null = null;
+let nextDay: typeof post | null = null;
+if (typeof post.data.day === "number") {
+  const dayPosts = allPosts
+    .filter((p) => typeof p.data.day === "number")
+    .sort((a, b) => (a.data.day ?? 0) - (b.data.day ?? 0));
+  const idx = dayPosts.findIndex((p) => p.id === post.id);
+  prevDay = idx > 0 ? dayPosts[idx - 1] : null;
+  nextDay = idx >= 0 && idx < dayPosts.length - 1 ? dayPosts[idx + 1] : null;
+}
+
 // Format date helper
 function formatDate(date: Date): string {
   return date.toLocaleDateString("es-ES", {
@@ -143,6 +155,11 @@ const tocItems = headings
     >
       {post.data.title}
     </h1>
+    {post.data.description && (
+      <p class="max-w-[680px] text-center text-base leading-relaxed text-txt-secondary sm:text-lg">
+        {post.data.description}
+      </p>
+    )}
     <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-sm">
       <div class="flex items-center gap-2.5">
         <img src="/profile.jpg" alt="Alejandro Lafourcade" class="w-8 h-8 rounded-full object-cover" />
@@ -157,7 +174,7 @@ const tocItems = headings
 
   <!-- Cover Image -->
   <section class="px-4 sm:px-6 md:px-10 lg:px-20">
-    <div class="mx-auto max-w-4xl overflow-hidden rounded-xl border border-border-subtle">
+    <div class="mx-auto max-w-5xl overflow-hidden rounded-xl border border-border-subtle shadow-[0_18px_50px_-20px_rgba(2,8,23,0.28)]">
       <img
         src={post.data.image}
         alt={post.data.title}
@@ -171,7 +188,7 @@ const tocItems = headings
   </section>
 
   <!-- Content Area -->
-  <section class="flex gap-8 md:gap-10 lg:gap-12 px-4 sm:px-6 md:px-10 lg:px-20 py-8 sm:py-12">
+  <section class="flex gap-8 md:gap-12 lg:gap-16 px-4 sm:px-6 md:px-10 lg:px-20 py-8 sm:py-12">
     <!-- TOC Sidebar -->
     {
       tocItems.length > 0 && (
@@ -186,7 +203,7 @@ const tocItems = headings
                 href={`#${item.id}`}
                 id={`toc-heading-${i}`}
                 data-toc-link={item.id}
-                class="text-sm py-2.5 pl-3 border-l-2 transition-colors border-transparent text-txt-muted hover:text-txt-secondary hover:border-border-subtle"
+                class="text-sm py-2.5 pl-3 border-l-2 transition-colors border-transparent text-txt-secondary hover:text-txt-primary hover:border-border-subtle"
               >
                 {item.label}
               </a>
@@ -197,11 +214,13 @@ const tocItems = headings
     }
 
     <!-- Article -->
-    <article class="flex-1 min-w-0 prose-custom">
-      <Content />
+    <article class="flex-1 min-w-0">
+      <div class="prose-custom">
+        <Content />
+      </div>
 
       <!-- Lead Magnet Section -->
-      <div id="lead-magnet-form">
+      <div id="lead-magnet-form" class="mt-12 sm:mt-16">
         <LeadMagnet />
       </div>
 
@@ -262,6 +281,40 @@ const tocItems = headings
         </div>
       </div>
     </article>
+  </section>
+
+  <!-- Serie / volver -->
+  <section class="border-t border-border-subtle px-4 sm:px-6 md:px-10 lg:px-20 py-8 sm:py-10">
+    <div class="mx-auto flex max-w-3xl flex-col gap-5">
+      {post.data.day && (prevDay || nextDay) && (
+        <div class="grid gap-3 sm:grid-cols-2">
+          {prevDay ? (
+            <a href={`/blog/${prevDay.id}`} class="group flex flex-col gap-1 rounded-xl border border-border-subtle bg-bg-surface p-4 transition-colors hover:border-accent/40">
+              <span class="font-mono text-xs uppercase tracking-wider text-txt-muted">← Día {prevDay.data.day}</span>
+              <span class="line-clamp-1 text-sm font-medium text-txt-primary transition-colors group-hover:text-accent">{prevDay.data.title}</span>
+            </a>
+          ) : (<div class="hidden sm:block" />)}
+          {nextDay ? (
+            <a href={`/blog/${nextDay.id}`} class="group flex flex-col gap-1 rounded-xl border border-border-subtle bg-bg-surface p-4 text-right transition-colors hover:border-accent/40">
+              <span class="font-mono text-xs uppercase tracking-wider text-txt-muted">Día {nextDay.data.day} →</span>
+              <span class="line-clamp-1 text-sm font-medium text-txt-primary transition-colors group-hover:text-accent">{nextDay.data.title}</span>
+            </a>
+          ) : (<div class="hidden sm:block" />)}
+        </div>
+      )}
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <a href="/blog" class="inline-flex items-center gap-1.5 text-sm font-medium text-txt-secondary transition-colors hover:text-accent">
+          <Icon name="arrow-right" size={14} class="rotate-180" />
+          Volver al blog
+        </a>
+        {post.data.day && (
+          <a href="/100-architecture-days" class="inline-flex items-center gap-1.5 text-sm font-medium text-accent transition-all hover:gap-2.5">
+            Ver toda la serie
+            <Icon name="arrow-right" size={14} />
+          </a>
+        )}
+      </div>
+    </div>
   </section>
 
   <!-- Comments -->
@@ -361,49 +414,22 @@ const tocItems = headings
   });
 </script>
 
-<script>
-  const tocLinks = document.querySelectorAll('[data-toc-link]');
-  const headings = document.querySelectorAll('article h2');
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          tocLinks.forEach((link) => {
-            link.classList.remove('border-accent', 'text-accent', 'font-medium');
-            link.classList.add('border-transparent', 'text-txt-muted');
-          });
-          const activeId = entry.target.id;
-          const activeLink = document.querySelector(`[data-toc-link="${activeId}"]`);
-          if (activeLink) {
-            activeLink.classList.remove('border-transparent', 'text-txt-muted');
-            activeLink.classList.add('border-accent', 'text-accent', 'font-medium');
-          }
-        }
-      });
-    },
-    { rootMargin: '0px 0px -70% 0px', threshold: 0 }
-  );
-
-  headings.forEach((heading) => observer.observe(heading));
-</script>
-
 <style is:global>
   /* Markdown prose styling */
   .prose-custom {
-    @apply text-base leading-[1.8];
+    @apply text-base leading-[1.8] max-w-[760px];
   }
 
   .prose-custom h2 {
-    @apply text-xl sm:text-2xl font-bold text-txt-primary mt-8 sm:mt-10 mb-4;
+    @apply font-heading text-2xl sm:text-3xl font-bold text-txt-primary mt-10 sm:mt-12 mb-4;
   }
 
   .prose-custom h3 {
-    @apply text-lg sm:text-xl font-bold text-txt-primary mt-6 sm:mt-8 mb-3;
+    @apply font-heading text-xl sm:text-2xl font-bold text-txt-primary mt-8 sm:mt-10 mb-3;
   }
 
   .prose-custom h4 {
-    @apply text-lg font-semibold text-txt-primary mt-6 mb-2;
+    @apply font-heading text-lg font-semibold text-txt-primary mt-6 mb-2;
   }
 
   .prose-custom p {
@@ -432,11 +458,11 @@ const tocItems = headings
   }
 
   .prose-custom ul {
-    @apply list-disc list-inside text-txt-secondary mb-5 space-y-1.5;
+    @apply list-disc list-outside pl-5 text-txt-secondary mb-5 space-y-1.5;
   }
 
   .prose-custom ol {
-    @apply list-decimal list-inside text-txt-secondary mb-5 space-y-1.5;
+    @apply list-decimal list-outside pl-5 text-txt-secondary mb-5 space-y-1.5;
   }
 
   .prose-custom li {
@@ -458,7 +484,7 @@ const tocItems = headings
   }
 
   .prose-custom pre {
-    @apply rounded-lg sm:rounded-xl border border-border-subtle overflow-hidden p-3 sm:p-5 my-4 sm:my-6 overflow-x-auto;
+    @apply rounded-lg sm:rounded-xl border border-border-subtle overflow-hidden p-4 sm:p-6 my-6 sm:my-8 overflow-x-auto;
     background-color: rgb(var(--code-bg)) !important;
     -webkit-overflow-scrolling: touch;
   }
