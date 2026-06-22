@@ -32,7 +32,7 @@ const featured = isFirstPage ? page.data[0] : null;
 const gridPosts = isFirstPage ? page.data.slice(1) : page.data;
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString("es-ES", { year: "numeric", month: "short", day: "numeric" });
+  return date.toLocaleDateString("es-ES", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
 }
 function readTimeOf(post: CollectionEntry<"blog">): string {
   const words = (post.body ?? "").split(/\s+/).length;

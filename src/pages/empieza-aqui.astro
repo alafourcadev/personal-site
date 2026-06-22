@@ -17,7 +17,7 @@ const latestPosts = allPosts
   .slice(0, 3);
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' });
+  return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
 }
 
 function readTimeOf(post: CollectionEntry<'blog'>): string {

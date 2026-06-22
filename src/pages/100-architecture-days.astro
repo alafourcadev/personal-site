@@ -22,7 +22,7 @@ const firstDays = [...dayPosts].sort((a, b) => (a.data.day ?? 0) - (b.data.day ?
 const recentDays = [...dayPosts].sort((a, b) => b.data.date.getTime() - a.data.date.getTime()).slice(0, 6);
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' });
+  return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
 }
 
 function readTimeOf(post: CollectionEntry<'blog'>): string {
