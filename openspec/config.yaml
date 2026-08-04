@@ -1,0 +1,71 @@
+schema: spec-driven
+
+context: |
+  Product: "La Forja" — a level-based architecture learning game hosted on the ISF
+  ("Ingeniería sin filtros") website. NOT a landing page. Players progress through
+  levels (junior architect -> advocate); each level is one architecture/software-design
+  topic holding many exercises. Every exercise funnels into the "playground": a canvas
+  where the player wires typed infrastructure/application/business components into a
+  system design, submits it, and a rule engine scores it and explains what is wrong.
+  Scoring is NOT pass/fail and has no single correct answer: it measures closeness to
+  the most optimal solution across weighted axes, and the highest-scoring peer answers
+  are shown on the exercise. A score ranking of all registered participants MUST be
+  visible at all times, in every view — this is a hard product requirement.
+  Design source of truth for visual identity is the live site's BaseLayout.astro tokens,
+  NOT La-Forja-Especificaciones/02-*.md (its palette was never implemented and is superseded).
+  Working prototypes to build from live in the brand repo at
+  /Users/ale/Documents/ingenieria-sin-filtros-brand/La-Forja-Especificaciones/prototipos/.
+  Stack: Astro 6.1.9 (static output, no server adapter), Tailwind 3.4.15, TypeScript 5.6.3 (strict), Node >=22.
+  No islands framework installed (no React/Vue/Svelte/Solid) — components are .astro only.
+  Content via Astro content collections (src/content.config.ts, glob loader, Zod schema).
+  No test runner installed today (no vitest/jest/playwright/cypress) — see testing gap below.
+  Product copy (La Forja UI/content) is Spanish with English toggle; code/comments/identifiers stay English.
+  Engram project key for all memory ops: ingenieria-sin-filtros-brand (shared with brand repo, do not fragment).
+
+strict_tdd: true
+
+testing_gap:
+  status: RESOLVED
+  detail: >
+    Resolved in R1-A of la-forja-integracion: vitest and @playwright/test are
+    installed, vitest.config.ts and playwright.config.ts exist, and
+    rules.apply.test_command / rules.verify.test_command are set to "npm test"
+    below.
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - State clearly which existing routes/pages are touched, if any (route changes need explicit user approval per project CLAUDE.md)
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence/flow diagrams for non-trivial interactions
+    - Document architecture decisions with rationale
+    - Justify any new dependency (islands framework, adapter, etc.) explicitly — none are installed today
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+    - Forecast the 400-changed-line review budget; recommend chained/stacked PRs if exceeded
+  apply:
+    guidelines:
+      - Follow existing Astro conventions (content collections, .astro components, no islands unless explicitly approved)
+      - Never git add -A / git add . — stage explicit paths only, verify with git diff --cached --name-only
+      - Never touch src/content/blog/checkpoint-clean-code.md (unrelated untracked draft)
+      - Never push or deploy without explicit approval
+      - Never change existing routes without explicit approval
+      - Conventional commits, no AI attribution / Co-Authored-By
+    tdd: true
+    test_command: "npm test"
+  verify:
+    test_command: "npm test"
+    build_command: "npm run build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
+
+delivery:
+  execution_mode: interactive
+  artifact_store: hybrid
+  delivery_strategy: ask-on-risk
+  review_budget_lines: 400

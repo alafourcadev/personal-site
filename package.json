@@ -7,7 +7,11 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "publish:devto": "node scripts/publish-to-devto.mjs"
+    "publish:devto": "node scripts/publish-to-devto.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "engines": {
     "node": ">=22.0.0"
@@ -28,5 +32,9 @@
     "tailwindcss": "^3.4.15",
     "typescript": "^5.6.3",
     "unist-util-visit": "^5.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "vitest": "^4.1.10"
   }
 }
