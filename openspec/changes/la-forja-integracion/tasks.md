@@ -151,26 +151,44 @@ clamp, empty state and 8 Playwright blocker tests add it back.
 
 ## R1-B — Engine legality [EE1, EE2, EE3(C1), EE9]
 
-- [ ] B.1 RED: `tests/engine/purity.test.ts` — source scan, no `document`/
+> **Apply Progress Update (2026-08-04):** R1-B is COMPLETE — all 11 tasks
+> (B.1–B.11) marked `[x]`. Split into two commits to stay under the 400-line
+> review budget (the ~400 forecast was for the whole slice, and the actual
+> port came to ~675 authored lines once the 13-rule port and its 14 test
+> cases were written out): `abd4f51` "feat(forja): engine legality
+> foundation — catalog, zones, ports" (277 lines: types.ts, catalog.ts,
+> legality.ts, rules.ts skeleton, purity/catalog/legality tests) and
+> `2bd2f4a` "feat(forja): port the 13-rule legality engine and
+> empty-canvas guard" (398 lines: full rules.ts, index.ts's
+> `evaluateLegality`, rules.test.ts with 14 cases, empty-canvas.test.ts).
+> `npm test` passes 27/27 across 6 files; `npm run build` stays green (50
+> pages); `tsc --noEmit` is clean. Spec `forja-evaluation-engine` amended
+> from "twelve" to "thirteen" rules incl. `port-mismatch` per C1, in the
+> docs commit (not the code commits). Full evidence in Engram
+> `sdd/la-forja-integracion/apply-progress`. Next: R1-C (engine scoring).
+
+- [x] B.1 RED: `tests/engine/purity.test.ts` — source scan, no `document`/
       `window`/`@xyflow`/`astro:` import under `src/lib/forja/engine/**`.
-- [ ] B.2 GREEN: engine module skeleton with zero DOM imports.
-- [ ] B.3 RED: `tests/engine/catalog.test.ts` — `Object.keys(CATALOG)` equals
+- [x] B.2 GREEN: engine module skeleton with zero DOM imports.
+- [x] B.3 RED: `tests/engine/catalog.test.ts` — `Object.keys(CATALOG)` equals
       §13.5 closed list incl. `business-process`, `external-provider`,
       `stream`, `cdn`, `vector-store`, `identity-provider`; every type owns
       ≥1 property read by ≥1 rule.
-- [ ] B.4 GREEN: `catalog.ts` closing the gap (D4).
-- [ ] B.5 RED: `tests/engine/legality.test.ts` — band/zone/`trust-zone-jump`,
+- [x] B.4 GREEN: `catalog.ts` closing the gap (D4).
+- [x] B.5 RED: `tests/engine/legality.test.ts` — band/zone/`trust-zone-jump`,
       port-compatibility (`ACCEPTS` table) legality gate.
-- [ ] B.6 GREEN: `legality.ts`.
-- [ ] B.7 RED: one Vitest case per rule (13 cases, per C1) in
+- [x] B.6 GREEN: `legality.ts`.
+- [x] B.7 RED: one Vitest case per rule (13 cases, per C1) in
       `tests/engine/rules.test.ts` — each asserts severity
       (`blocking|warning|note`) and legality gating.
-- [ ] B.8 GREEN: `rules.ts` porting all 13 rule bodies + verbatim `why` copy
+- [x] B.8 GREEN: `rules.ts` porting all 13 rule bodies + verbatim `why` copy
       from `forja-canvas.html`; revive the `stream` branch via the catalog
       fix (D4), not by deleting it.
-- [ ] B.9 RED: `tests/engine/empty-canvas.test.ts` — zero nodes/edges scores 0.
-- [ ] B.10 GREEN: empty-design early guard in the evaluation pipeline.
-- [ ] B.11 Commit: `feat(forja): port 13-rule legality engine`.
+- [x] B.9 RED: `tests/engine/empty-canvas.test.ts` — zero nodes/edges scores 0.
+- [x] B.10 GREEN: empty-design early guard in the evaluation pipeline.
+- [x] B.11 Commit: `feat(forja): port 13-rule legality engine`. **Scope note:**
+      delivered as two commits (`abd4f51`, `2bd2f4a`) per the 400-line-per-slice
+      discipline; see Apply Progress Update above.
 
 ## R1-C — Engine scoring [EE4–EE8, EE10, EE11 + risk item]
 

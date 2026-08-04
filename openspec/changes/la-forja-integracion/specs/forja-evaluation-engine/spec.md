@@ -19,7 +19,8 @@ The engine MUST be implemented with zero DOM or browser-global imports.
 
 ### Requirement: Legality gates scoring
 The engine MUST evaluate legality (trust-zone bands §13.3, port compatibility
-§13.6, the 12 rules of §13.7) before computing any score. An illegal design
+§13.6, the 13 rules — the 12 of §13.7 plus `port-mismatch`) before computing
+any score. An illegal design
 MUST NOT receive a numeric score derived from guarantees or cost.
 
 #### Scenario: Illegal design has no score
@@ -32,14 +33,17 @@ MUST NOT receive a numeric score derived from guarantees or cost.
 - WHEN evaluated
 - THEN the result MUST include `legal: true` and a numeric `score`
 
-### Requirement: Twelve validation rules with severities
-The engine MUST implement all twelve §13.7 rules (`trust-zone-jump`,
-`volatile-durable-mismatch`, `regulated-without-backup`,
+### Requirement: Thirteen validation rules with severities
+The engine MUST implement all thirteen rules: the twelve named in §13.7
+(`trust-zone-jump`, `volatile-durable-mismatch`, `regulated-without-backup`,
 `pii-to-external-model`, `queue-without-dlq`, `orphan-queue`,
 `sync-chain-depth`, `intermittent-client-without-idempotency`,
 `no-observability-on-critical`, `single-point-of-failure`,
-`ops-budget-exceeded`, `undeclared-data-class`), each tagged
-`blocking | warning | note`, and MUST gate legality only on `blocking`.
+`ops-budget-exceeded`, `undeclared-data-class`) plus `port-mismatch` (§13.6:
+a target component's inbound port that does not accept the source
+component's type — "no es una decisión discutible, es un error de forma"),
+each tagged `blocking | warning | note`, and MUST gate legality only on
+`blocking`.
 
 #### Scenario: Blocking rule prevents legal status
 - GIVEN a design with an orphan queue (no connected consumer)
