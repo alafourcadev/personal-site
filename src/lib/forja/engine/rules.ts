@@ -73,9 +73,12 @@ export function evaluateRules(design: Design, opsCapacity = 4): Finding[] {
         [a.id, b.id], [e.id])
     }
 
-    if (e.dataClass === 'regulated' && b.type === 'cache')
-      add('volatile-durable-mismatch', 'blocking', 'Dato regulado en almacenamiento volátil',
-        `${a.label} → ${b.label} · dato regulado`, WHY.volatileDurableMismatch, [b.id], [e.id])
+    // Doc 13 §13.7 binds this rule to `regulated` OR `personal`. The prototype only
+    // checked `regulated`; porting that verbatim would have left PII in a cache silent.
+    if ((e.dataClass === 'regulated' || e.dataClass === 'personal') && b.type === 'cache')
+      add('volatile-durable-mismatch', 'blocking', 'Dato sensible en almacenamiento volátil',
+        `${a.label} → ${b.label} · dato ${e.dataClass === 'regulated' ? 'regulado' : 'personal'}`,
+        WHY.volatileDurableMismatch, [b.id], [e.id])
 
     if (e.dataClass === 'personal' && b.type === 'ai-model' && b.props.hosting === 'external')
       add('pii-to-external-model', 'blocking', 'Datos personales hacia un modelo externo',

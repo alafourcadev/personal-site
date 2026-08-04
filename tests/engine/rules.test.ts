@@ -53,6 +53,18 @@ describe('forja engine — the 13 §13.7 rules', () => {
     expect(found[0].severity).toBe('blocking')
   })
 
+  it('volatile-durable-mismatch: personal data landing only in a cache — blocking', () => {
+    // Doc 13 §13.7 binds this rule to "un dato `regulated` o `personal`".
+    // The prototype only checked `regulated`, so PII in a cache went unreported.
+    const d = design(
+      [node('a', 'service', 'private'), node('b', 'cache', 'private')],
+      [edge('a', 'b', 'personal')],
+    )
+    const found = only(evaluateRules(d), 'volatile-durable-mismatch')
+    expect(found).toHaveLength(1)
+    expect(found[0].severity).toBe('blocking')
+  })
+
   it('regulated-without-backup: regulated data into a database with backup:none — blocking', () => {
     const d = design(
       [node('a', 'service', 'private'), node('b', 'database', 'restricted', { backup: 'none' })],
