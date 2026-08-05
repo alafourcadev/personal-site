@@ -4,6 +4,7 @@
 // drives these methods is proven separately in tests/e2e/canvas.spec.ts.
 import { describe, expect, it } from 'vitest'
 import { ForjaStore } from '../../src/lib/forja/store/forja-store'
+import { bandXRange } from '../../src/lib/forja/canvas/bands'
 
 describe('ForjaStore — create [PC1]', () => {
   it('adds a node of the requested type at the given position', () => {
@@ -44,9 +45,12 @@ describe('ForjaStore — move [PC2]', () => {
     const store = new ForjaStore()
     const node = store.createNode('service', 'Cobros', { x: 0, y: 0 })
 
-    store.moveNode(node.id, { x: 120, y: 80 })
+    // 'service' is an application-layer type; this target sits inside that
+    // band's own bounds (see the band-clamp describe block below for the
+    // containment behaviour itself).
+    store.moveNode(node.id, { x: 360, y: 80 })
 
-    expect(store.getDesign().nodes[0].position).toEqual({ x: 120, y: 80 })
+    expect(store.getDesign().nodes[0].position).toEqual({ x: 360, y: 80 })
   })
 
   it('is a no-op for a node id that does not exist', () => {
@@ -68,6 +72,26 @@ describe('ForjaStore — move [PC2]', () => {
     const moved = store.getDesign().nodes[0].position
     expect(moved!.x).toBeGreaterThan(100)
     expect(moved!.y).toBeGreaterThan(100)
+  })
+
+  it('clamps a business-band node so it can never reach the infrastructure band [PC7 design note]', () => {
+    const store = new ForjaStore()
+    const actor = store.createNode('actor', 'Persona usuaria', { x: 0, y: 0 })
+
+    store.moveNode(actor.id, { x: 100000, y: 40 })
+
+    const database = store.createNode('database', 'Base de pedidos', { x: 0, y: 0 })
+    store.moveNode(database.id, { x: 0, y: 0 })
+
+    expect(store.getDesign().nodes[0].position!.x).toBeLessThan(store.getDesign().nodes[1].position!.x)
+  })
+
+  it('clamps keyboard-driven moves to the same band bounds', () => {
+    const store = new ForjaStore()
+    const actor = store.createNode('actor', 'Persona usuaria', { x: 0, y: 0 })
+    for (let i = 0; i < 200; i += 1) store.moveNodeByKeyboard(actor.id, 'right')
+
+    expect(store.getDesign().nodes[0].position!.x).toBeLessThanOrEqual(bandXRange('business').max)
   })
 })
 

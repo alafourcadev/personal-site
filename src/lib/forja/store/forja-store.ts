@@ -5,6 +5,7 @@
 // `onNodeDragStop`, goes through here.
 import { checkConnection } from '../engine'
 import { CATALOG } from '../engine/catalog'
+import { bandForType, clampToBand } from '../canvas/bands'
 import type { ComponentType, ConnectionVerdict, Design, DesignEdge, DesignNode, PlayerColor, Zone } from '../engine/types'
 
 export interface StorePosition {
@@ -89,11 +90,18 @@ export class ForjaStore {
     return node
   }
 
+  // Single source of truth for band containment (PC7's design note) — both
+  // the drag-stop commit and keyboard moves route through here, so neither
+  // gesture can push a node past its band regardless of how far the raw
+  // input tries to move it. See bands.ts for why this is a manual clamp
+  // rather than React Flow's `extent: 'parent'`.
   moveNode(nodeId: string, position: StorePosition): void {
-    if (!this.design.nodes.some((n) => n.id === nodeId)) return
+    const node = this.design.nodes.find((n) => n.id === nodeId)
+    if (!node) return
+    const clamped = clampToBand(position, bandForType(node.type))
     this.commit({
       ...this.design,
-      nodes: this.design.nodes.map((n) => (n.id === nodeId ? { ...n, position } : n)),
+      nodes: this.design.nodes.map((n) => (n.id === nodeId ? { ...n, position: clamped } : n)),
     })
   }
 
