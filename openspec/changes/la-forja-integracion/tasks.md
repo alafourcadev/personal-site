@@ -246,33 +246,55 @@ clamp, empty state and 8 Playwright blocker tests add it back.
 
 ## R1-D1 — Canvas core gestures [PC1–PC6, PC10–PC13] · *value-first, not the checkpoint yet*
 
-- [ ] D1.1 RED (Playwright): create node by pointer and by keyboard, focus
+> **Apply Progress Update (2026-08-04):** R1-D1 is COMPLETE — all 17 tasks
+> (D1.1–D1.17) marked `[x]`. Delivered as 8 commits on `feat/la-forja`
+> (no PRs, per the owner's explicit override): `c4ad861` deps + react()
+> integration, `c9f7205` domain store, `6237497` presentation catalog +
+> accessible-name composer, `5c92d35` Design→React Flow projection,
+> `b95e162` store default-props fix, `1cf0b22` presentation components
+> (icons, node, palette, list view), `a2e0fb1` ForjaCanvas orchestrator +
+> `/forja` mount, `4866e08` the 16-scenario Playwright suite, `1d0277e`
+> dark-theme Controls + a real post-create focus race fix found while
+> stress-testing. `npm test`: 84/84 (59 baseline + 25 new). `npm run
+> build`: 51 pages, only `/forja/index.html` references the React chunk
+> (grepped across `dist/**/*.html`). Playwright: 16/16 against the
+> production build, stress-tested 80/80 and 75/75 under `--repeat-each`.
+> `DesignList` shipped as a React component inside the island, not
+> `DesignList.astro` — design D5 places the list view outside the island
+> only once a real `[level]/[exercise]` route exists (R1-F); noted as a
+> deviation. Full evidence in Engram `sdd/la-forja-integracion/apply-progress`.
+
+- [x] D1.1 RED (Playwright): create node by pointer and by keyboard, focus
       moves to the new node [PC1].
-- [ ] D1.2 GREEN: `ForjaCanvas.tsx` node creation wired to the store.
-- [ ] D1.3 RED (Playwright): move a focused/selected node with arrow keys [PC2].
-- [ ] D1.4 GREEN: keyboard move handler.
-- [ ] D1.5 RED (Playwright): connect by pointer drag and by keyboard
+- [x] D1.2 GREEN: `ForjaCanvas.tsx` node creation wired to the store.
+- [x] D1.3 RED (Playwright): move a focused/selected node with arrow keys [PC2].
+- [x] D1.4 GREEN: keyboard move handler.
+- [x] D1.5 RED (Playwright): connect by pointer drag and by keyboard
       command; illegal connection announced via `aria-live`, never color
       alone [PC3, PC12].
-- [ ] D1.6 GREEN: `isValidConnection` → `engine.checkConnection` wiring per
+- [x] D1.6 GREEN: `isValidConnection` → `engine.checkConnection` wiring per
       the connection-gesture diagram.
-- [ ] D1.7 RED (Playwright, real pointer — **B4 blocker, PC4**): click an
+- [x] D1.7 RED (Playwright, real pointer — **B4 blocker, PC4**): click an
       existing connection, confirm delete; count decreases by one and it
       does **not** reappear on next render.
-- [ ] D1.8 GREEN: edge deletion (React Flow edge selection + delete).
-- [ ] D1.9 RED (Playwright): delete a keyboard-selected node removes its
+- [x] D1.8 GREEN: edge deletion (React Flow edge selection + delete).
+- [x] D1.9 RED (Playwright): delete a keyboard-selected node removes its
       connections too [PC5].
-- [ ] D1.10 GREEN: node deletion handler.
-- [ ] D1.11 RED (Playwright): undo restores a deleted connection between the
+- [x] D1.10 GREEN: node deletion handler.
+- [x] D1.11 RED (Playwright): undo restores a deleted connection between the
       same two ports [PC6].
-- [ ] D1.12 GREEN: undo wiring (store history).
-- [ ] D1.13 RED: accessible name includes label, type, zone, state [PC13];
+- [x] D1.12 GREEN: undo wiring (store history).
+- [x] D1.13 RED: accessible name includes label, type, zone, state [PC13];
       `DesignList.astro` shows the same findings as the canvas [PC10].
-- [ ] D1.14 GREEN: `aria-label` composition (D8) + `DesignList.astro`.
-- [ ] D1.15 RED (Playwright): full keyboard build (create, connect, move,
+- [x] D1.14 GREEN: `aria-label` composition (D8) + `DesignList.astro`.
+      **Deviation:** shipped as `DesignList.tsx`, a React component inside
+      the island — see Apply Progress Update above.
+- [x] D1.15 RED (Playwright): full keyboard build (create, connect, move,
       delete) matches an equivalent pointer-built design [PC11].
-- [ ] D1.16 GREEN: close any remaining keyboard gaps found by D1.15.
-- [ ] D1.17 Commit: `feat(forja): canvas core gestures`.
+- [x] D1.16 GREEN: close any remaining keyboard gaps found by D1.15.
+- [x] D1.17 Commit: `feat(forja): canvas core gestures`. **Scope note:**
+      delivered as 8 commits per the 400-line-per-slice discipline; see
+      Apply Progress Update above.
 
 ## R1-D2 — Bands, spike, pan/fit, empty state [PC7, PC8(G1)] · **🔴 HUMAN VERIFICATION POINT**
 
