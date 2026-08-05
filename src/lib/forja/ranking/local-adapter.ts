@@ -19,7 +19,10 @@ export interface KeyValueStorage {
   setItem(key: string, value: string): void
 }
 
-const STORAGE_KEY = 'forja:attempts:v1'
+// Exported so the Playwright suite can seed a real attempt directly into
+// localStorage (the same key the app itself reads/writes) rather than
+// duplicating the string literal and risking drift.
+export const STORAGE_KEY = 'forja:attempts:v1'
 
 function inMemoryFallback(): KeyValueStorage {
   const map = new Map<string, string>()
