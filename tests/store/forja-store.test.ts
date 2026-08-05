@@ -48,9 +48,9 @@ describe('ForjaStore — move [PC2]', () => {
     // 'service' is an application-layer type; this target sits inside that
     // band's own bounds (see the band-clamp describe block below for the
     // containment behaviour itself).
-    store.moveNode(node.id, { x: 360, y: 80 })
+    store.moveNode(node.id, { x: 450, y: 80 })
 
-    expect(store.getDesign().nodes[0].position).toEqual({ x: 360, y: 80 })
+    expect(store.getDesign().nodes[0].position).toEqual({ x: 450, y: 80 })
   })
 
   it('is a no-op for a node id that does not exist', () => {

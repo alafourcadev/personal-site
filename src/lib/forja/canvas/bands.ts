@@ -18,11 +18,22 @@ import type { ComponentType, Layer } from '../engine/types'
 import { CATALOG } from '../engine/catalog'
 
 export const BAND_ORDER: Layer[] = ['business', 'application', 'infrastructure']
-export const BAND_WIDTH = 320
-const BAND_PADDING = 16
-// Matches ForjaNode's `min-w-[168px]` plus a little breathing room so a
-// clamped node's right edge never touches the band divider.
-const NODE_WIDTH = 200
+// Sized against the real rendered canvas pane (~915px wide at the
+// component library's default width, 1280px viewport — measured directly,
+// not guessed): three bands at 360px total 1080px, wider than the pane, but
+// every node SPAWNS at its band's own left edge (see ForjaCanvas's
+// nextCreatePosition), so what actually has to stay visible without manual
+// panning is each band's own left edge and a freshly created node's own
+// width from there — comfortably inside 915px for all three bands. 360px
+// also leaves ~140px of real horizontal slack per band (360 - 190 - 28),
+// enough for a full-size pointer drag to move within its own band without
+// hitting the clamp on every frame.
+export const BAND_WIDTH = 360
+const BAND_PADDING = 14
+// Matches ForjaNode's `min-w-[168px]` with margin for longer labels, plus a
+// little breathing room so a clamped node's right edge never touches the
+// band divider.
+const NODE_WIDTH = 190
 
 export function bandForType(type: ComponentType): Layer {
   return CATALOG[type].layer
