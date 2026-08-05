@@ -6,6 +6,7 @@
 // This is the ONLY React island on the site: no other route pays for it.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { ForjaCanvas } from '../../components/forja/canvas/ForjaCanvas';
+import RankingStrip from '../../components/forja/RankingStrip.astro';
 ---
 
 <BaseLayout
@@ -37,5 +38,18 @@ import { ForjaCanvas } from '../../components/forja/canvas/ForjaCanvas';
       </p>
     </header>
     <ForjaCanvas client:only="react" />
+    <!--
+      RK1: a non-empty ranking element MUST be present in every La Forja
+      view — the spec requires presence and non-zero size, not a specific
+      position. Rendered here, outside the React island, so it is on the
+      page regardless of which internal ForjaCanvas tab (Lienzo/Vista de
+      lista/Resultado) is active — it never unmounts with them. Placed
+      AFTER the canvas, not before: an earlier revision placed it above
+      and pushed the canvas below a real 1280x720 viewport (measured, not
+      guessed — it broke an existing pointer-position test), which is
+      exactly the kind of below-the-fold defect this whole change exists
+      to fix, not reintroduce elsewhere.
+    -->
+    <RankingStrip />
   </section>
 </BaseLayout>
