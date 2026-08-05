@@ -31,6 +31,53 @@ hiddenFacts:
     discoveryPath: dejá la cola sin marcar `dlq` y probá tu respuesta — el motor te marca el hallazgo con la palabra exacta que describe qué le pasa a esas imágenes.
   - fact: hoy una imagen que falla el procesamiento se queda atascada en la cola hasta que la retención la borra sola — nadie la vuelve a ver.
     discoveryPath: la misma pregunta que responde el hallazgo de la cola sin destino para fallos.
+startingDesign:
+  nodes:
+    - id: usuario
+      type: actor
+      label: Usuario
+      zone: public
+      given: true
+      position: { x: 28, y: 80 }
+    - id: web
+      type: web-client
+      label: Panel web
+      zone: public
+      given: true
+      position: { x: 388, y: 80 }
+    - id: gw
+      type: api-gateway
+      label: Puerta de entrada
+      zone: dmz
+      given: true
+      position: { x: 388, y: 190 }
+    - id: subida
+      type: service
+      label: Servicio de subida
+      zone: private
+      given: true
+      props: { criticality: "medium" }
+      position: { x: 388, y: 300 }
+    - id: cola
+      type: queue
+      label: Cola de procesamiento
+      zone: private
+      given: true
+      props: { delivery: "at-least-once", dlq: "sí" }
+      position: { x: 748, y: 80 }
+  edges:
+    - id: usuario-web
+      from: { node: usuario }
+      to: { node: web }
+    - id: web-gw
+      from: { node: web }
+      to: { node: gw }
+    - id: gw-subida
+      from: { node: gw }
+      to: { node: subida }
+    - id: subida-cola
+      from: { node: subida }
+      to: { node: cola }
 guarantees:
   - id: g-queue-exists
     label: las imágenes pasan por una cola, no se procesan en el momento de subirlas

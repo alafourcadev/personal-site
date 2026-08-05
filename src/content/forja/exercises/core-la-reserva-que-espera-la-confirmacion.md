@@ -31,6 +31,55 @@ hiddenFacts:
     discoveryPath: probá una respuesta que conecte el servicio de reservas directo al sistema del hotel sin nada durable en el medio — el motor marca el salto sin testigo durable de inmediato.
   - fact: hoy nadie del equipo de reservas mira si el servicio sigue vivo — se enteran por el hotel, no por sus propias métricas.
     discoveryPath: dejá el servicio de reservas sin conectar a observabilidad y probá tu respuesta.
+startingDesign:
+  nodes:
+    - id: huesped
+      type: actor
+      label: Huésped
+      zone: public
+      given: true
+      position: { x: 28, y: 80 }
+    - id: app
+      type: mobile-client
+      label: App de reservas
+      zone: public
+      given: true
+      position: { x: 388, y: 80 }
+    - id: gw
+      type: api-gateway
+      label: Puerta de entrada
+      zone: dmz
+      given: true
+      position: { x: 388, y: 190 }
+    - id: reservas
+      type: service
+      label: Servicio de reservas
+      zone: private
+      role: booking-service
+      given: true
+      props: { criticality: "high", replicas: "2" }
+      position: { x: 388, y: 300 }
+    - id: hotel
+      type: external-provider
+      label: Sistema del hotel
+      zone: dmz
+      role: confirmation-sent
+      given: true
+      position: { x: 388, y: 410 }
+  edges:
+    - id: huesped-app
+      from: { node: huesped }
+      to: { node: app }
+    - id: app-gw
+      from: { node: app }
+      to: { node: gw }
+    - id: gw-reservas
+      from: { node: gw }
+      to: { node: reservas }
+    - id: reservas-hotel
+      from: { node: reservas }
+      to: { node: hotel }
+      dataClass: personal
 guarantees:
   - id: g-no-volatile-cut
     label: la reserva no depende de que el hotel confirme al toque

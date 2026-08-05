@@ -31,6 +31,55 @@ hiddenFacts:
     discoveryPath: si conectás el servicio de pagos directo al proveedor de email sin nada durable en el medio, el motor marca la conexión como un salto sin testigo durable en cuanto probás la respuesta — no hace falta esperar los 8 segundos reales para verlo.
   - fact: nadie mira el servicio de pagos en producción hoy — la primera señal de un problema es un reclamo de un comprador.
     discoveryPath: dejá el servicio de pagos sin conectar a observabilidad y probá tu respuesta — el motor te lo va a marcar como hallazgo, no como bloqueante.
+startingDesign:
+  nodes:
+    - id: cliente
+      type: actor
+      label: Comprador
+      zone: public
+      given: true
+      position: { x: 28, y: 80 }
+    - id: web
+      type: web-client
+      label: Tienda online
+      zone: public
+      given: true
+      position: { x: 388, y: 80 }
+    - id: gw
+      type: api-gateway
+      label: Puerta de entrada
+      zone: dmz
+      given: true
+      position: { x: 388, y: 190 }
+    - id: pagos
+      type: service
+      label: Servicio de pagos
+      zone: private
+      role: payment-service
+      given: true
+      props: { criticality: "high", replicas: "2" }
+      position: { x: 388, y: 300 }
+    - id: proveedor
+      type: external-provider
+      label: Proveedor de email
+      zone: dmz
+      role: email-sent
+      given: true
+      position: { x: 388, y: 410 }
+  edges:
+    - id: cliente-web
+      from: { node: cliente }
+      to: { node: web }
+    - id: web-gw
+      from: { node: web }
+      to: { node: gw }
+    - id: gw-pagos
+      from: { node: gw }
+      to: { node: pagos }
+    - id: pagos-proveedor
+      from: { node: pagos }
+      to: { node: proveedor }
+      dataClass: personal
 guarantees:
   - id: g-no-volatile-cut
     label: la confirmación de compra no depende de que el email salga primero

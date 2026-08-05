@@ -25,6 +25,25 @@ constraints:
 hiddenFacts:
   - fact: en una red inestable el cliente reintenta automáticamente cuando no recibe respuesta a tiempo.
     discoveryPath: el motor marca el hallazgo de reintentos sin idempotencia apenas conectás un cliente intermitente a un servicio que no declara ser idempotente.
+startingDesign:
+  nodes:
+    - id: cliente
+      type: mobile-client
+      label: Cliente móvil
+      zone: public
+      given: true
+      props: { connectivity: "intermittent" }
+      position: { x: 388, y: 80 }
+    - id: gw
+      type: api-gateway
+      label: Puerta de entrada
+      zone: dmz
+      given: true
+      position: { x: 388, y: 190 }
+  edges:
+    - id: cliente-gw
+      from: { node: cliente }
+      to: { node: gw }
 guarantees:
   - id: g-idempotent
     label: el servicio de pagos es idempotente ante reintentos

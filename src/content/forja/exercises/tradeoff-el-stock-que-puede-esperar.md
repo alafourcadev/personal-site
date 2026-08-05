@@ -30,6 +30,52 @@ constraints:
 hiddenFacts:
   - fact: el servicio de inventario soporta cómodamente 600 llamadas síncronas por hora — 20 veces menos que el pico de Black Friday.
     discoveryPath: es la cuenta que explica por qué la misma llamada directa que funcionaba en el ejercicio anterior acá tumba al servicio de inventario.
+startingDesign:
+  nodes:
+    - id: comprador
+      type: actor
+      label: Comprador
+      zone: public
+      given: true
+      position: { x: 28, y: 80 }
+    - id: web
+      type: web-client
+      label: Tienda online
+      zone: public
+      given: true
+      position: { x: 388, y: 80 }
+    - id: gw
+      type: api-gateway
+      label: Puerta de entrada
+      zone: dmz
+      given: true
+      position: { x: 388, y: 190 }
+    - id: checkout
+      type: service
+      label: Servicio de checkout
+      zone: private
+      role: checkout-service
+      given: true
+      props: { criticality: "high", replicas: "2" }
+      position: { x: 388, y: 300 }
+    - id: inventario
+      type: service
+      label: Servicio de inventario
+      zone: private
+      role: inventory-service
+      given: true
+      props: { criticality: "high", replicas: "2" }
+      position: { x: 388, y: 410 }
+  edges:
+    - id: comprador-web
+      from: { node: comprador }
+      to: { node: web }
+    - id: web-gw
+      from: { node: web }
+      to: { node: gw }
+    - id: gw-checkout
+      from: { node: gw }
+      to: { node: checkout }
 guarantees:
   - id: g-decoupled
     label: el checkout avisa a inventario sin depender de que responda al toque

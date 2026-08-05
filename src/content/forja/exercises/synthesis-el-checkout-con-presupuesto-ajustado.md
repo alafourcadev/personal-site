@@ -31,6 +31,46 @@ hiddenFacts:
     discoveryPath: pasate del presupuesto declarado y probá tu respuesta — el motor te muestra exactamente cuántos puntos perdiste por sobrepasarlo, no sólo que "está mal".
   - fact: el proveedor de email de este ejercicio tiene el mismo comportamiento errático que en "El pago que espera al email" — no es un problema nuevo, es el mismo, ahora con menos margen para resolverlo.
     discoveryPath: es la razón por la que no alcanza con resolver un solo hallazgo — hay que resolver los tres, con las mismas cinco piezas.
+startingDesign:
+  nodes:
+    - id: comprador
+      type: mobile-client
+      label: Cliente móvil
+      zone: public
+      given: true
+      position: { x: 388, y: 80 }
+    - id: gw
+      type: api-gateway
+      label: Puerta de entrada
+      zone: dmz
+      given: true
+      position: { x: 388, y: 190 }
+    - id: checkout
+      type: service
+      label: Servicio de checkout
+      zone: private
+      role: checkout-service
+      given: true
+      props: { criticality: "high", replicas: "1" }
+      position: { x: 388, y: 300 }
+    - id: proveedor
+      type: external-provider
+      label: Proveedor de email
+      zone: dmz
+      role: email-sent
+      given: true
+      position: { x: 388, y: 410 }
+  edges:
+    - id: comprador-gw
+      from: { node: comprador }
+      to: { node: gw }
+    - id: gw-checkout
+      from: { node: gw }
+      to: { node: checkout }
+    - id: checkout-proveedor
+      from: { node: checkout }
+      to: { node: proveedor }
+      dataClass: personal
 guarantees:
   - id: g-no-direct
     label: el cliente nunca llama directo al servicio de checkout

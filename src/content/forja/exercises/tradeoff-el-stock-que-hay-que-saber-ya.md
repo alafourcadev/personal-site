@@ -30,6 +30,52 @@ constraints:
 hiddenFacts:
   - fact: si el checkout cobra antes de confirmar el stock, un producto que se agotó hace 10 segundos genera un reembolso manual y un cliente enojado.
     discoveryPath: es la razón por la que el checkout necesita la respuesta de inventario ANTES de seguir, no en algún momento después.
+startingDesign:
+  nodes:
+    - id: comprador
+      type: actor
+      label: Comprador
+      zone: public
+      given: true
+      position: { x: 28, y: 80 }
+    - id: web
+      type: web-client
+      label: Tienda online
+      zone: public
+      given: true
+      position: { x: 388, y: 80 }
+    - id: gw
+      type: api-gateway
+      label: Puerta de entrada
+      zone: dmz
+      given: true
+      position: { x: 388, y: 190 }
+    - id: checkout
+      type: service
+      label: Servicio de checkout
+      zone: private
+      role: checkout-service
+      given: true
+      props: { criticality: "high", replicas: "2" }
+      position: { x: 388, y: 300 }
+    - id: inventario
+      type: service
+      label: Servicio de inventario
+      zone: private
+      role: inventory-service
+      given: true
+      props: { criticality: "high", replicas: "2" }
+      position: { x: 388, y: 410 }
+  edges:
+    - id: comprador-web
+      from: { node: comprador }
+      to: { node: web }
+    - id: web-gw
+      from: { node: web }
+      to: { node: gw }
+    - id: gw-checkout
+      from: { node: gw }
+      to: { node: checkout }
 guarantees:
   - id: g-immediate-answer
     label: el checkout sabe si hay stock antes de seguir, no en algún momento después

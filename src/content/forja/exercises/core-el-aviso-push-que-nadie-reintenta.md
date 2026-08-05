@@ -31,6 +31,50 @@ hiddenFacts:
     discoveryPath: dejá la cola sin marcar `dlq` y probá tu respuesta — el motor te marca el hallazgo con la palabra exacta que describe qué le pasa a esos avisos.
   - fact: hoy, cuando un aviso falla, simplemente desaparece — nadie lo reintenta ni lo revisa.
     discoveryPath: es la misma pregunta que el hallazgo de la cola sin destino para fallos responde — leé la consecuencia, no sólo el título.
+startingDesign:
+  nodes:
+    - id: app
+      type: mobile-client
+      label: App
+      zone: public
+      given: true
+      position: { x: 28, y: 80 }
+    - id: gw
+      type: api-gateway
+      label: Puerta de entrada
+      zone: dmz
+      given: true
+      position: { x: 388, y: 80 }
+    - id: notif
+      type: service
+      label: Servicio de notificaciones
+      zone: private
+      given: true
+      props: { criticality: "medium" }
+      position: { x: 388, y: 190 }
+    - id: cola
+      type: queue
+      label: Cola de avisos push
+      zone: private
+      given: true
+      props: { delivery: "at-least-once", dlq: "sí" }
+      position: { x: 748, y: 80 }
+    - id: proveedor
+      type: external-provider
+      label: Proveedor de push
+      zone: dmz
+      given: true
+      position: { x: 388, y: 300 }
+  edges:
+    - id: app-gw
+      from: { node: app }
+      to: { node: gw }
+    - id: gw-notif
+      from: { node: gw }
+      to: { node: notif }
+    - id: notif-cola
+      from: { node: notif }
+      to: { node: cola }
 guarantees:
   - id: g-queue-exists
     label: los avisos pasan por una cola, no se envían en el momento

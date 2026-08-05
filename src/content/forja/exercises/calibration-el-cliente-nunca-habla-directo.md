@@ -25,6 +25,15 @@ constraints:
 hiddenFacts:
   - fact: el motor rechaza cualquier conexión directa entre un cliente y un servicio, sin excepción.
     discoveryPath: intentá conectar el cliente directo al servicio — el motor te va a decir exactamente por qué no puede aceptar esa conexión, antes incluso de que termines de armar el diseño.
+startingDesign:
+  nodes:
+    - id: mc
+      type: mobile-client
+      label: Cliente móvil
+      zone: public
+      given: true
+      position: { x: 388, y: 80 }
+  edges: []
 guarantees:
   - id: g-no-direct
     label: el cliente nunca llama directo al servicio
