@@ -230,3 +230,28 @@ the site header, its navigation, or any control outside the playground.
 - WHEN the refusal message is announced
 - THEN it MUST be fully readable within the playground area
 - AND every site navigation link MUST remain visible and clickable
+
+### Requirement: The playground uses the full viewport width
+The playground is a tool, not an article, and MUST NOT be constrained by the
+site's prose container. It MUST span the full viewport width minus a small
+gutter, and the canvas MUST receive the largest share of the horizontal space —
+larger than the component library and larger than the exercise/result panel.
+The library and the panel MAY have a maximum width so that surplus space goes
+to the canvas rather than stretching sidebars.
+
+Rationale: an explicit owner requirement, stated twice. On a 2000px display the
+1200px article container left roughly 800px of dead margin while the canvas —
+the actual work surface — was cramped. Space spent on empty gutters is space
+taken from the diagram the player is reasoning about.
+
+#### Scenario: No dead margin on a wide display
+- GIVEN a viewport 1920px wide or wider
+- WHEN the playground is rendered
+- THEN the playground MUST occupy the full width minus its gutter
+- AND the canvas MUST be wider than the library and wider than the side panel
+
+#### Scenario: Surplus width goes to the canvas
+- GIVEN the viewport grows from 1440px to 2560px
+- WHEN the layout reflows
+- THEN the canvas MUST absorb the majority of the added width
+- AND neither the library nor the side panel may grow without bound
