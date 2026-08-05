@@ -87,3 +87,28 @@ export interface Finding {
   // Allocated by score.ts's ledger (R1-C) — not populated by the legality/rules layer.
   costPoints?: number
 }
+
+// -- R1-C: guarantee predicate DSL (design D2) --------------------------
+// An exercise declares what it demands as data, never as a function — the
+// engine compiles this closed combinator vocabulary into graph queries and
+// never learns anything about any specific exercise.
+
+export interface NodeQuery {
+  type?: ComponentType[]
+  propEquals?: Record<string, string>
+  role?: string
+}
+
+export type Predicate =
+  | { op: 'exists'; node: NodeQuery }
+  | { op: 'path'; from: NodeQuery; to: NodeQuery; via?: NodeQuery; forbid?: NodeQuery }
+  // G2 in §14.3, verbatim: no cut in the path where the accepted state lives
+  // only in volatile memory. Satisfied by an outbox, a durable queue, log
+  // tailing or a reconciliation job alike — the predicate is over structure.
+  | { op: 'noVolatileCut'; from: NodeQuery; to: NodeQuery }
+  | { op: 'covered'; target: NodeQuery; by: NodeQuery }
+  | { op: 'edgeAbsent'; from: NodeQuery; to: NodeQuery }
+  // Lets an exercise decide which universal §13.7 rule costs points *in this
+  // exercise*, without the rule catalog knowing any exercise.
+  | { op: 'ruleSilent'; rule: RuleId }
+  | { op: 'all' | 'any' | 'not'; of: Predicate[] }
