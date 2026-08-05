@@ -112,3 +112,10 @@ export type Predicate =
   // exercise*, without the rule catalog knowing any exercise.
   | { op: 'ruleSilent'; rule: RuleId }
   | { op: 'all' | 'any' | 'not'; of: Predicate[] }
+
+// -- R1-C: cost as a budget with a cliff (design D3) ---------------------
+
+export interface Budget {
+  opsUnits: number
+  monthlyUsd?: number
+}
