@@ -16,6 +16,18 @@ test.describe('La Forja — level routes [EC6, PR5]', () => {
     await expect(page.getByTestId('exercise-role-tag').first()).toBeVisible()
   })
 
+  // R1-G requirement 1: "desde la lista de ejercicios del nivel se tiene
+  // que poder entrar a uno" — every list entry must be a real link into its
+  // own play route, not just a static card.
+  test('every exercise in the list links to its own play route', async ({ page }) => {
+    await page.goto('/forja/4')
+    const links = page.getByTestId('exercise-list-link')
+    await expect(links).toHaveCount(8)
+    for (const href of await links.evaluateAll((els) => els.map((el) => el.getAttribute('href')))) {
+      expect(href).toMatch(/^\/forja\/4\/[a-z0-9-]+$/)
+    }
+  })
+
   test('level 4 is the first playable level on the map [PR5]', async ({ page }) => {
     await page.goto('/forja/niveles')
     const playable = page.locator('[data-testid="level-card"][data-playable="true"]')
