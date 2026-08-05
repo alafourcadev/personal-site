@@ -5,13 +5,15 @@
 import { Position } from '@xyflow/react'
 import type { Edge, Node } from '@xyflow/react'
 import { composeNodeAccessibleName } from './accessible-name'
-import type { ComponentType, Design, Zone } from '../engine/types'
+import { PLAYER_COLORS } from './player-colors'
+import type { ComponentType, Design, PlayerColor, Zone } from '../engine/types'
 
 export interface ForjaNodeData extends Record<string, unknown> {
   label: string
   componentType: ComponentType
   zone: Zone
   hasError: boolean
+  color?: PlayerColor
 }
 
 export type ForjaFlowNode = Node<ForjaNodeData, 'forja'>
@@ -25,6 +27,7 @@ export function projectNodes(
   return design.nodes.map((node) => {
     const selected = selectedNodeIds.has(node.id)
     const hasError = errorNodeIds.has(node.id)
+    const colorLabel = node.color ? PLAYER_COLORS[node.color].label : undefined
     return {
       id: node.id,
       type: 'forja',
@@ -32,8 +35,8 @@ export function projectNodes(
       selected,
       sourcePosition: Position.Right,
       targetPosition: Position.Left,
-      ariaLabel: composeNodeAccessibleName(node, { selected, hasError }),
-      data: { label: node.label, componentType: node.type, zone: node.zone, hasError },
+      ariaLabel: composeNodeAccessibleName({ ...node, colorLabel }, { selected, hasError }),
+      data: { label: node.label, componentType: node.type, zone: node.zone, hasError, color: node.color },
     }
   })
 }

@@ -38,6 +38,19 @@ describe('projectNodes', () => {
     expect(nodes.find((n) => n.id === 'n2')!.data.hasError).toBe(true)
     expect(nodes.find((n) => n.id === 'n1')!.data.hasError).toBe(false)
   })
+
+  it('carries the colour through to data and the accessible name [PC16]', () => {
+    const colored: Design = {
+      ...design,
+      nodes: design.nodes.map((n) => (n.id === 'n2' ? { ...n, color: 'violet' as const } : n)),
+    }
+    const nodes = projectNodes(colored, new Set(), new Set())
+    const restricted = nodes.find((n) => n.id === 'n2')!
+
+    expect(restricted.data.color).toBe('violet')
+    expect(restricted.ariaLabel).toContain('color Violeta')
+    expect(nodes.find((n) => n.id === 'n1')!.ariaLabel).not.toContain('color')
+  })
 })
 
 describe('projectEdges', () => {

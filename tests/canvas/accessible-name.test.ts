@@ -35,4 +35,23 @@ describe('composeNodeAccessibleName [PC13]', () => {
 
     expect(name).toContain('con error')
   })
+
+  it('names the player-assigned colour as text, alongside label/type/zone [PC16]', () => {
+    const name = composeNodeAccessibleName(
+      { label: 'Base de pedidos', type: 'database', zone: 'restricted', colorLabel: 'Violeta' },
+      { selected: true },
+    )
+
+    expect(name).toContain('Base de pedidos')
+    expect(name).toContain('database')
+    expect(name).toContain('restricted')
+    expect(name).toContain('seleccionado')
+    expect(name).toContain('color Violeta')
+  })
+
+  it('omits the colour descriptor when no colour was assigned', () => {
+    const name = composeNodeAccessibleName({ label: 'Cola de eventos', type: 'queue', zone: 'private' })
+
+    expect(name).not.toContain('color')
+  })
 })

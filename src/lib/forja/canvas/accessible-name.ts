@@ -9,6 +9,10 @@ export interface AccessibleNameNode {
   label: string
   type: ComponentType
   zone: Zone
+  // PC16: "the chosen colour MUST be named in the node's accessible
+  // description" — the Spanish label from PLAYER_COLORS, passed in rather
+  // than looked up here so this module stays free of any UI-layer import.
+  colorLabel?: string
 }
 
 export interface AccessibleNameState {
@@ -20,5 +24,6 @@ export function composeNodeAccessibleName(node: AccessibleNameNode, state: Acces
   const parts = [node.label, node.type, `zona ${node.zone}`]
   if (state.selected) parts.push('seleccionado')
   if (state.hasError) parts.push('con error')
+  if (node.colorLabel) parts.push(`color ${node.colorLabel}`)
   return parts.join(', ')
 }
