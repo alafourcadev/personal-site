@@ -26,20 +26,29 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { checkConnection, evaluateLegality } from '../../../lib/forja/engine'
+import { checkConnection, evaluate, evaluateLegality } from '../../../lib/forja/engine'
 import { CATALOG } from '../../../lib/forja/engine/catalog'
-import type { ComponentType, ConnectionVerdict, Layer } from '../../../lib/forja/engine/types'
+import type { ComponentType, ConnectionVerdict, Evaluation, Finding, Layer } from '../../../lib/forja/engine/types'
 import { projectEdges, projectNodes, type ForjaFlowEdge, type ForjaFlowNode } from '../../../lib/forja/canvas/project'
 import { bandForType, bandXRange, clampToBand } from '../../../lib/forja/canvas/bands'
 import { CANVAS_EDGE_STYLE_VARS } from '../../../lib/forja/canvas/edge-theme'
 import { useForjaStore } from '../../../lib/forja/store/useForjaStore'
 import { CATALOG_UI } from '../../../lib/forja/canvas/catalog-ui'
 import { PLAYER_COLORS, PLAYER_COLOR_ORDER } from '../../../lib/forja/canvas/player-colors'
+import { PLAYGROUND_EXERCISE, PLAYGROUND_EXERCISE_ID } from '../../../lib/forja/playground/exercise'
+import { localRankingAdapter } from '../../../lib/forja/ranking/local-adapter'
 import { BandLane } from './BandLane'
 import { ComponentLibrary } from './ComponentLibrary'
 import { ContextMenu, type ContextMenuItem } from './ContextMenu'
 import { DesignList } from './DesignList'
 import { ForjaNode } from './ForjaNode'
+import { ResultPanel } from './ResultPanel'
+
+// The page shell's RankingStrip.astro script listens for this to refresh
+// itself — it lives entirely outside the island (design D5), so a DOM
+// CustomEvent is the only channel that reaches it without giving it a
+// direct import into React state.
+const RANKING_UPDATED_EVENT = 'forja:ranking-updated'
 
 const NODE_TYPES = { forja: ForjaNode }
 const DELETE_KEYS = ['Backspace', 'Delete']
@@ -70,8 +79,13 @@ function ForjaCanvasInner() {
   const { screenToFlowPosition } = useReactFlow()
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set())
   const [selectedEdgeIds, setSelectedEdgeIds] = useState<Set<string>>(new Set())
-  const [view, setView] = useState<'canvas' | 'list'>('canvas')
+  const [view, setView] = useState<'canvas' | 'list' | 'result'>('canvas')
   const [status, setStatus] = useState('')
+  const [evaluation, setEvaluation] = useState<Evaluation | null>(null)
+  // R1-E: hover previews a finding's nodeIds/edgeIds on the canvas without
+  // mutating the persistent selection; click (below) reuses the existing
+  // selectedNodeIds/selectedEdgeIds so the highlight survives a tab switch.
+  const [hoveredFindingId, setHoveredFindingId] = useState<string | null>(null)
   const [connectSourceId, setConnectSourceId] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
   const pendingFocusId = useRef<string | null>(null)
@@ -79,6 +93,9 @@ function ForjaCanvasInner() {
   // it (see the JSX below) is what keeps ContextMenu's `position: absolute`
   // contained to the playground's own box, never the site header.
   const containerRef = useRef<HTMLDivElement>(null)
+  // "Every panel that opens can be closed": closing the result panel
+  // returns focus HERE, to the exact control that opened it.
+  const submitButtonRef = useRef<HTMLButtonElement>(null)
 
   const findings = useMemo(() => evaluateLegality(design).findings, [design])
   const errorNodeIds = useMemo(
@@ -89,6 +106,27 @@ function ForjaCanvasInner() {
     () => new Set(findings.filter((f) => f.severity === 'blocking').flatMap((f) => f.edgeIds)),
     [findings],
   )
+
+  const hoveredFinding = useMemo(
+    () => evaluation?.findings.find((f) => f.id === hoveredFindingId) ?? null,
+    [evaluation, hoveredFindingId],
+  )
+  // A hovered finding dims every node/edge OUTSIDE its own nodeIds/edgeIds —
+  // this is the "findings must point at the canvas" requirement: the
+  // prototype made the player translate prose into geometry by hand for 7
+  // of 8 diagnoses. An empty union (a guarantee-missing finding never
+  // carries nodeIds — see score.ts) dims nothing, which is an acceptable,
+  // honest degrade: there is nothing on the canvas to circle.
+  const dimmedNodeIds = useMemo(() => {
+    if (!hoveredFinding || hoveredFinding.nodeIds.length === 0) return new Set<string>()
+    const keep = new Set(hoveredFinding.nodeIds)
+    return new Set(design.nodes.filter((n) => !keep.has(n.id)).map((n) => n.id))
+  }, [design.nodes, hoveredFinding])
+  const dimmedEdgeIds = useMemo(() => {
+    if (!hoveredFinding || hoveredFinding.edgeIds.length === 0) return new Set<string>()
+    const keep = new Set(hoveredFinding.edgeIds)
+    return new Set(design.edges.filter((e) => !keep.has(e.id)).map((e) => e.id))
+  }, [design.edges, hoveredFinding])
 
   const [nodes, setNodes] = useState<ForjaFlowNode[]>([])
   const [edges, setEdges] = useState<ForjaFlowEdge[]>([])
@@ -107,12 +145,12 @@ function ForjaCanvasInner() {
   // own render had actually committed — reproducible under Playwright's
   // faster-than-human input, though invisible to a real player.
   useLayoutEffect(() => {
-    setNodes(projectNodes(design, selectedNodeIds, errorNodeIds))
-  }, [design, selectedNodeIds, errorNodeIds])
+    setNodes(projectNodes(design, selectedNodeIds, errorNodeIds, dimmedNodeIds))
+  }, [design, selectedNodeIds, errorNodeIds, dimmedNodeIds])
 
   useLayoutEffect(() => {
-    setEdges(projectEdges(design, selectedEdgeIds, errorEdgeIds))
-  }, [design, selectedEdgeIds, errorEdgeIds])
+    setEdges(projectEdges(design, selectedEdgeIds, errorEdgeIds, dimmedEdgeIds))
+  }, [design, selectedEdgeIds, errorEdgeIds, dimmedEdgeIds])
 
   useLayoutEffect(() => {
     if (!pendingFocusId.current) return
@@ -136,6 +174,50 @@ function ForjaCanvasInner() {
     const undone = store.undo()
     setStatus(undone ? 'Se deshizo la última acción.' : 'No hay nada para deshacer.')
   }, [store])
+
+  // B3 blocker: submit scores the current design and switches straight to
+  // the Resultado tab, which — unlike the prototype — keeps the canvas
+  // mounted next to it (see the JSX below) rather than replacing it, so a
+  // finding's highlight is visible the moment the player looks at the
+  // canvas tab too.
+  //
+  // RK7: LocalRankingAdapter.submit() always stores the full graph, legal
+  // or not — an illegal attempt still becomes personal history, just never
+  // a ranked entry (see local-adapter.ts's getSnapshot()).
+  const handleSubmit = useCallback(() => {
+    const result = evaluate(design, PLAYGROUND_EXERCISE)
+    setEvaluation(result)
+    setView('result')
+    localRankingAdapter.submit({
+      exerciseId: PLAYGROUND_EXERCISE_ID,
+      design,
+      score: result.score,
+      ceiling: result.ceiling,
+      engineVersion: result.engineVersion,
+    })
+    window.dispatchEvent(new CustomEvent(RANKING_UPDATED_EVENT))
+  }, [design])
+
+  const handleHoverFinding = useCallback((findingId: string | null) => {
+    setHoveredFindingId(findingId)
+  }, [])
+
+  // Click persists the highlight as the canvas's own selection (the exact
+  // state onSelectionChange already drives) — it survives switching back
+  // to the Lienzo tab, unlike hover.
+  const handleSelectFinding = useCallback((finding: Finding) => {
+    setSelectedNodeIds(new Set(finding.nodeIds))
+    setSelectedEdgeIds(new Set(finding.edgeIds))
+  }, [])
+
+  // "Every panel that opens can be closed": switches the tab away from
+  // 'result' and returns focus to the control that opened it — never
+  // clears `evaluation`, so reopening the Resultado tab shows the exact
+  // same result, not a blank one.
+  const handleCloseResultPanel = useCallback(() => {
+    setView('canvas')
+    submitButtonRef.current?.focus()
+  }, [])
 
   const handleCreate = useCallback(
     (type: ComponentType) => {
@@ -393,6 +475,13 @@ function ForjaCanvasInner() {
         setStatus('Modo conectar activo. Elegí el nodo destino con Tab y presioná Enter. Escape para cancelar.')
         return
       }
+      // "Every panel that opens can be closed": Escape closes the result
+      // panel, same as its own close button. Guarded on `!contextMenu` —
+      // that overlay owns Escape when it is the thing actually open.
+      if (event.key === 'Escape' && view === 'result' && !contextMenu) {
+        handleCloseResultPanel()
+        return
+      }
       if (connectSourceId && event.key === 'Escape') {
         setConnectSourceId(null)
         setStatus('Conexión cancelada.')
@@ -414,7 +503,7 @@ function ForjaCanvasInner() {
     }
     window.addEventListener('keydown', onKeyDown, { capture: true })
     return () => window.removeEventListener('keydown', onKeyDown, { capture: true })
-  }, [connectSourceId, store, announceVerdict, handleUndo])
+  }, [connectSourceId, store, announceVerdict, handleUndo, view, contextMenu, handleCloseResultPanel])
 
   return (
     <div
@@ -446,15 +535,36 @@ function ForjaCanvasInner() {
           >
             Vista de lista
           </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={view === 'result'}
+            onClick={() => setView('result')}
+            data-testid="view-result-tab"
+            className={`rounded-md px-3 py-1.5 text-sm font-medium ${view === 'result' ? 'bg-accent-dim text-accent' : 'text-txt-secondary hover:text-txt-primary'}`}
+          >
+            Resultado
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={handleUndo}
-          data-testid="undo-button"
-          className="rounded-md border border-border-subtle px-3 py-1.5 text-sm text-txt-secondary hover:bg-bg-surface-hover hover:text-txt-primary"
-        >
-          Deshacer <kbd className="ml-1 text-xs text-txt-muted">Ctrl+Z</kbd>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            ref={submitButtonRef}
+            type="button"
+            onClick={handleSubmit}
+            data-testid="submit-button"
+            className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-bg-deep hover:bg-accent-strong"
+          >
+            Probar respuesta
+          </button>
+          <button
+            type="button"
+            onClick={handleUndo}
+            data-testid="undo-button"
+            className="rounded-md border border-border-subtle px-3 py-1.5 text-sm text-txt-secondary hover:bg-bg-surface-hover hover:text-txt-primary"
+          >
+            Deshacer <kbd className="ml-1 text-xs text-txt-muted">Ctrl+Z</kbd>
+          </button>
+        </div>
       </div>
 
       <div role="status" aria-live="polite" data-testid="canvas-status" className="min-h-[1.75rem] border-b border-border-subtle bg-bg-surface px-3 py-1 text-sm text-txt-secondary">
@@ -462,9 +572,21 @@ function ForjaCanvasInner() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <ComponentLibrary onCreate={handleCreate} />
-        {view === 'canvas' ? (
-          <div className="flex-1" data-testid="forja-canvas">
+        {/* Fixed-width sidebar (spec "full viewport width"): shown only
+            alongside the canvas, hidden for 'result' so its width goes to
+            ResultPanel instead. */}
+        {view === 'canvas' && <ComponentLibrary onCreate={handleCreate} />}
+        {view !== 'list' ? (
+          // Mounted for BOTH 'canvas' and 'result' — never unmounted when
+          // switching to Resultado, unlike the Lienzo/Vista de lista toggle
+          // below. This is what lets a hovered finding highlight real
+          // canvas nodes: the ReactFlow instance (and its live state) is
+          // never torn down just because the result panel is what has
+          // visual focus. `min-w-0` keeps this flex-1 child from refusing
+          // to shrink below its content's intrinsic width, which is what
+          // actually lets the fixed-width ResultPanel sidebar coexist with
+          // it instead of overflowing the row.
+          <div className="min-w-0 flex-1" data-testid="forja-canvas">
             <ReactFlow
               nodes={nodes}
               edges={edges}
@@ -541,6 +663,16 @@ function ForjaCanvasInner() {
             findings={findings}
             onDeleteNode={(id) => store.deleteNode(id)}
             onDeleteEdge={(id) => store.deleteEdge(id)}
+          />
+        )}
+        {view === 'result' && (
+          <ResultPanel
+            evaluation={evaluation}
+            exercise={PLAYGROUND_EXERCISE}
+            hoveredFindingId={hoveredFindingId}
+            onHoverFinding={handleHoverFinding}
+            onSelectFinding={handleSelectFinding}
+            onClose={handleCloseResultPanel}
           />
         )}
       </div>

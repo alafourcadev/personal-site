@@ -22,9 +22,9 @@ export function ForjaNode({ data, selected }: NodeProps<ForjaFlowNode>) {
 
   return (
     <div
-      className={`min-w-[168px] rounded-lg border bg-bg-surface px-3 py-2.5 shadow-sm ${CATALOG_COLOR_CLASS[ui.color]} ${
+      className={`min-w-[168px] rounded-lg border bg-bg-surface px-3 py-2.5 shadow-sm transition-opacity ${CATALOG_COLOR_CLASS[ui.color]} ${
         selected ? 'ring-2 ring-accent ring-offset-2 ring-offset-bg-deep' : ''
-      } ${data.hasError ? 'border-accent-red' : ''}`}
+      } ${data.hasError ? 'border-accent-red' : ''} ${data.dimmed ? 'opacity-30' : 'opacity-100'}`}
     >
       <Handle type="target" position={Position.Left} className="!h-2.5 !w-2.5 !border-none !bg-txt-muted" />
       <div className="flex items-center gap-2">

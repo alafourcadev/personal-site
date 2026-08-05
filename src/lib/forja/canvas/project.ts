@@ -14,15 +14,22 @@ export interface ForjaNodeData extends Record<string, unknown> {
   zone: Zone
   hasError: boolean
   color?: PlayerColor
+  // R1-E: a hovered result-panel finding dims every node/edge outside its
+  // own nodeIds/edgeIds, so the finding visibly points at the canvas
+  // instead of the player translating prose into geometry by hand.
+  dimmed: boolean
 }
 
 export type ForjaFlowNode = Node<ForjaNodeData, 'forja'>
 export type ForjaFlowEdge = Edge
 
+const EMPTY_SET: ReadonlySet<string> = new Set()
+
 export function projectNodes(
   design: Design,
   selectedNodeIds: ReadonlySet<string>,
   errorNodeIds: ReadonlySet<string>,
+  dimmedNodeIds: ReadonlySet<string> = EMPTY_SET,
 ): ForjaFlowNode[] {
   return design.nodes.map((node) => {
     const selected = selectedNodeIds.has(node.id)
@@ -36,7 +43,14 @@ export function projectNodes(
       sourcePosition: Position.Right,
       targetPosition: Position.Left,
       ariaLabel: composeNodeAccessibleName({ ...node, colorLabel }, { selected, hasError }),
-      data: { label: node.label, componentType: node.type, zone: node.zone, hasError, color: node.color },
+      data: {
+        label: node.label,
+        componentType: node.type,
+        zone: node.zone,
+        hasError,
+        color: node.color,
+        dimmed: dimmedNodeIds.has(node.id),
+      },
     }
   })
 }
@@ -45,11 +59,16 @@ export function projectEdges(
   design: Design,
   selectedEdgeIds: ReadonlySet<string>,
   errorEdgeIds: ReadonlySet<string>,
+  dimmedEdgeIds: ReadonlySet<string> = EMPTY_SET,
 ): ForjaFlowEdge[] {
   const labelOf = (nodeId: string) => design.nodes.find((n) => n.id === nodeId)?.label ?? '?'
 
   return design.edges.map((edge) => {
     const hasError = errorEdgeIds.has(edge.id)
+    const dimmed = dimmedEdgeIds.has(edge.id)
+    const style: Record<string, unknown> = {}
+    if (hasError) style.stroke = 'rgb(var(--accent-red))'
+    if (dimmed) style.opacity = 0.25
     return {
       id: edge.id,
       source: edge.from.node,
@@ -58,7 +77,7 @@ export function projectEdges(
       focusable: true,
       deletable: true,
       ariaLabel: `Conexión de ${labelOf(edge.from.node)} a ${labelOf(edge.to.node)}${hasError ? ', con advertencia' : ''}`,
-      style: hasError ? { stroke: 'rgb(var(--accent-red))' } : undefined,
+      style: Object.keys(style).length > 0 ? style : undefined,
     }
   })
 }
