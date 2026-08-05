@@ -77,7 +77,10 @@ export interface Finding {
   // Per-instance id — a rule can fire more than once per evaluation, so this
   // disambiguates instances; `rule` below is the stable, reusable rule id.
   id: string
-  rule: RuleId
+  // Widened in R1-C: a legal-but-unsatisfied guarantee also produces a
+  // finding, per the design's Interfaces contract — `RuleId` alone covers
+  // only the 13 §13.7 rules plus `empty-canvas`.
+  rule: RuleId | `guarantee-missing:${string}`
   severity: Severity
   title: string
   evidence: string
@@ -118,4 +121,23 @@ export type Predicate =
 export interface Budget {
   opsUnits: number
   monthlyUsd?: number
+}
+
+export interface Guarantee {
+  id: string
+  label: string
+  weight: number
+  predicate: Predicate
+  whyMissing: string // the sentence the player reads. Required, non-empty.
+  consequence: string // §13.1: rule, evidence, consequence
+}
+
+// Minimal projection the engine needs from an exercise — deliberately not
+// the full content-collection schema (difficulty axes, prereqs, copy live
+// in R1-F). Mirrors R1-B's `opsCapacity` precedent: the engine only takes
+// what it evaluates against, so it stays exercise-agnostic.
+export interface ExerciseSpec {
+  guarantees: Guarantee[]
+  budget: Budget
+  lambda: number
 }
