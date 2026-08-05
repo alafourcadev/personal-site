@@ -303,28 +303,56 @@ clamp, empty state and 8 Playwright blocker tests add it back.
 > openable in `npm run dev` and clickable end to end. This is the first
 > point where Alejandro should actually play.
 
-- [ ] D2.1 **Spike (unverified design risk, item 8):** prototype React Flow
-      group nodes with `extent: 'parent'` for band containment in a
-      throwaway component; timebox to one session. If a node can be dragged
-      out of its band under a real pointer (extent doesn't hold), fall back
-      to **manual clamping in `onNodesChange`**: compute each band's x/y
-      bounds and clamp the node's position on every change event. Record the
-      chosen approach in a one-paragraph note before continuing.
-- [ ] D2.2 GREEN: apply the spike's chosen mechanism to all bands in
-      `BandLane.tsx`.
-- [ ] D2.3 RED (Playwright, real pointer — **B2 blocker, PC7**): at 1280px
-      width, a design whose rightmost node is off-screen — fit-to-content
-      makes it fully visible without manual panning.
-- [ ] D2.4 GREEN: `fitView` wiring computing the bounding box of all nodes.
-- [ ] D2.5 RED: empty canvas (zero nodes) renders a visible guidance
-      message, not a bare grid [PC8 — closes G1].
-- [ ] D2.6 GREEN: empty-state component.
-- [ ] D2.7 GREEN: `tests/build/no-react-on-existing-routes.test.ts` — the 12
-      existing routes' `dist` HTML references no React chunk (D5 containment
-      test, run against `npm run build` output).
-- [ ] D2.8 Manual verification: `npm run dev`, open `/forja`, build and play
-      one exercise end to end. **Owner confirms before continuing to R1-E.**
-- [ ] D2.9 Commit: `feat(forja): band containment, real fit, empty state`.
+> **Apply Progress Update (2026-08-05):** R1-D2 and R1-D2b are COMPLETE.
+> Full evidence, deviations, and the production-only infinite-loop bug (and
+> its fix) are recorded in Engram `sdd/la-forja-integracion/apply-progress`.
+
+- [x] D2.1 **Spike:** confirmed via @xyflow/system's own `NodeBase` type
+      (`extent?: 'parent' | CoordinateExtent | null`) and @xyflow/react's
+      `evaluateAbsolutePosition()` call site that `extent: 'parent'` makes a
+      child's `position` PARENT-RELATIVE once `parentId` is set — a real,
+      documented coordinate-space change that would have broken design D1's
+      "position is absolute domain state" invariant across the store,
+      project.ts, and the drag-commit path. Chose the documented fallback:
+      **manual clamping**, done centrally in `ForjaStore.moveNode()` (single
+      source of truth for both drag-stop and keyboard moves) plus a live
+      mirror in `onNodesChange` for in-flight visual feedback.
+- [x] D2.2 GREEN: `bands.ts` (pure clamp math) + `BandLane.tsx` — a
+      decorative layer synced to React Flow's own `useViewport()`,
+      deliberately NOT a React Flow node (would have broken every existing
+      `.react-flow__node` count assertion).
+- [x] D2.3 RED (Playwright, real pointer): rewritten mid-slice from a pixel
+      -coordinate comparison (flaky — the canvas pane's own box can extend
+      past the browser viewport at 1280×720) to `toBeInViewport()` against a
+      deliberately short test-scoped viewport; a real pointer drag pushes
+      the node out, `fitView` (React Flow's own Controls button, zero custom
+      code) brings it back.
+- [x] D2.4 GREEN: no new production code — React Flow's stock `<Controls>`
+      already includes a working fit-view button (`showInteractive={false}`
+      only hides the interactive-lock toggle); this task ended up being the
+      proving test alone.
+- [x] D2.5 RED: empty canvas renders a `<Panel>` guidance message [PC8 —
+      closes G1].
+- [x] D2.6 GREEN: conditional `<Panel position="top-center">` inside
+      `<ReactFlow>`, `data-testid="empty-canvas-hint"`.
+- [x] D2.7 GREEN: `tests/containment/no-react-on-existing-routes.test.ts`
+      (not `tests/build/` — a machine-local global gitignore rule silently
+      excludes any directory named "build" anywhere in the tree, noted in
+      the file itself). Walks real `npm run build` output; skips, not
+      fails, when `dist/` doesn't exist.
+- [ ] D2.8 Manual verification: **NOT done by the implementer** — the
+      owner's own browser session is what this task asks for. `/forja`
+      builds green (51 pages) and passes 36/36 Playwright scenarios across
+      3 spec files, stress-tested to 90/90 clean under `--repeat-each=3`
+      (2 workers), but nobody but the owner can close this task.
+- [x] D2.9 Commits: `feat(forja): band-clamp math, menu-position clamp,
+      player colour palette` (band math only — BandLane landed with D2.11's
+      commit since both needed the context-menu wiring pass to test
+      end-to-end), `feat(forja): colour on the node, visual band lanes`,
+      `feat(forja): wire the context menu, band clamp, empty state, overlay
+      containment`, `test(forja): Playwright proof for fit-view, empty
+      state, undo and overlay containment`, `test(forja): D5 containment
+      check`.
 
 ## R1-D2b — Owner-requested additions [PC15, PC16, PC17]
 
@@ -337,62 +365,70 @@ clamp, empty state and 8 Playwright blocker tests add it back.
 > numbers continue the `forja-playground-canvas` spec's own requirement
 > order (14 prior requirements, these are #15–#17).
 
-- [ ] D2.10 RED (Playwright, real right-click — **not `dispatchEvent`,
-      per the prototype's own B-class bug**): right-click on a node opens a
-      menu scoped to that node (not the empty-canvas menu), the node is not
-      moved/deleted/mutated by the gesture [PC15].
-- [ ] D2.11 GREEN: wire `onNodeContextMenu`/`onPaneContextMenu` (React
-      Flow's own contextmenu hooks — not a hand-rolled `pointerdown` +
-      `contextmenu` race, which is exactly the prototype's bug class) plus a
-      reusable `ContextMenu.tsx` (`role="menu"`/`role="menuitem"`, roving
-      tabindex, Escape closes and returns focus to the origin node).
-- [ ] D2.12 RED (Playwright, real right-click on empty canvas): opens a
-      distinct "add component" menu; choosing an item creates a node at the
-      pointer position (via `screenToFlowPosition`), not the default grid
-      slot.
-- [ ] D2.13 GREEN: pane context menu wired to `store.createNode` at the
-      clicked flow position.
-- [ ] D2.14 RED (Playwright, real pointer): choosing "Conectar con…" from a
-      node's menu and then clicking a legal target creates the same
-      connection a handle-drag would.
-- [ ] D2.15 GREEN: menu's "Conectar con…" reuses the existing keyboard
-      connect-mode state machine (`connectSourceId`), completed by a real
-      `onNodeClick` instead of only the `'c'`/Enter keyboard path.
-- [ ] D2.16 RED (Playwright, real keyboard): Shift+F10 on a focused node
-      opens its menu with focus on the first item; Escape closes it and
-      returns focus to the node; ArrowDown moves focus to the next item.
-- [ ] D2.17 GREEN: capture-phase keydown handling for ContextMenu key /
-      Shift+F10, plus the menu's own internal arrow-key roving-tabindex nav.
-- [ ] D2.18 RED (Vitest, pure): store gains `renameNode`, `duplicateNode`,
-      `setNodeColor` — each producing one undoable history entry.
-- [ ] D2.19 GREEN: `ForjaStore` mutations for rename/duplicate/recolor.
-- [ ] D2.20 RED (Vitest, pure — **engine-level proof, no UI needed**):
-      `evaluate()`/`checkConnection()`/`evaluateLegality()` return identical
-      results for two designs differing only in `node.color` [PC16].
-- [ ] D2.21 GREEN: `DesignNode.color` is a field the engine never reads —
-      proven by the D2.20 regression, not by convention.
-- [ ] D2.22 RED (Playwright, real pointer): opening a node's menu and
-      picking a colour swatch persists the colour on the node and the
-      colour's Spanish name appears in the node's accessible description,
-      while its label/type/zone text remain unchanged [PC16].
-- [ ] D2.23 GREEN: six-swatch colour row in `ContextMenu`, `composeNode
-      AccessibleName` extended with an optional colour-name segment,
-      `ForjaNode` renders a small colour dot alongside (never instead of)
-      the icon/label/subtitle.
-- [ ] D2.24 RED (Playwright, real interaction): trigger a connection
-      refusal AND open a node's context menu near the top of the canvas;
-      every site navigation link stays visible and clickable in both cases
-      [PC17].
-- [ ] D2.25 GREEN: playground root gets `relative isolate` (own stacking
-      context); `ContextMenu` is `position: absolute` inside that root,
-      never `position: fixed`, clamped to the root's own bounding box via a
-      pure `clampMenuPosition` helper (also satisfies PC15's "stay within
-      the viewport").
-- [ ] D2.26 Commit(s): `feat(forja): per-node context menu`,
-      `feat(forja): player-assigned node colour`,
-      `fix(forja): contain canvas overlays inside their own stacking
-      context` — split across the 400-line-per-commit budget; exact split
-      recorded in apply-progress once landed.
+- [x] D2.10 RED (Playwright, real right-click): right-click on a node opens
+      the node menu, not the pane menu; node not mutated [PC15].
+- [x] D2.11 GREEN: `onNodeContextMenu`/`onPaneContextMenu` (React Flow's own
+      hooks) + reusable `ContextMenu.tsx` (`role="menu"`/`role="menuitem"`,
+      roving tabindex, Escape closes and returns focus, click-outside
+      closes, positioned via `clampMenuPosition`).
+- [x] D2.12 RED (Playwright, real right-click on empty canvas): opens the
+      "add component" menu; an item creates a node at the clicked flow
+      position via `screenToFlowPosition`.
+- [x] D2.13 GREEN: pane menu wired to `store.createNode` at that position.
+- [x] D2.14 RED (Playwright, real pointer): "Conectar con…" + a real click
+      on a legal target creates the same connection a drag would.
+- [x] D2.15 GREEN — **with a real deviation from the plan:** the menu's
+      "Conectar con…" completion is a raw capture-phase `window` `click`
+      listener, NOT React Flow's `onNodeClick` prop as originally planned.
+      Calling `store.connect()` (mutating `design`) from directly inside
+      RF's own synthetic click handling produced a real, reproducible
+      "Maximum update depth exceeded" crash under Playwright — specific to
+      the **production build** (never reproduced against `npm run dev`),
+      root-caused and fixed; see apply-progress for the full investigation.
+      A second, related bug fixed in the same pass: `onNodesChange` was
+      unconditionally rebuilding every node's object reference on every
+      change event (including React Flow's own dimension-measurement
+      events, not just position drags), which fed back into another
+      measurement pass — narrowed the clamp to only nodes with an actual
+      position change in the batch.
+- [x] D2.16 RED (Playwright, real keyboard): Shift+F10 opens the menu with
+      focus on the first item; ArrowDown moves focus; Escape closes and
+      returns focus to the node.
+- [x] D2.17 GREEN: capture-phase keydown branch for ContextMenu key /
+      Shift+F10 (anchored near the focused node's own bounding rect) +
+      the menu's internal roving-tabindex arrow navigation.
+- [x] D2.18 RED (Vitest, pure): `renameNode`/`duplicateNode`/`setNodeColor`,
+      each one undoable history entry.
+- [x] D2.19 GREEN: the three `ForjaStore` mutations.
+- [x] D2.20 RED (Vitest, pure, engine-level): `evaluate()`/
+      `checkConnection()`/`evaluateLegality()` identical regardless of
+      `node.color`, plus a source-grep asserting no engine file contains
+      `.color` at all.
+- [x] D2.21 GREEN: `DesignNode.color` added to `types.ts`; the D2.20 grep is
+      the actual enforcement, not a comment.
+- [x] D2.22 RED (Playwright, real pointer): picking a swatch persists the
+      colour, the accessible name gains `color {Spanish name}`, label/type
+      /zone text unchanged [PC16].
+- [x] D2.23 GREEN: `player-colors.ts` (six Tailwind-default swatches, not
+      new BaseLayout tokens — rationale in the file), `ContextMenu`'s
+      colour row, `composeNodeAccessibleName`'s colour segment, `ForjaNode`'s
+      colour dot (next to, never replacing, icon/label).
+- [x] D2.24 RED (Playwright, real interaction): a connection refusal AND an
+      open node menu, both followed by a real click on a nav link — the
+      only genuine proof nothing is drawn on top of it (a covered element
+      fails Playwright's own actionability check) [PC17].
+- [x] D2.25 GREEN: `relative isolate` on the playground root; `ContextMenu`
+      is `position: absolute` inside it, never `fixed`, clamped via the
+      shared `clampMenuPosition` helper.
+- [x] D2.26 Commits: `feat(forja): reusable context menu component,
+      band-width tuning`, `feat(forja): wire the context menu, band clamp,
+      empty state, overlay containment`, `test(forja): Playwright suite for
+      the context menu`, `test(forja): Playwright proof for fit-view, empty
+      state, undo and overlay containment`. `BAND_WIDTH` itself moved twice
+      during this slice (320 → 520 → 360) — the first two values either
+      starved the pointer-drag test of slack or pushed cross-band nodes off
+      the canvas pane's real ~915px width (measured directly, not guessed);
+      360 is the value that satisfies both.
 
 ## R1-E — Result panel + local ranking [RK1, RK5, RK7 + B3 blocker]
 
