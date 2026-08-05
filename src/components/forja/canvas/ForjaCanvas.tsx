@@ -27,7 +27,7 @@ import {
 import '@xyflow/react/dist/style.css'
 import './node-tooltip.css'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { checkConnection, ENGINE_VERSION, evaluateLegality } from '../../../lib/forja/engine'
+import { checkConnection, ENGINE_VERSION, evaluate, evaluateLegality } from '../../../lib/forja/engine'
 import { CATALOG } from '../../../lib/forja/engine/catalog'
 import type { ComponentType, ConnectionVerdict, Finding, Layer } from '../../../lib/forja/engine/types'
 import { projectEdges, projectNodes, type ForjaFlowEdge, type ForjaFlowNode } from '../../../lib/forja/canvas/project'
@@ -36,7 +36,10 @@ import { CANVAS_EDGE_STYLE_VARS } from '../../../lib/forja/canvas/edge-theme'
 import { useForjaStore } from '../../../lib/forja/store/useForjaStore'
 import { CATALOG_UI } from '../../../lib/forja/canvas/catalog-ui'
 import { PLAYER_COLORS, PLAYER_COLOR_ORDER } from '../../../lib/forja/canvas/player-colors'
-import { FREE_PLAY_EXERCISE_ID, type FreePlayResult } from '../../../lib/forja/playground/free-play'
+import { FREE_PLAY_EXERCISE_ID } from '../../../lib/forja/playground/free-play'
+import { continuedDesign } from '../../../lib/forja/playground/continue-design'
+import { toExerciseSpec, type LoadedExercise } from '../../../lib/forja/playground/loaded-exercise'
+import { toScoredResult, type CanvasResult } from '../../../lib/forja/playground/result'
 import { localRankingAdapter } from '../../../lib/forja/ranking/local-adapter'
 import { BandLane } from './BandLane'
 import { ComponentLibrary } from './ComponentLibrary'
@@ -75,16 +78,36 @@ function nextCreatePosition(layer: Layer, countInBand: number) {
   return { x: min, y: 80 + countInBand * 110 }
 }
 
-function ForjaCanvasInner() {
-  const { store, design } = useForjaStore()
+interface ForjaCanvasInnerProps {
+  // R1-G: a level route (`/forja/[level]/[exercise]`) passes its own real
+  // exercise; `/forja` alone stays free play (undefined here), unchanged
+  // from R1-F's "free play without a loaded exercise produces no score".
+  exercise?: LoadedExercise
+}
+
+function ForjaCanvasInner({ exercise }: ForjaCanvasInnerProps) {
+  // R1-G requirement 6, "volver y seguir": the initial design is the last
+  // graph LocalRankingAdapter already has on file for this exerciseId —
+  // reusing the existing ranking port (continuedDesign), never a second
+  // storage mechanism. Free play keeps its own separate history under
+  // FREE_PLAY_EXERCISE_ID, exactly as before.
+  const [initialDesign] = useState(() =>
+    continuedDesign(localRankingAdapter.getHistory(exercise?.id ?? FREE_PLAY_EXERCISE_ID)),
+  )
+  const { store, design } = useForjaStore(initialDesign)
   const { screenToFlowPosition } = useReactFlow()
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set())
   const [selectedEdgeIds, setSelectedEdgeIds] = useState<Set<string>>(new Set())
   const [view, setView] = useState<'canvas' | 'list' | 'result'>('canvas')
   const [status, setStatus] = useState('')
-  // Free play only (no real exercise loaded — see free-play.ts): legality
-  // and findings, deliberately never a score.
-  const [result, setResult] = useState<FreePlayResult | null>(null)
+  // Free play (no exercise prop): legality + findings, never a score (see
+  // free-play.ts). A loaded exercise: a real scored Evaluation, projected
+  // through toScoredResult so the panel gets per-axis labels too.
+  const [result, setResult] = useState<CanvasResult | null>(null)
+  // Skips the FIRST design-change effect run below — that first run is the
+  // continued design being loaded, not a new edit, so persisting it again
+  // as a fresh draft attempt would be a no-op write on every mount.
+  const isFirstDesignEffect = useRef(true)
   // R1-E: hover previews a finding's nodeIds/edgeIds on the canvas without
   // mutating the persistent selection; click (below) reuses the existing
   // selectedNodeIds/selectedEdgeIds so the highlight survives a tab switch.
@@ -100,7 +123,11 @@ function ForjaCanvasInner() {
   // returns focus HERE, to the exact control that opened it.
   const submitButtonRef = useRef<HTMLButtonElement>(null)
 
-  const findings = useMemo(() => evaluateLegality(design).findings, [design])
+  // A loaded exercise's own budget IS the team's operational capacity for
+  // the "too many components to operate" rule (engine's evaluate() passes
+  // exercise.budget.opsUnits as this same second argument) — live canvas
+  // highlighting must agree with what submit() will actually score against.
+  const findings = useMemo(() => evaluateLegality(design, exercise?.budget.opsUnits).findings, [design, exercise])
   const errorNodeIds = useMemo(
     () => new Set(findings.filter((f) => f.severity === 'blocking').flatMap((f) => f.nodeIds)),
     [findings],
@@ -178,16 +205,39 @@ function ForjaCanvasInner() {
     setStatus(undone ? 'Se deshizo la última acción.' : 'No hay nada para deshacer.')
   }, [store])
 
+  // R1-G requirement 6, "volver y seguir": persists the current design as a
+  // draft (score: null — RK7, never a score) every time it actually changes,
+  // reusing the exact same LocalRankingAdapter.submit() the explicit submit
+  // button already calls. Free play keeps its own prior behaviour (only an
+  // explicit submit persists); this effect only runs once an exercise is
+  // loaded, so /forja's existing tests and semantics are untouched.
+  useEffect(() => {
+    if (!exercise) return
+    if (isFirstDesignEffect.current) {
+      isFirstDesignEffect.current = false
+      return
+    }
+    localRankingAdapter.submit({
+      exerciseId: exercise.id,
+      design,
+      score: null,
+      ceiling: 100,
+      engineVersion: ENGINE_VERSION,
+    })
+  }, [exercise, design])
+
   // B3 blocker: submit switches straight to the Resultado tab, which —
   // unlike the prototype — keeps the canvas mounted next to it (see the JSX
   // below) rather than replacing it, so a finding's highlight is visible the
   // moment the player looks at the canvas tab too.
   //
-  // "Free play without a loaded exercise produces no score": no real
-  // ExerciseSpec exists yet (R1-F), so this calls evaluateLegality alone —
-  // legality and findings, never a guarantee/cost/score pass. Scoring free
-  // play against a placeholder exercise is the exact defect this replaces
-  // (see free-play.ts).
+  // "Free play without a loaded exercise produces no score": no exercise
+  // prop means this calls evaluateLegality alone — legality and findings,
+  // never a guarantee/cost/score pass. Scoring free play against a
+  // placeholder exercise is the exact defect this replaces (see
+  // free-play.ts). R1-G: a REAL loaded exercise calls the real evaluate(),
+  // the same engine surface every reference-solution test already proves
+  // reaches exactly 100 for its two structurally distinct designs.
   //
   // RK7: LocalRankingAdapter.submit() always stores the full graph, legal
   // or not — free play never has a score to store (score: null), so it
@@ -195,18 +245,30 @@ function ForjaCanvasInner() {
   // local-adapter.ts's getSnapshot(), which filters null scores out of the
   // ranked total).
   const handleSubmit = useCallback(() => {
-    const legality = evaluateLegality(design)
-    setResult({ legal: legality.legal, findings: legality.findings })
+    if (exercise) {
+      const evaluation = evaluate(design, toExerciseSpec(exercise))
+      setResult(toScoredResult(evaluation, exercise.guarantees))
+      localRankingAdapter.submit({
+        exerciseId: exercise.id,
+        design,
+        score: evaluation.status === 'scored' ? evaluation.score : null,
+        ceiling: evaluation.ceiling,
+        engineVersion: ENGINE_VERSION,
+      })
+    } else {
+      const legality = evaluateLegality(design)
+      setResult({ kind: 'free-play', legal: legality.legal, findings: legality.findings })
+      localRankingAdapter.submit({
+        exerciseId: FREE_PLAY_EXERCISE_ID,
+        design,
+        score: null,
+        ceiling: 100,
+        engineVersion: ENGINE_VERSION,
+      })
+    }
     setView('result')
-    localRankingAdapter.submit({
-      exerciseId: FREE_PLAY_EXERCISE_ID,
-      design,
-      score: null,
-      ceiling: 100,
-      engineVersion: ENGINE_VERSION,
-    })
     window.dispatchEvent(new CustomEvent(RANKING_UPDATED_EVENT))
-  }, [design])
+  }, [design, exercise])
 
   const handleHoverFinding = useCallback((findingId: string | null) => {
     setHoveredFindingId(findingId)
@@ -691,10 +753,16 @@ function ForjaCanvasInner() {
   )
 }
 
-export function ForjaCanvas() {
+export interface ForjaCanvasProps {
+  // R1-G: passed by `/forja/[level]/[exercise].astro` only. Absent here,
+  // the canvas is `/forja`'s free play, unchanged since R1-F.
+  exercise?: LoadedExercise
+}
+
+export function ForjaCanvas({ exercise }: ForjaCanvasProps) {
   return (
     <ReactFlowProvider>
-      <ForjaCanvasInner />
+      <ForjaCanvasInner exercise={exercise} />
     </ReactFlowProvider>
   )
 }
