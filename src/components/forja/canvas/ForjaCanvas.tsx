@@ -27,16 +27,16 @@ import {
 import '@xyflow/react/dist/style.css'
 import './node-tooltip.css'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { checkConnection, evaluate, evaluateLegality } from '../../../lib/forja/engine'
+import { checkConnection, ENGINE_VERSION, evaluateLegality } from '../../../lib/forja/engine'
 import { CATALOG } from '../../../lib/forja/engine/catalog'
-import type { ComponentType, ConnectionVerdict, Evaluation, Finding, Layer } from '../../../lib/forja/engine/types'
+import type { ComponentType, ConnectionVerdict, Finding, Layer } from '../../../lib/forja/engine/types'
 import { projectEdges, projectNodes, type ForjaFlowEdge, type ForjaFlowNode } from '../../../lib/forja/canvas/project'
 import { bandForType, bandXRange, clampToBand } from '../../../lib/forja/canvas/bands'
 import { CANVAS_EDGE_STYLE_VARS } from '../../../lib/forja/canvas/edge-theme'
 import { useForjaStore } from '../../../lib/forja/store/useForjaStore'
 import { CATALOG_UI } from '../../../lib/forja/canvas/catalog-ui'
 import { PLAYER_COLORS, PLAYER_COLOR_ORDER } from '../../../lib/forja/canvas/player-colors'
-import { PLAYGROUND_EXERCISE, PLAYGROUND_EXERCISE_ID } from '../../../lib/forja/playground/exercise'
+import { FREE_PLAY_EXERCISE_ID, type FreePlayResult } from '../../../lib/forja/playground/free-play'
 import { localRankingAdapter } from '../../../lib/forja/ranking/local-adapter'
 import { BandLane } from './BandLane'
 import { ComponentLibrary } from './ComponentLibrary'
@@ -82,7 +82,9 @@ function ForjaCanvasInner() {
   const [selectedEdgeIds, setSelectedEdgeIds] = useState<Set<string>>(new Set())
   const [view, setView] = useState<'canvas' | 'list' | 'result'>('canvas')
   const [status, setStatus] = useState('')
-  const [evaluation, setEvaluation] = useState<Evaluation | null>(null)
+  // Free play only (no real exercise loaded — see free-play.ts): legality
+  // and findings, deliberately never a score.
+  const [result, setResult] = useState<FreePlayResult | null>(null)
   // R1-E: hover previews a finding's nodeIds/edgeIds on the canvas without
   // mutating the persistent selection; click (below) reuses the existing
   // selectedNodeIds/selectedEdgeIds so the highlight survives a tab switch.
@@ -109,8 +111,8 @@ function ForjaCanvasInner() {
   )
 
   const hoveredFinding = useMemo(
-    () => evaluation?.findings.find((f) => f.id === hoveredFindingId) ?? null,
-    [evaluation, hoveredFindingId],
+    () => result?.findings.find((f) => f.id === hoveredFindingId) ?? null,
+    [result, hoveredFindingId],
   )
   // A hovered finding dims every node/edge OUTSIDE its own nodeIds/edgeIds —
   // this is the "findings must point at the canvas" requirement: the
@@ -176,25 +178,32 @@ function ForjaCanvasInner() {
     setStatus(undone ? 'Se deshizo la última acción.' : 'No hay nada para deshacer.')
   }, [store])
 
-  // B3 blocker: submit scores the current design and switches straight to
-  // the Resultado tab, which — unlike the prototype — keeps the canvas
-  // mounted next to it (see the JSX below) rather than replacing it, so a
-  // finding's highlight is visible the moment the player looks at the
-  // canvas tab too.
+  // B3 blocker: submit switches straight to the Resultado tab, which —
+  // unlike the prototype — keeps the canvas mounted next to it (see the JSX
+  // below) rather than replacing it, so a finding's highlight is visible the
+  // moment the player looks at the canvas tab too.
+  //
+  // "Free play without a loaded exercise produces no score": no real
+  // ExerciseSpec exists yet (R1-F), so this calls evaluateLegality alone —
+  // legality and findings, never a guarantee/cost/score pass. Scoring free
+  // play against a placeholder exercise is the exact defect this replaces
+  // (see free-play.ts).
   //
   // RK7: LocalRankingAdapter.submit() always stores the full graph, legal
-  // or not — an illegal attempt still becomes personal history, just never
-  // a ranked entry (see local-adapter.ts's getSnapshot()).
+  // or not — free play never has a score to store (score: null), so it
+  // becomes personal history only, same as an illegal attempt today (see
+  // local-adapter.ts's getSnapshot(), which filters null scores out of the
+  // ranked total).
   const handleSubmit = useCallback(() => {
-    const result = evaluate(design, PLAYGROUND_EXERCISE)
-    setEvaluation(result)
+    const legality = evaluateLegality(design)
+    setResult({ legal: legality.legal, findings: legality.findings })
     setView('result')
     localRankingAdapter.submit({
-      exerciseId: PLAYGROUND_EXERCISE_ID,
+      exerciseId: FREE_PLAY_EXERCISE_ID,
       design,
-      score: result.score,
-      ceiling: result.ceiling,
-      engineVersion: result.engineVersion,
+      score: null,
+      ceiling: 100,
+      engineVersion: ENGINE_VERSION,
     })
     window.dispatchEvent(new CustomEvent(RANKING_UPDATED_EVENT))
   }, [design])
@@ -670,8 +679,7 @@ function ForjaCanvasInner() {
         )}
         {view === 'result' && (
           <ResultPanel
-            evaluation={evaluation}
-            exercise={PLAYGROUND_EXERCISE}
+            result={result}
             hoveredFindingId={hoveredFindingId}
             onHoverFinding={handleHoverFinding}
             onSelectFinding={handleSelectFinding}

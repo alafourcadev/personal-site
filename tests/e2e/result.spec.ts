@@ -108,12 +108,41 @@ test.describe('La Forja — result panel [RK1 refs, B3 blocker]', () => {
     await expect(queueNode).toHaveAttribute('aria-label', /seleccionado/)
   })
 
-  test('the score/ceiling and per-axis result are shown for a legal, scored design', async ({ page }) => {
+  // "Free play without a loaded exercise produces no score" — /forja has no
+  // real exercise content yet (R1-F ships the first one); until a level
+  // route loads a real ExerciseSpec, every submission here is free play, and
+  // free play MUST NOT present a numeric score, only legality and findings.
+  test('a legal design in free play states plainly there is nothing to score against, with no per-axis result', async ({ page }) => {
     await createNode(page, 'service')
     await createNode(page, 'observability')
     await page.getByTestId('submit-button').click()
 
-    await expect(page.getByTestId('result-score')).toContainText('/ 100')
-    await expect(page.getByTestId('result-axes')).toBeVisible()
+    await expect(page.getByTestId('result-score')).not.toContainText('100')
+    await expect(page.getByTestId('result-no-exercise')).toBeVisible()
+    await expect(page.getByTestId('result-no-exercise')).toContainText(/ejercicio cargado.*nada contra qué puntuar/i)
+    await expect(page.getByTestId('result-axes')).toHaveCount(0)
+  })
+
+  // The exact defect the owner found live: a placeholder exercise with a
+  // vacuously satisfiable guarantee (nothing of the type it asks about is
+  // even on the canvas) awarded 100/100 to two components that were never
+  // connected to each other.
+  test('two unconnected components do not score 100 [free play never scores]', async ({ page }) => {
+    await createNode(page, 'cache')
+    await createNode(page, 'database')
+    await page.getByTestId('submit-button').click()
+
+    await expect(page.getByTestId('result-score')).not.toContainText('100')
+    await expect(page.getByTestId('result-score')).not.toContainText('/ 100')
+    await expect(page.getByTestId('result-no-exercise')).toBeVisible()
+  })
+
+  test('free play still reports legality — an illegal design is announced, not silently unscored', async ({ page }) => {
+    await createNode(page, 'queue')
+    await page.getByTestId('submit-button').click()
+
+    await expect(page.getByTestId('result-score')).toContainText('ilegal')
+    const finding = page.locator('[data-testid^="finding-"][data-rule="orphan-queue"]')
+    await expect(finding).toBeVisible()
   })
 })

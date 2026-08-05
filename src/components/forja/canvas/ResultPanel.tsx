@@ -9,19 +9,22 @@
 // "Every panel that opens can be closed": a visible close control (below)
 // plus Escape (wired in ForjaCanvas.tsx's global keydown handler) both
 // call the same `onClose`, which only switches the tab away — it never
-// clears `evaluation`, so reopening shows the same result.
+// clears `result`, so reopening shows the same result.
+//
+// "Free play without a loaded exercise produces no score": no per-axis
+// ("ejes") section exists here at all — that requires a real ExerciseSpec's
+// guarantees, which free play never has (see free-play.ts). The score area
+// only ever shows "illegal" or the honest "nothing to score against yet"
+// message; findings (legality only) still render underneath either way.
 //
 // "Plain language everywhere except canonical technical terms": severity
 // is rendered as a Spanish word, never the engine's own literal value; the
-// internal rule id is a `data-rule` TEST attribute only, never visible
-// text; a guarantee's numeric `weight` (an engine scoring internal, not
-// player vocabulary) is not shown at all — satisfied/not is what a player
-// needs to act on.
-import type { Evaluation, ExerciseSpec, Finding, Severity } from '../../../lib/forja/engine/types'
+// internal rule id is a `data-rule` TEST attribute only, never visible text.
+import type { FreePlayResult } from '../../../lib/forja/playground/free-play'
+import type { Finding, Severity } from '../../../lib/forja/engine/types'
 
 export interface ResultPanelProps {
-  evaluation: Evaluation | null
-  exercise: ExerciseSpec
+  result: FreePlayResult | null
   hoveredFindingId: string | null
   onHoverFinding: (findingId: string | null) => void
   onSelectFinding: (finding: Finding) => void
@@ -32,10 +35,6 @@ const SEVERITY_LABEL: Record<Severity, string> = {
   blocking: 'Bloqueante',
   warning: 'Advertencia',
   note: 'Nota',
-}
-
-function guaranteeLabel(exercise: ExerciseSpec, id: string): string {
-  return exercise.guarantees.find((g) => g.id === id)?.label ?? id
 }
 
 function CloseButton({ onClose }: { onClose: () => void }) {
@@ -55,8 +54,8 @@ function CloseButton({ onClose }: { onClose: () => void }) {
   )
 }
 
-export function ResultPanel({ evaluation, exercise, hoveredFindingId, onHoverFinding, onSelectFinding, onClose }: ResultPanelProps) {
-  if (!evaluation) {
+export function ResultPanel({ result, hoveredFindingId, onHoverFinding, onSelectFinding, onClose }: ResultPanelProps) {
+  if (!result) {
     return (
       <div
         // Fixed width + shrink-0: spec "the playground uses the full
@@ -67,8 +66,7 @@ export function ResultPanel({ evaluation, exercise, hoveredFindingId, onHoverFin
       >
         <div className="flex items-start justify-between gap-2">
           <p data-testid="result-empty" className="text-sm text-txt-secondary">
-            Todavía no probaste tu diseño. Usá <strong>Probar respuesta</strong> para ver tu puntaje y los hallazgos
-            del motor.
+            Todavía no probaste tu diseño. Usá <strong>Probar respuesta</strong> para ver tus hallazgos.
           </p>
           <CloseButton onClose={onClose} />
         </div>
@@ -76,53 +74,36 @@ export function ResultPanel({ evaluation, exercise, hoveredFindingId, onHoverFin
     )
   }
 
-  const isIllegal = evaluation.status === 'illegal'
-
   return (
     <div
       className="flex h-full w-[380px] shrink-0 flex-col gap-4 overflow-y-auto border-l border-border-subtle bg-bg-surface p-4"
       data-testid="result-panel"
     >
       <div className="flex items-start justify-between gap-2">
-        {/* Score sits first, unconditionally — this is what B3 requires
-            visible without scrolling immediately after submit. */}
+        {/* Score/status sits first, unconditionally — this is what B3
+            requires visible without scrolling immediately after submit. */}
         <div data-testid="result-score" className="flex-1 rounded-lg border border-border-subtle p-3">
-          {isIllegal ? (
+          {!result.legal ? (
             <p className="text-lg font-semibold text-accent-red">Diseño ilegal — sin puntaje</p>
           ) : (
-            <p className="text-lg font-semibold text-txt-primary">
-              {evaluation.score} <span className="text-sm font-normal text-txt-muted">/ {evaluation.ceiling}</span>
+            <p data-testid="result-no-exercise" className="text-sm text-txt-secondary">
+              Todavía no hay un ejercicio cargado — no hay nada contra qué puntuar todavía. Los hallazgos de abajo
+              siguen siendo reales.
             </p>
           )}
         </div>
         <CloseButton onClose={onClose} />
       </div>
 
-      {!isIllegal && (
-        <section aria-labelledby="result-axes-heading">
-          <h3 id="result-axes-heading" className="mb-2 text-xs font-semibold uppercase tracking-wide text-txt-muted">
-            Ejes
-          </h3>
-          <ul className="flex flex-col gap-1" data-testid="result-axes">
-            {evaluation.guarantees.map((g) => (
-              <li key={g.id} className="flex items-center justify-between gap-2 text-sm text-txt-secondary">
-                <span>{guaranteeLabel(exercise, g.id)}</span>
-                <span className={g.satisfied ? 'text-accent' : 'text-accent-red'}>{g.satisfied ? '✓ Cumplido' : '✗ Falta'}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       <section aria-labelledby="result-findings-heading">
         <h3 id="result-findings-heading" className="mb-2 text-xs font-semibold uppercase tracking-wide text-txt-muted">
-          Hallazgos ({evaluation.findings.length})
+          Hallazgos ({result.findings.length})
         </h3>
-        {evaluation.findings.length === 0 ? (
+        {result.findings.length === 0 ? (
           <p className="text-sm text-txt-muted">El motor no reportó ningún hallazgo.</p>
         ) : (
           <ul className="flex flex-col gap-1" data-testid="result-findings">
-            {evaluation.findings.map((finding) => (
+            {result.findings.map((finding) => (
               <li key={finding.id}>
                 <button
                   type="button"

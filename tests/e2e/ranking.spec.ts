@@ -40,13 +40,18 @@ test.describe('La Forja — ranking strip [RK1, RK5, RK7]', () => {
     await expect(page.getByTestId('ranking-empty')).toBeVisible()
   })
 
-  test('a scored submission appears as a ranked row [RK7: the write reaches the same local storage the strip reads]', async ({ page }) => {
+  // Free play (no real exercise loaded — R1-F ships the first one) never
+  // produces a score (see result.spec.ts), so it can never become a ranked
+  // row either — it is still recorded as personal history [RK7], just
+  // excluded from the ranking, same as C3's "local history does not
+  // retroactively score" for an entirely different reason today.
+  test('a legal free-play submission is still never a ranked row [RK7: the write reaches the same local storage the strip reads]', async ({ page }) => {
     await createNode(page, 'service')
     await createNode(page, 'observability')
     await page.getByTestId('submit-button').click()
 
-    await expect(page.getByTestId('ranking-row-0')).toBeVisible()
-    await expect(page.getByTestId('ranking-empty')).toHaveCount(0)
+    await expect(page.getByTestId('ranking-empty')).toBeVisible()
+    await expect(page.getByTestId('ranking-row-0')).toHaveCount(0)
   })
 
   test('an illegal submission is never a ranked row [score:null attempts stay personal history only]', async ({ page }) => {
