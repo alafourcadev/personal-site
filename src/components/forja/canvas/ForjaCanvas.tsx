@@ -13,15 +13,17 @@ import {
   applyNodeChanges,
   type Connection,
   type EdgeChange,
+  type FinalConnectionState,
   type NodeChange,
   type OnConnect,
+  type OnConnectEnd,
   type OnNodeDrag,
   type OnEdgesDelete,
   type OnNodesDelete,
   type OnSelectionChangeFunc,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { checkConnection, evaluateLegality } from '../../../lib/forja/engine'
 import type { ComponentType, ConnectionVerdict } from '../../../lib/forja/engine/types'
 import { projectEdges, projectNodes, type ForjaFlowEdge, type ForjaFlowNode } from '../../../lib/forja/canvas/project'
@@ -69,15 +71,23 @@ function ForjaCanvasInner() {
   // fight an in-progress drag: position changes during a drag stay purely
   // local via onNodesChange until onNodeDragStop commits them, and this
   // effect only re-fires when the store's design (or selection) changes.
-  useEffect(() => {
+  // Layout effects, not plain effects: they run synchronously after the DOM
+  // commit and before the browser paints, in declaration order, in the same
+  // pass as the pending-focus effect below. Two rapid creations in a row
+  // (fast enough that a plain `useEffect` doesn't get a chance to flush
+  // between them) could otherwise leave the first `pendingFocusId` write
+  // unresolved before the second overwrote it, or focus a node before its
+  // own render had actually committed — reproducible under Playwright's
+  // faster-than-human input, though invisible to a real player.
+  useLayoutEffect(() => {
     setNodes(projectNodes(design, selectedNodeIds, errorNodeIds))
   }, [design, selectedNodeIds, errorNodeIds])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setEdges(projectEdges(design, selectedEdgeIds, errorEdgeIds))
   }, [design, selectedEdgeIds, errorEdgeIds])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!pendingFocusId.current) return
     const id = pendingFocusId.current
     const el = document.querySelector<HTMLElement>(`.react-flow__node[data-id="${id}"]`)
@@ -136,6 +146,20 @@ function ForjaCanvasInner() {
       announceVerdict(result.verdict)
     },
     [store, announceVerdict],
+  )
+
+  // isValidConnection rejecting the drag means onConnect never fires for an
+  // illegal pointer attempt — this is the only place that still sees the
+  // gesture end, so it is the one that announces WHY it was refused.
+  const onConnectEnd: OnConnectEnd = useCallback(
+    (_event, connectionState: FinalConnectionState) => {
+      if (connectionState.isValid !== false) return
+      const fromId = connectionState.fromNode?.id
+      const toId = connectionState.toNode?.id
+      if (!fromId || !toId) return
+      announceVerdict(checkConnection(design, { node: fromId }, { node: toId }))
+    },
+    [design, announceVerdict],
   )
 
   const onNodesDelete: OnNodesDelete<ForjaFlowNode> = useCallback(
@@ -243,6 +267,7 @@ function ForjaCanvasInner() {
               onEdgesChange={onEdgesChange}
               onNodeDragStop={onNodeDragStop}
               onConnect={onConnect}
+              onConnectEnd={onConnectEnd}
               isValidConnection={isValidConnection}
               onNodesDelete={onNodesDelete}
               onEdgesDelete={onEdgesDelete}
@@ -252,6 +277,13 @@ function ForjaCanvasInner() {
               edgesFocusable
               elementsSelectable
               proOptions={{ hideAttribution: true }}
+              // React Flow's Background/Controls chrome uses its own default
+              // (light) palette unless told otherwise; the site itself
+              // toggles light/dark independently, but ISF's default is dark
+              // premium editorial, so that is this island's fixed baseline
+              // for now — following the site's live toggle is a follow-up,
+              // not a R1-D1 gesture concern.
+              colorMode="dark"
             >
               <Background />
               <Controls showInteractive={false} />

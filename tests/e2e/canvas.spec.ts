@@ -74,6 +74,7 @@ test.describe('La Forja canvas — R1-D1 gestures', () => {
     await createNodeByKeyboard(page, 'api-gateway')
     const source = nodeByLabel(page, /Cliente web/)
     const target = nodeByLabel(page, /Puerta de entrada/)
+    await expect(target).toBeFocused() // let the post-create focus effect settle first
 
     await source.focus()
     await expect(source).toBeFocused()
@@ -89,6 +90,8 @@ test.describe('La Forja canvas — R1-D1 gestures', () => {
   test('cancels the keyboard connect command with Escape, creating no edge', async ({ page }) => {
     await createNodeByKeyboard(page, 'web-client')
     await createNodeByKeyboard(page, 'api-gateway')
+    const gateway = nodeByLabel(page, /Puerta de entrada/)
+    await expect(gateway).toBeFocused() // let the post-create focus effect settle first
     const source = nodeByLabel(page, /Cliente web/)
 
     await source.focus()
