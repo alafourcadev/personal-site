@@ -164,3 +164,69 @@ MUST NOT run automatically or be required to complete an exercise.
 - GIVEN a design with manually positioned nodes
 - WHEN the player performs any other canvas action
 - THEN node positions MUST remain exactly as the player placed them
+
+### Requirement: Per-node context menu on right-click
+Right-clicking a node MUST open a context menu scoped to that node, offering
+at least: connect to another component, rename, duplicate, delete, and change
+colour. Right-clicking empty canvas MUST open a separate menu that adds a
+component at the pointer position. The menu MUST be operable by keyboard
+(the ContextMenu key or Shift+F10 opens it, arrow keys move between items,
+Escape closes it and returns focus to the node), MUST expose `role="menu"`
+with `role="menuitem"` children, and MUST stay within the viewport.
+
+Rationale: this is an explicit owner requirement carried over from the
+approved prototype, and it is the only pointer path to "connect to" that does
+not require a precise drag between two 10px handles — which WCAG 2.5.8 target
+size makes hostile on a trackpad.
+
+#### Scenario: Right-click on a node opens the node menu, not the canvas menu
+- GIVEN a canvas containing at least one node
+- WHEN the player right-clicks directly on that node
+- THEN the node menu MUST open with that node selected
+- AND the empty-canvas "add component" menu MUST NOT open
+- AND the node MUST NOT be deleted, moved, or otherwise mutated by the gesture
+
+#### Scenario: Connecting through the context menu
+- GIVEN two nodes whose connection is legal
+- WHEN the player opens the source node's context menu and chooses "conectar
+  con…" and then picks the target
+- THEN a connection MUST be created identical to one made by dragging handles
+
+#### Scenario: The menu is fully keyboard operable
+- GIVEN a focused node
+- WHEN the player presses the ContextMenu key or Shift+F10
+- THEN the menu MUST open and focus MUST move to its first item
+- AND Escape MUST close it and return focus to the node
+
+### Requirement: Player-assigned node colour
+A player MUST be able to assign a colour to any node from a small fixed
+palette, the colour MUST persist with the design, and it MUST be purely
+presentational: it MUST NOT affect evaluation, legality, or score.
+Because §13.9 forbids conveying meaning by colour alone, every node MUST
+remain identifiable by its icon and text label regardless of colour, and the
+chosen colour MUST be named in the node's accessible description.
+
+Rationale: an explicit owner requirement. Colour lets a player group parts of
+a large design by their own reasoning — a personal annotation, not a system
+signal.
+
+#### Scenario: Colour changes nothing about the score
+- GIVEN a design with a known score
+- WHEN the player recolours any node
+- THEN the score, the findings, and the legality verdict MUST be unchanged
+
+#### Scenario: Colour never carries meaning alone
+- GIVEN a node with a player-assigned colour
+- WHEN its accessible name and description are queried
+- THEN the type, zone, state, and colour name MUST all be present as text
+
+### Requirement: Canvas chrome must not overlap the site shell
+Canvas overlays — status announcements, refusal messages, menus and toolbars —
+MUST render inside the playground's own stacking context and MUST NOT cover
+the site header, its navigation, or any control outside the playground.
+
+#### Scenario: A refusal message does not cover the site navigation
+- GIVEN the player triggers a connection refusal
+- WHEN the refusal message is announced
+- THEN it MUST be fully readable within the playground area
+- AND every site navigation link MUST remain visible and clickable
