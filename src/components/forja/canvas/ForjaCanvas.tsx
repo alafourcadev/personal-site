@@ -91,8 +91,16 @@ function ForjaCanvasInner({ exercise }: ForjaCanvasInnerProps) {
   // reusing the existing ranking port (continuedDesign), never a second
   // storage mechanism. Free play keeps its own separate history under
   // FREE_PLAY_EXERCISE_ID, exactly as before.
+  //
+  // R1-H: a first-time visit (empty history) now falls back to the loaded
+  // exercise's OWN startingDesign — the system its brief describes — never
+  // a blank canvas. Free play has no starting design and keeps its prior
+  // blank-canvas fallback (continuedDesign()'s own default).
   const [initialDesign] = useState(() =>
-    continuedDesign(localRankingAdapter.getHistory(exercise?.id ?? FREE_PLAY_EXERCISE_ID)),
+    continuedDesign(
+      localRankingAdapter.getHistory(exercise?.id ?? FREE_PLAY_EXERCISE_ID),
+      exercise?.startingDesign,
+    ),
   )
   const { store, design } = useForjaStore(initialDesign)
   const { screenToFlowPosition } = useReactFlow()
@@ -204,6 +212,19 @@ function ForjaCanvasInner({ exercise }: ForjaCanvasInnerProps) {
     const undone = store.undo()
     setStatus(undone ? 'Se deshizo la última acción.' : 'No hay nada para deshacer.')
   }, [store])
+
+  // R1-H item 4: "reiniciar el ejercicio" — goes back to the starting
+  // design without leaving the page. Only meaningful for a loaded exercise
+  // (free play has no startingDesign to reset to); a normal store commit,
+  // so it stays undoable like every other mutation, and the existing
+  // auto-persist effect below saves it as the new "volver y seguir" state.
+  const handleReset = useCallback(() => {
+    if (!exercise) return
+    store.resetTo(exercise.startingDesign)
+    setSelectedNodeIds(new Set())
+    setSelectedEdgeIds(new Set())
+    setStatus('Ejercicio reiniciado al diseño inicial.')
+  }, [store, exercise])
 
   // R1-G requirement 6, "volver y seguir": persists the current design as a
   // draft (score: null — RK7, never a score) every time it actually changes,
@@ -636,6 +657,16 @@ function ForjaCanvasInner({ exercise }: ForjaCanvasInnerProps) {
           >
             Deshacer <kbd className="ml-1 text-xs text-txt-muted">Ctrl+Z</kbd>
           </button>
+          {exercise && (
+            <button
+              type="button"
+              onClick={handleReset}
+              data-testid="reset-exercise-button"
+              className="rounded-md border border-border-subtle px-3 py-1.5 text-sm text-txt-secondary hover:bg-bg-surface-hover hover:text-txt-primary"
+            >
+              Reiniciar ejercicio
+            </button>
+          )}
         </div>
       </div>
 
