@@ -192,36 +192,57 @@ clamp, empty state and 8 Playwright blocker tests add it back.
 
 ## R1-C — Engine scoring [EE4–EE8, EE10, EE11 + risk item]
 
-- [ ] C.1 RED: `tests/engine/predicates.test.ts` — two structurally distinct
+> **Apply Progress Update (2026-08-04):** R1-C is COMPLETE — all 15 tasks
+> (C.1–C.15) marked `[x]`. Split into 5 commits to stay under the 400-line
+> review budget: `9a20283` "feat(forja): guarantee predicate DSL over the
+> design graph" (369 lines: predicates.ts, predicates.test.ts, NodeQuery/
+> Predicate types), `e716a5b` "feat(forja): cost as a budget with a cliff"
+> (128 lines: catalog.ts monthlyUsd, cost.ts, cost.test.ts, Budget type),
+> `ab544ca` "feat(forja): the ledger — exact feedback accounting with
+> largest-remainder rounding" (318 lines: score.ts, ceiling.test.ts,
+> ledger.test.ts, Guarantee/ExerciseSpec types), `dff2d4d` "test(forja): prove
+> the monotonicity invariant (EE6)" (115 lines: monotonicity.test.ts, the
+> enumeration plus the exact prototype DLQ regression), `29a9693`
+> "feat(forja): wire evaluate()/checkConnection() — the public engine
+> surface" (305 lines: index.ts rewrite, rules.ts WHY export, Evaluation/
+> ConnectionVerdict types, no-mutation.test.ts, evaluate.test.ts covering
+> all 4 named regressions). `npm test` passes 59/59 across 13 files; `npm
+> run build` stays green (50 pages, C.14 checkpoint); `tsc --noEmit` clean
+> throughout. Full evidence in Engram `sdd/la-forja-integracion/
+> apply-progress`. Next: R1-D1 (canvas core gestures).
+
+- [x] C.1 RED: `tests/engine/predicates.test.ts` — two structurally distinct
       legal designs both satisfy `G2` (outbox vs. durable queue).
-- [ ] C.2 GREEN: `predicates.ts`, DSL → graph queries, `set` never `find`
+- [x] C.2 GREEN: `predicates.ts`, DSL → graph queries, `set` never `find`
       (defect-9 regression coverage).
-- [ ] C.3 RED: `tests/engine/cost.test.ts` — under-budget no penalty;
+- [x] C.3 RED: `tests/engine/cost.test.ts` — under-budget no penalty;
       over-budget monotonic `eficiencia` decrease.
-- [ ] C.4 GREEN: `cost.ts`.
-- [ ] C.5 RED: `tests/engine/ceiling.test.ts` — two distinct legal designs
+- [x] C.4 GREEN: `cost.ts`.
+- [x] C.5 RED: `tests/engine/ceiling.test.ts` — two distinct legal designs
       both score exactly 100 (also doubles as EE10 §13.10 publication test).
-- [ ] C.6 GREEN: `score.ts`, analytic ceiling.
-- [ ] C.7 RED: `tests/engine/monotonicity.test.ts` — seeded small design-space
+- [x] C.6 GREEN: `score.ts`, analytic ceiling.
+- [x] C.7 RED: `tests/engine/monotonicity.test.ts` — seeded small design-space
       enumeration, `G(d')≥G(d) ∧ C(d')≤budget ⟹ score(d')≥score(d)`.
-- [ ] C.8 Verify EE7 already holds by D3 construction (no node-count term);
+- [x] C.8 Verify EE7 already holds by D3 construction (no node-count term);
       no new production code expected — task is proof, not implementation.
-- [ ] C.9 RED: `tests/engine/ledger.test.ts` — `score + Σ costPoints == 100`
+- [x] C.9 RED: `tests/engine/ledger.test.ts` — `score + Σ costPoints == 100`
       exactly, largest-remainder rounding.
-- [ ] C.10 GREEN: ledger allocation in `score.ts`.
-- [ ] C.11 RED: `tests/engine/no-mutation.test.ts` — `evaluate()` does not
+- [x] C.10 GREEN: ledger allocation in `score.ts`.
+- [x] C.11 RED: `tests/engine/no-mutation.test.ts` — `evaluate()` does not
       alter the input `Design` object (EE11).
-- [ ] C.12 Verify: confirm immutability by construction; no code change
+- [x] C.12 Verify: confirm immutability by construction; no code change
       expected unless C.11 fails.
-- [ ] C.13 Wire `evaluate()` / `checkConnection()` exports per the Interfaces
+- [x] C.13 Wire `evaluate()` / `checkConnection()` exports per the Interfaces
       contract in `engine/index.ts`.
-- [ ] C.14 **Risk task (design/build coupling):** after C.13, run
+- [x] C.14 **Risk task (design/build coupling):** after C.13, run
       `npm run build` with the engine wired but *before* `content.config.ts`
       imports it (R1-F). Confirm build stays green with the engine present
       but unused, so R1-F's later coupling failure is attributable to content
       admission, not an engine regression. Document the revert path
       (unregister the `superRefine` import) in the R1-F commit message.
-- [ ] C.15 Commit: `feat(forja): engine scoring, invariants, ledger`.
+- [x] C.15 Commit: `feat(forja): engine scoring, invariants, ledger`. **Scope
+      note:** delivered as 5 commits per the 400-line-per-slice discipline;
+      see Apply Progress Update above.
 
 ## R1-D1 — Canvas core gestures [PC1–PC6, PC10–PC13] · *value-first, not the checkpoint yet*
 
