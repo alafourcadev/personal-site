@@ -532,35 +532,135 @@ clamp, empty state and 8 Playwright blocker tests add it back.
 
 ## R1-F — Level 4 content + admission gates [EC1–EC7, PR1, PR2, PR5, C2 pending]
 
-- [ ] F.1 RED: exercise missing `D3` fails schema validation [EC1].
-- [ ] F.2 GREEN: Zod schema in `content.config.ts`, registers `forja`
-      collections additively; `blog` untouched.
-- [ ] F.3 RED: level-4 exercise with index 22 (band 8–16) rejected [EC2];
-      axis over its level ceiling rejected [EC3].
-- [ ] F.4 GREEN: `superRefine` admission gates — **this is the coupling
-      point flagged in C.14: run `npm run build` immediately after wiring
-      and confirm any failure is a legitimate content rejection.**
-- [ ] F.5 RED: prerequisite level greater than own level rejected [EC4].
-- [ ] F.6 GREEN: prerequisite gate.
-- [ ] F.7 RED: single-reference-solution exercise fails validation [EC5];
-      §13.10 test generated from `referenceSolutions`, both score 100 [EE10].
-- [ ] F.8 GREEN: two-reference-solution + `contextInversion` gate.
-- [ ] F.9 RED: `DRAFT` exercise absent from the playable level list [EC6 —
-      closes G4]; rubric dimension without a linked predicate/metric
-      rejected [EC7].
-- [ ] F.10 GREEN: status filter in the level/exercise route query + rubric
-      gate.
-- [ ] F.11 Author level 4 content (*"Comunicación entre servicios"*, first
-      playable per PR5), including *"El pago que espera al email"* as a core
-      exercise. **Use the spec's literal 8-exercise floor (1/4/1-pair/1)
-      unless C2 is resolved to require trap+counter-trap** — do not silently
-      pick a number.
-- [ ] F.12 RED: passing only core exercises does not unlock the next level
-      [PR2]; locked level states its missing prerequisite [PR1].
-- [ ] F.13 GREEN: role-quota unlock logic (`unlockRequires`), not a count.
-- [ ] F.14 RED: level 4 is the first level with playable exercises on a new
-      player's level map [PR5].
-- [ ] F.15 Commit: `feat(forja): level 4 content and admission gates`.
+> **Apply Progress Update (2026-08-05):** R1-F is COMPLETE — all 15 tasks
+> (F.1–F.15) marked `[x]`, plus two owner-requested fixes found in live
+> review of R1-E (see the "R1-F additions" subsection right below). Delivered
+> as 13 commits on `feat/la-forja` (no PRs, per the owner's explicit
+> override): `b7b5ddb` component-library-stays-visible fix (57 lines),
+> `0b75572` free-play-never-scores fix (122 lines), `452130b` progression
+> pure modules — difficulty index, level map, unlock-by-role (249 lines),
+> `ac45c02` the exercise-content Zod schema (280 lines), `288c8ca` its
+> admission-gate test coverage (185 lines), `da48dbb` wiring the collection
+> into `content.config.ts` (13 lines, C.14 round-trip verified both
+> directions), `fc4dd50`+`7b0ee28` the calibration and two payments/bookings
+> core exercises (340+214 lines), `389dd60` the two DLQ core exercises
+> (394 lines), `7199742` the contrasted tradeoff pair (391 lines), `41d9291`
+> the synthesis exercise (219 lines), `5c71008` cross-entry composition
+> tests over the real content (119 lines), `bd8ed10` the level map and
+> per-level list routes plus a ninth DRAFT exercise fixture (270 lines).
+> Every commit stays under the 400-line budget. `npm test`: 175/175 across
+> 30 files. `npx tsc --noEmit`: clean. `npx astro check`: 0 errors. `npm run
+> build`: 64 pages green (51 existing + `/forja/niveles` + `/forja/1..12`).
+> Playwright: 71/71 across the full suite. Full evidence in Engram
+> `sdd/la-forja-integracion/apply-progress`. Next: R2 (per-level content,
+> §13.9 remainder) or R3 (Supabase), on explicit continuation instruction.
+
+- [x] F.1 RED: exercise missing `D3` fails schema validation [EC1].
+      `tests/content/exercise-schema.test.ts` — a known-valid level-4
+      fixture with `D3` deleted fails `exerciseSchema.safeParse`.
+- [x] F.2 GREEN: Zod schema in `content.config.ts`, registers `forjaExercises`
+      additively; `blog` untouched. Split into its own module,
+      `src/lib/forja/content/exercise-schema.ts`, so it stays directly
+      Vitest-testable without the Astro content pipeline — `content.config.ts`
+      only imports and registers it (13-line diff).
+- [x] F.3 RED: level-4 exercise pushed to every axis's own per-level ceiling
+      (index 20, band [8,16]) rejected [EC2]; `D1=3` at level 4 (ceiling 2)
+      rejected naming the offending axis [EC3].
+- [x] F.4 GREEN: `superRefine` admission gates — **the C.14 coupling point,
+      verified in BOTH directions, not just wired-and-hoped:** (1) `npm run
+      build` stays green with the collection wired but zero content entries;
+      (2) a deliberately broken fixture entry (a reference solution wiring
+      `mobile-client` straight to a private-zone `service`) fails the build
+      with the exact engine-backed rejection message ("Salto de zona de
+      confianza; Conexión imposible por contrato"), not an opaque Zod error
+      — the fixture was removed after the round trip, it never merged.
+- [x] F.5 RED: a level-4 exercise declaring `prerequisiteLevels: [5]`
+      rejected [EC4].
+- [x] F.6 GREEN: prerequisite gate — `prerequisiteLevels[i] > level` is a
+      `superRefine` issue.
+- [x] F.7 RED: single-reference-solution exercise fails validation [EC5];
+      §13.10/EE10 publication test generated from `referenceSolutions` for
+      every real PILOT exercise (`tests/content/level-4-composition.test.ts`,
+      `it.each` over the 8 real files) — both score exactly 100, not just
+      "high".
+- [x] F.8 GREEN: two-reference-solution schema floor (`.min(2)`) +
+      `contextInversion` required non-empty on every solution, checked by
+      the same build-failing `evaluate()` pass that proves legality/budget.
+- [x] F.9 RED: `DRAFT` exercise absent from the playable level list [EC6 —
+      closes G4], proven against a real draft ("El reintento que cobra dos
+      veces", a genuine ninth level-4 exercise mid-authoring — no idempotent
+      second solution shape yet) via `tests/e2e/level-routes.spec.ts`; rubric
+      dimension without a linked predicate/metric rejected [EC7].
+- [x] F.10 GREEN: `getCollection('forjaExercises', ({data}) => isPlayable(...))`
+      status filter in `src/pages/forja/[level]/index.astro` and
+      `src/pages/forja/niveles/index.astro`; rubric signal-linkage gate in
+      `exercise-schema.ts`'s `superRefine`.
+- [x] F.11 Authored level 4's 8 beta exercises (*"Comunicación entre
+      servicios"*, first playable per PR5) — **the spec's literal 8-exercise
+      floor (1 calibration + 4 core + 1 contrasted tradeoff pair + 1
+      synthesis), no trap/counter-trap**, per the binding C2 resolution and
+      this run's explicit instruction: 1 calibration ("El cliente nunca habla
+      directo con el servicio"), 4 core across two concepts × two domains
+      each — durability of a confirmation (payments: *"El pago que espera al
+      email"*, the one existing evaluated exercise; bookings: *"La reserva
+      que espera la confirmación del hotel"*) and DLQ/consumer presence
+      (push notifications: *"El aviso push que nadie vuelve a intentar"*;
+      image processing: *"La cola de miniaturas que se llena y nadie
+      mira"*) — 1 contrasted tradeoff pair (*"El stock que hay que saber
+      ya"* / *"El stock que puede esperar"*, same checkout/inventory pair,
+      inverted context, proven to genuinely flip the winner both directions
+      in `level-4-composition.test.ts`), and 1 synthesis (*"El checkout
+      completo, con presupuesto ajustado"*, all three of the level's
+      guarantees under a 5-opsUnits, lambda=1.0 tight budget).
+- [x] F.12 RED: `tests/content/unlock.test.ts` — passing only core exercises
+      does not unlock the next level [PR2]; `tests/content/levels.test.ts` —
+      a locked level states its missing prerequisite by name [PR1].
+- [x] F.13 GREEN: role-quota unlock logic, `requiredRoles()` +
+      `isLevelComplete()` in `src/lib/forja/progression/unlock.ts` — required
+      roles are the roles a level's own content actually ships, never a
+      fixed universal list, which is what lets level 4's real 8-exercise
+      beta content (no trap/counter-trap) never demand one; validated
+      against the real content in `level-4-composition.test.ts`, not just a
+      synthetic fixture.
+- [x] F.14 RED: `tests/e2e/level-routes.spec.ts` — level 4 is the only level
+      marked playable (`data-playable="true"`) on `/forja/niveles`, derived
+      from the content collection itself, not a hardcoded flag [PR5].
+- [x] F.15 Commits: 13 commits per the 400-line-per-slice discipline; see
+      Apply Progress Update above.
+
+### R1-F additions — owner-requested fixes found in live review of R1-E
+
+> **Orchestrator gap, not the implementer's:** two defects were found by the
+> owner reviewing `/forja` live before this slice started, and formalized as
+> requirements at the end of `specs/forja-playground-canvas/spec.md` ("The
+> correction loop never loses its tools") and `specs/forja-evaluation-engine/
+> spec.md` ("Free play without a loaded exercise produces no score"), commit
+> `b4583da` — same pattern as R1-D2b's PC15–17 and R1-E's E.11–E.14. This
+> subsection is their task breakdown, written retroactively before
+> implementation started (this run began with these two fixes, before R1-F
+> proper).
+
+- [x] Fix 1 — the component library stayed reachable while a result was
+      shown. RED (Playwright, stashed the eventual fix first to prove the
+      defect): `getByRole('navigation', {name: 'Biblioteca de componentes'})`
+      not found while `view === 'result'` — the library's render condition
+      was `view === 'canvas'` only. GREEN: changed to `view !== 'list'`,
+      matching the canvas's own mount condition — only the list view
+      replaces the workspace now (`tests/e2e/correction-loop.spec.ts`).
+- [x] Fix 2 — free play never presents a numeric score. RED: reproduced the
+      exact reported defect live — two disconnected `cache`+`database`
+      nodes scored "100 / 100" (the placeholder exercise's single `covered`
+      guarantee is vacuously satisfied when its target type is absent from
+      the canvas — `Array.prototype.every` on `[]` — a real, documented
+      property of the predicate DSL's own empty-set semantics, not an
+      engine bug: see `score.ts`'s own comment that real content always
+      declares 3–5 guarantees whose target nodes the brief gives the
+      player). GREEN: `handleSubmit` now calls `evaluateLegality()` alone —
+      legality and findings, never a guarantee/cost/score pass — until a
+      real `ExerciseSpec` exists; the `PLAYGROUND_EXERCISE` placeholder is
+      deleted, not patched (`src/lib/forja/playground/free-play.ts`,
+      `tests/e2e/result.spec.ts`). The engine itself (`src/lib/forja/
+      engine/`) was not modified, per this run's explicit instruction.
 
 ## R2 — §13.9 remainder, contrast, per-level content [PC9(G2), PC14(G3)]
 
