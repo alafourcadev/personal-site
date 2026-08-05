@@ -11,3 +11,9 @@ content-drafts/
 
 # Agent tooling cache
 .atl/
+
+# Los agentes SÍ se versionan: son parte del proyecto, no configuración local.
+# (el gitignore global ignora .claude entero)
+!.claude/
+.claude/*
+!.claude/agents/
