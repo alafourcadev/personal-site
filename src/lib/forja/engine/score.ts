@@ -16,7 +16,11 @@ interface GuaranteeStatus {
 }
 
 // Σ wᵢ·satᵢ / Σ wᵢ ∈ [0,1]. An exercise with zero total weight has nothing to
-// score against — treated as raw 0 rather than dividing by zero.
+// satisfy, so it is vacuously fully satisfied (raw 1) — consistent with the
+// predicate DSL's own empty-set semantics (`covered`/`all` over an empty
+// set are vacuously true). Real content always declares 3–5 guarantees
+// (spec's floor), so this only guards a malformed exercise from ever
+// producing an unexplained 100-point loss with no finding to attach it to.
 function computeRaw(design: Design, exercise: ExerciseSpec, findings: Finding[]) {
   const totalWeight = exercise.guarantees.reduce((s, g) => s + g.weight, 0)
   const statuses: GuaranteeStatus[] = exercise.guarantees.map((g) => ({
@@ -24,7 +28,7 @@ function computeRaw(design: Design, exercise: ExerciseSpec, findings: Finding[])
     satisfied: evaluatePredicate(design, g.predicate, findings),
     weight: g.weight,
   }))
-  if (totalWeight === 0) return { raw: 0, statuses }
+  if (totalWeight === 0) return { raw: 1, statuses }
   const satWeight = statuses.reduce((s, g) => s + (g.satisfied ? g.weight : 0), 0)
   return { raw: satWeight / totalWeight, statuses }
 }
@@ -48,8 +52,12 @@ function allocate(buckets: Bucket[], total: number): Map<string, number> {
     .map((b, i) => ({ i, frac: b.real - floors[i] }))
     .sort((a, b) => b.frac - a.frac || a.i - b.i)
   const result = new Map(buckets.map((b, i) => [b.key, floors[i]]))
-  for (let k = 0; k < remaining; k++) {
-    const key = buckets[order[k].i].key
+  // `remaining` is at most `buckets.length − 1` whenever Σ real === total
+  // (each fractional part is < 1). The modulo is defence in depth only —
+  // it keeps this function total even if a future caller's buckets don't
+  // sum to `total` exactly, rather than indexing past the end of `order`.
+  for (let k = 0; k < remaining && order.length > 0; k++) {
+    const key = buckets[order[k % order.length].i].key
     result.set(key, (result.get(key) ?? 0) + 1)
   }
   return result

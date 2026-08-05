@@ -8,7 +8,10 @@ import { CATALOG } from './catalog'
 import { isPortCompatible, isTrustZoneJump } from './legality'
 import type { Design, DesignNode, Finding, RuleId, Severity } from './types'
 
-const WHY = {
+// Exported so index.ts's checkConnection() can reuse the exact same copy for
+// the live connection-refusal gesture — "the same module the scorer gates
+// on" (design's connection-gesture diagram).
+export const WHY = {
   trustZoneJump:
     'Exponés un componente restringido a una red donde no controlás quién llega. Si el cliente es comprometido, no hay capa intermedia que limite el daño.',
   volatileDurableMismatch:

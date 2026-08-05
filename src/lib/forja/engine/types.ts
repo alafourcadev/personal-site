@@ -141,3 +141,21 @@ export interface ExerciseSpec {
   budget: Budget
   lambda: number
 }
+
+// -- R1-C: the public evaluate() / checkConnection() surface -------------
+
+export interface Evaluation {
+  status: 'illegal' | 'scored'
+  score: number | null
+  ceiling: 100
+  guarantees: { id: string; satisfied: boolean; weight: number }[]
+  cost: { opsUnits: number; monthlyUsd: number; budget: Budget; overage: number }
+  findings: Finding[]
+  engineVersion: string
+}
+
+export interface ConnectionVerdict {
+  ok: boolean
+  why?: string
+  consequence?: string
+}
