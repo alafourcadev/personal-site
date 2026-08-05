@@ -28,6 +28,14 @@ export type ComponentType =
   | 'observability'
   | 'generic'
 
+// PC16: a small, fixed palette a player can assign to any node — purely
+// presentational (see tests/engine/color-neutral.test.ts). Deliberately not
+// one of the four categorical CATALOG_UI colours, which already carry
+// component-type identity: this is a personal annotation, never a system
+// signal, so it lives on DesignNode as its own optional field, never read
+// by anything under src/lib/forja/engine.
+export type PlayerColor = 'slate' | 'emerald' | 'blue' | 'amber' | 'violet' | 'rose'
+
 export interface DesignNode {
   id: string
   type: ComponentType
@@ -37,6 +45,7 @@ export interface DesignNode {
   role?: string
   given?: boolean
   position?: { x: number; y: number }
+  color?: PlayerColor
 }
 
 export interface DesignEdge {

@@ -5,7 +5,7 @@
 // `onNodeDragStop`, goes through here.
 import { checkConnection } from '../engine'
 import { CATALOG } from '../engine/catalog'
-import type { ComponentType, ConnectionVerdict, Design, DesignEdge, DesignNode, Zone } from '../engine/types'
+import type { ComponentType, ConnectionVerdict, Design, DesignEdge, DesignNode, PlayerColor, Zone } from '../engine/types'
 
 export interface StorePosition {
   x: number
@@ -102,6 +102,47 @@ export class ForjaStore {
     if (!node?.position) return
     const delta = ARROW_DELTA[direction]
     this.moveNode(nodeId, { x: node.position.x + delta.x, y: node.position.y + delta.y })
+  }
+
+  // PC15's "Renombrar" menu action — blank input is a no-op (keeps the
+  // original label) rather than committing an empty string, matching the
+  // rest of the store's "invalid input never mutates" convention.
+  renameNode(nodeId: string, label: string): void {
+    const trimmed = label.trim()
+    if (!trimmed) return
+    if (!this.design.nodes.some((n) => n.id === nodeId)) return
+    this.commit({
+      ...this.design,
+      nodes: this.design.nodes.map((n) => (n.id === nodeId ? { ...n, label: trimmed } : n)),
+    })
+  }
+
+  // PC15's "Duplicar" menu action — same offset convention the prototype
+  // used (forja-app.html's ctxAction 'dup'), but keeps the label (suffixed)
+  // rather than dropping it, so the copy is identifiable in the list view
+  // without relying on position alone.
+  duplicateNode(nodeId: string): DesignNode | null {
+    const original = this.design.nodes.find((n) => n.id === nodeId)
+    if (!original) return null
+    const copy: DesignNode = {
+      ...original,
+      id: randomId('node'),
+      label: `${original.label} (copia)`,
+      position: original.position ? { x: original.position.x + 28, y: original.position.y + 28 } : undefined,
+    }
+    this.commit({ ...this.design, nodes: [...this.design.nodes, copy] })
+    return copy
+  }
+
+  // PC16: purely presentational — never read by anything under
+  // src/lib/forja/engine (tests/engine/color-neutral.test.ts is the
+  // regression guard for that claim).
+  setNodeColor(nodeId: string, color: PlayerColor): void {
+    if (!this.design.nodes.some((n) => n.id === nodeId)) return
+    this.commit({
+      ...this.design,
+      nodes: this.design.nodes.map((n) => (n.id === nodeId ? { ...n, color } : n)),
+    })
   }
 
   // Reuses the exact module the scorer gates on (design D1's connection

@@ -165,6 +165,85 @@ describe('ForjaStore — undo [PC6]', () => {
   })
 })
 
+describe('ForjaStore — rename [PC15]', () => {
+  it('updates the node label', () => {
+    const store = new ForjaStore()
+    const node = store.createNode('service', 'Cobros', { x: 0, y: 0 })
+
+    store.renameNode(node.id, 'Cobros v2')
+
+    expect(store.getDesign().nodes[0].label).toBe('Cobros v2')
+  })
+
+  it('ignores a blank rename, keeping the original label', () => {
+    const store = new ForjaStore()
+    const node = store.createNode('service', 'Cobros', { x: 0, y: 0 })
+
+    store.renameNode(node.id, '   ')
+
+    expect(store.getDesign().nodes[0].label).toBe('Cobros')
+  })
+
+  it('is undoable', () => {
+    const store = new ForjaStore()
+    const node = store.createNode('service', 'Cobros', { x: 0, y: 0 })
+    store.renameNode(node.id, 'Cobros v2')
+
+    store.undo()
+
+    expect(store.getDesign().nodes[0].label).toBe('Cobros')
+  })
+})
+
+describe('ForjaStore — duplicate [PC15]', () => {
+  it('creates a copy with a new id, an offset position, and a distinct label', () => {
+    const store = new ForjaStore()
+    const original = store.createNode('database', 'Base de pedidos', { x: 40, y: 40 })
+
+    const copy = store.duplicateNode(original.id)!
+
+    expect(copy.id).not.toBe(original.id)
+    expect(copy.label).not.toBe(original.label)
+    expect(copy.type).toBe('database')
+    expect(copy.zone).toBe('restricted')
+    expect(copy.props).toEqual(original.props)
+    expect(copy.position).not.toEqual(original.position)
+    expect(store.getDesign().nodes).toHaveLength(2)
+  })
+
+  it('returns null for a missing node id and does not mutate the design', () => {
+    const store = new ForjaStore()
+    const result = store.duplicateNode('missing-id')
+
+    expect(result).toBeNull()
+    expect(store.getDesign().nodes).toHaveLength(0)
+  })
+})
+
+describe('ForjaStore — recolor [PC16]', () => {
+  it('sets a player-assigned colour without touching anything else', () => {
+    const store = new ForjaStore()
+    const node = store.createNode('service', 'Cobros', { x: 0, y: 0 })
+
+    store.setNodeColor(node.id, 'violet')
+
+    const updated = store.getDesign().nodes[0]
+    expect(updated.color).toBe('violet')
+    expect(updated.type).toBe('service')
+    expect(updated.label).toBe('Cobros')
+  })
+
+  it('is undoable', () => {
+    const store = new ForjaStore()
+    const node = store.createNode('service', 'Cobros', { x: 0, y: 0 })
+    store.setNodeColor(node.id, 'violet')
+
+    store.undo()
+
+    expect(store.getDesign().nodes[0].color).toBeUndefined()
+  })
+})
+
 describe('ForjaStore — subscriptions', () => {
   it('notifies listeners on a successful mutation but not on a refused connection', () => {
     const store = new ForjaStore()
