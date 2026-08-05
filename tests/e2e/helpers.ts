@@ -41,6 +41,29 @@ export async function connectByPointer(page: Page, source: Locator, target: Loca
   await page.mouse.up()
 }
 
+// Scoped to a specific edge by its accessible name ("Conexión de X a Y") —
+// `.react-flow__edge` alone is ambiguous the moment a design has more than
+// one connection, which every non-trivial exercise does. React Flow renders
+// `ariaLabel` (project.ts) as a real `aria-label` attribute on the edge's
+// own group element, so a plain attribute selector reaches it directly.
+export function edgeByLabel(page: Page, text: string) {
+  return page.locator(`.react-flow__edge[aria-label*="${text}"]`).first()
+}
+
+// Real pointer click + Delete key on a specific edge — the same gesture
+// canvas.spec.ts already proves survives a re-render (B4 blocker), reused
+// here as a step in a larger human-path build rather than its own subject.
+// `scrollIntoViewIfNeeded` first: an exercise route's canvas sits below a
+// long brief, so it can start below the fold — `page.mouse.click` (unlike
+// a locator action) never auto-scrolls, and clicking a point outside the
+// viewport is silently a no-op, not an error.
+export async function deleteEdgeByPointer(page: Page, edge: Locator) {
+  await edge.scrollIntoViewIfNeeded()
+  const point = await edgeMidpoint(edge)
+  await page.mouse.click(point.x, point.y)
+  await page.keyboard.press('Delete')
+}
+
 // Maps an SVG edge path's real midpoint to viewport coordinates via its
 // screen CTM, so a subsequent page.mouse.click() lands ON the rendered
 // curve — not on the bounding box of the whole SVG layer.
