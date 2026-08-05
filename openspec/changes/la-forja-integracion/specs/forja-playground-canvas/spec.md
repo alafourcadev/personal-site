@@ -318,3 +318,21 @@ softening the technical noun.
 - WHEN it is rendered to the player
 - THEN it MUST state the consequence in plain language
 - AND its internal rule id MUST NOT be the player-facing title
+
+### Requirement: The correction loop never loses its tools
+Reading the result MUST NOT hide the component library or the canvas. The loop
+is brief → build → submit → read what is wrong → correct, and the correction
+step MUST be reachable without navigating away from the finding that motivated
+it. The result MAY share the viewport with the canvas, but MUST NOT replace the
+workspace.
+
+Rationale: the result currently lives in a tab that hides the library, so the
+player must leave the finding to act on it. This is the same defect the
+prototype had in another form — there the result fell below the fold, here it
+takes the tools away.
+
+#### Scenario: The library stays reachable while a result is shown
+- GIVEN the player has submitted a design and is reading the findings
+- WHEN they decide to add a component the finding implies is missing
+- THEN the component library MUST be usable without dismissing the result
+- AND the canvas MUST remain visible so the highlighted nodes stay in context

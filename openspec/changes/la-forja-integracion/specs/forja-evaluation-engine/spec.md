@@ -137,3 +137,24 @@ or generate a corrected version.
 - WHEN evaluated
 - THEN the result MUST NOT include a modified graph, and the input graph MUST
   remain unchanged
+
+### Requirement: Free play without a loaded exercise produces no score
+When no exercise is loaded, the playground is in free play: the engine MUST
+still report legality and findings, but MUST NOT present a numeric score, and
+MUST state plainly that there is nothing to score against yet.
+
+A design MUST NOT be able to reach the ceiling without satisfying a real
+guarantee. A placeholder exercise whose guarantees are vacuously satisfiable
+MUST NOT ship: it awards a perfect score for nothing, which is the exact defect
+the empty-canvas guard exists to prevent, one step removed.
+
+#### Scenario: Two unconnected components do not score 100
+- GIVEN a canvas holding two components with no connection between them
+- WHEN the player submits
+- THEN the result MUST NOT show a perfect score
+- AND if no exercise is loaded, the result MUST say so instead of showing a number
+
+#### Scenario: Free play still reports legality
+- GIVEN free play with no exercise loaded
+- WHEN the player submits an illegal design
+- THEN the blocking findings MUST still be reported with their consequences
