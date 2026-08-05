@@ -48,7 +48,17 @@ const allExercises = await getCollection('forjaExercises', ({ data }) => data.le
               <span data-testid="exercise-role-tag" class="mb-1 inline-block rounded-md bg-accent-dim px-2 py-0.5 text-xs font-medium text-accent">
                 {ROLE_LABEL[exercise.data.role]}
               </span>
-              <h2 class="text-base font-semibold text-txt-primary">{exercise.data.title}</h2>
+              {/* R1-G requirement 1: from this list, entering a specific
+                  exercise must be possible — the play route lives at
+                  `/forja/[level]/[exercise]`, `exercise.id` being the same
+                  slug getStaticPaths there is built from. */}
+              <a
+                href={`/forja/${levelId}/${exercise.id}`}
+                data-testid="exercise-list-link"
+                class="block text-base font-semibold text-txt-primary hover:text-accent"
+              >
+                {exercise.data.title}
+              </a>
               <p class="mt-1 text-sm text-txt-secondary">{exercise.data.domain}</p>
             </li>
           ))}

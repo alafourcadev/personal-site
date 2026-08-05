@@ -1,0 +1,56 @@
+---
+// R1-G requirement 2: "el enunciado a la vista — contexto, problema,
+// restricciones con sus números, y el presupuesto de dinero y de
+// opsUnits" — the player must know what they are designing against BEFORE
+// touching the canvas. Server-rendered (design D5: only canvas + result
+// hydrate), so this is on the page from the very first paint, no JS
+// required to read it. Deliberately never shows `hiddenFacts` — those are
+// meant to be discovered by playing (each one's own `discoveryPath` says
+// so), not spoiled here.
+import { formatBudget, formatConstraint } from '../../lib/forja/content/format';
+import { ROLE_LABEL } from '../../lib/forja/progression/types';
+import type { ExerciseFrontmatter } from '../../lib/forja/content/exercise-schema';
+
+interface Props {
+  exercise: ExerciseFrontmatter;
+}
+
+const { exercise } = Astro.props;
+---
+
+<section
+  data-testid="exercise-brief"
+  class="mb-6 rounded-lg border border-border-subtle bg-bg-surface p-4 md:p-6"
+>
+  <span
+    data-testid="exercise-role-tag"
+    class="mb-2 inline-block rounded-md bg-accent-dim px-2 py-0.5 text-xs font-medium text-accent"
+  >
+    {ROLE_LABEL[exercise.role]}
+  </span>
+  <h1 class="text-2xl font-heading font-bold text-txt-primary">{exercise.title}</h1>
+  <p class="mt-1 text-sm text-txt-secondary">{exercise.domain}</p>
+
+  <div data-testid="exercise-body" class="prose prose-invert mt-4 max-w-none text-sm text-txt-secondary">
+    <slot />
+  </div>
+
+  <dl class="mt-4 grid grid-cols-1 gap-3 border-t border-border-subtle pt-4 sm:grid-cols-2" data-testid="exercise-constraints">
+    <div>
+      <dt class="text-xs font-semibold uppercase tracking-wide text-txt-muted">Presupuesto</dt>
+      <dd data-testid="exercise-budget" class="text-sm text-txt-primary">{formatBudget(exercise.budget)}</dd>
+    </div>
+    {
+      exercise.constraints.map((constraint) => (
+        <div>
+          <dt class="text-xs font-semibold uppercase tracking-wide text-txt-muted">Restricción</dt>
+          <dd data-testid="exercise-constraint" class="text-sm text-txt-primary">
+            {formatConstraint(constraint)}
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+
+  <p class="mt-3 text-xs text-txt-muted" data-testid="exercise-ai-budget">Uso de IA: {exercise.aiBudget}</p>
+</section>

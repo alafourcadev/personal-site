@@ -1,0 +1,64 @@
+---
+// R1-G: the last piece of R1 — a route that actually LOADS a real
+// exercise's guarantees, budget and lambda into the canvas, replacing the
+// `/forja/[level]/index.astro` list-only view once a specific exercise is
+// picked. Static output (like every other content route in astro.config.mjs
+// — no server adapter), so getStaticPaths owns which paths exist: only
+// PILOT/PUBLISHED exercises (EC6, same filter every other Forja route
+// already applies), never a DRAFT one.
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ExerciseBrief from '../../../components/forja/ExerciseBrief.astro';
+import { ForjaCanvas } from '../../../components/forja/canvas/ForjaCanvas';
+import RankingStrip from '../../../components/forja/RankingStrip.astro';
+import { isPlayable } from '../../../lib/forja/progression/types';
+import type { LoadedExercise } from '../../../lib/forja/playground/loaded-exercise';
+
+export async function getStaticPaths() {
+  const exercises = await getCollection('forjaExercises', ({ data }) => isPlayable(data.status));
+  return exercises.map((entry) => ({
+    params: { level: String(entry.data.level), exercise: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+// R1-G requirement 3: "el lienzo carga ESE ejercicio — sus garantías, sus
+// pesos, su presupuesto, su capacidad de equipo" — the minimal serializable
+// slice `ForjaCanvas` (client:only="react") needs, never the full
+// ExerciseFrontmatter (title/domain/prose stay server-rendered above, in
+// ExerciseBrief, never re-sent to the island).
+const loadedExercise: LoadedExercise = {
+  id: entry.id,
+  title: entry.data.title,
+  guarantees: entry.data.guarantees,
+  budget: entry.data.budget,
+  lambda: entry.data.lambda,
+};
+---
+
+<BaseLayout
+  title={`${entry.data.title} — Nivel ${entry.data.level} | La Forja | Ingeniería sin filtros`}
+  description={entry.data.title}
+  navVariant="blog"
+  footerVariant="simple"
+  noindex={true}
+>
+  <!-- Same full-bleed breakout as /forja/index.astro (D5's own layout note)
+       — the playground is a tool, not an article, so it must not inherit
+       BaseLayout's shared centered max-w shell. -->
+  <section class="relative ml-[calc(50%_-_50vw)] mr-[calc(50%_-_50vw)] w-screen px-4 py-8 md:px-6">
+    <a href={`/forja/${entry.data.level}`} class="text-sm text-txt-secondary hover:text-txt-primary">
+      &larr; Nivel {entry.data.level}
+    </a>
+    <div class="mx-auto mt-4 max-w-3xl">
+      <ExerciseBrief exercise={entry.data}>
+        <Content />
+      </ExerciseBrief>
+    </div>
+    <ForjaCanvas client:only="react" exercise={loadedExercise} />
+    <RankingStrip />
+  </section>
+</BaseLayout>
