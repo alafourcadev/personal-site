@@ -26,6 +26,17 @@ describe('ForjaStore — create [PC1]', () => {
 
     expect(node.zone).toBe('restricted')
   })
+
+  it('seeds the node with the catalog default props, not an empty object', () => {
+    const store = new ForjaStore()
+    const node = store.createNode('database', 'Base de pedidos', { x: 0, y: 0 })
+
+    // Rules.ts reads these defaults (e.g. backup: 'none') to raise findings —
+    // an empty props object would make every node-level rule permanently
+    // silent for player-created nodes.
+    expect(node.props.backup).toBe('none')
+    expect(node.props.persistence).toBe('durable')
+  })
 })
 
 describe('ForjaStore — move [PC2]', () => {

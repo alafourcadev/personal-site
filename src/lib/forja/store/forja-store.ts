@@ -73,8 +73,18 @@ export class ForjaStore {
   }
 
   createNode(type: ComponentType, label: string, position: StorePosition): DesignNode {
-    const zone: Zone = CATALOG[type].zone
-    const node: DesignNode = { id: randomId('node'), type, label, zone, props: {}, position }
+    const entry = CATALOG[type]
+    // Seeds the catalog's default props (e.g. database's `backup: 'none'`) —
+    // rules.ts reads these to raise findings; an empty object would make
+    // every node-level rule permanently silent for player-created nodes.
+    const node: DesignNode = {
+      id: randomId('node'),
+      type,
+      label,
+      zone: entry.zone,
+      props: { ...entry.props },
+      position,
+    }
     this.commit({ ...this.design, nodes: [...this.design.nodes, node] })
     return node
   }
