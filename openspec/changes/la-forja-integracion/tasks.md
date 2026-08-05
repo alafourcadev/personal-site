@@ -326,6 +326,74 @@ clamp, empty state and 8 Playwright blocker tests add it back.
       one exercise end to end. **Owner confirms before continuing to R1-E.**
 - [ ] D2.9 Commit: `feat(forja): band containment, real fit, empty state`.
 
+## R1-D2b — Owner-requested additions [PC15, PC16, PC17]
+
+> **Orchestrator gap, not the implementer's:** these three requirements were
+> dictated explicitly by the owner during design review but never made it
+> into the design/tasks handoff. They now exist as formal requirements at
+> the end of `specs/forja-playground-canvas/spec.md` (added out of band by
+> the orchestrator once the gap was found) — this subsection is their task
+> breakdown, written retroactively before implementation starts. Traceability
+> numbers continue the `forja-playground-canvas` spec's own requirement
+> order (14 prior requirements, these are #15–#17).
+
+- [ ] D2.10 RED (Playwright, real right-click — **not `dispatchEvent`,
+      per the prototype's own B-class bug**): right-click on a node opens a
+      menu scoped to that node (not the empty-canvas menu), the node is not
+      moved/deleted/mutated by the gesture [PC15].
+- [ ] D2.11 GREEN: wire `onNodeContextMenu`/`onPaneContextMenu` (React
+      Flow's own contextmenu hooks — not a hand-rolled `pointerdown` +
+      `contextmenu` race, which is exactly the prototype's bug class) plus a
+      reusable `ContextMenu.tsx` (`role="menu"`/`role="menuitem"`, roving
+      tabindex, Escape closes and returns focus to the origin node).
+- [ ] D2.12 RED (Playwright, real right-click on empty canvas): opens a
+      distinct "add component" menu; choosing an item creates a node at the
+      pointer position (via `screenToFlowPosition`), not the default grid
+      slot.
+- [ ] D2.13 GREEN: pane context menu wired to `store.createNode` at the
+      clicked flow position.
+- [ ] D2.14 RED (Playwright, real pointer): choosing "Conectar con…" from a
+      node's menu and then clicking a legal target creates the same
+      connection a handle-drag would.
+- [ ] D2.15 GREEN: menu's "Conectar con…" reuses the existing keyboard
+      connect-mode state machine (`connectSourceId`), completed by a real
+      `onNodeClick` instead of only the `'c'`/Enter keyboard path.
+- [ ] D2.16 RED (Playwright, real keyboard): Shift+F10 on a focused node
+      opens its menu with focus on the first item; Escape closes it and
+      returns focus to the node; ArrowDown moves focus to the next item.
+- [ ] D2.17 GREEN: capture-phase keydown handling for ContextMenu key /
+      Shift+F10, plus the menu's own internal arrow-key roving-tabindex nav.
+- [ ] D2.18 RED (Vitest, pure): store gains `renameNode`, `duplicateNode`,
+      `setNodeColor` — each producing one undoable history entry.
+- [ ] D2.19 GREEN: `ForjaStore` mutations for rename/duplicate/recolor.
+- [ ] D2.20 RED (Vitest, pure — **engine-level proof, no UI needed**):
+      `evaluate()`/`checkConnection()`/`evaluateLegality()` return identical
+      results for two designs differing only in `node.color` [PC16].
+- [ ] D2.21 GREEN: `DesignNode.color` is a field the engine never reads —
+      proven by the D2.20 regression, not by convention.
+- [ ] D2.22 RED (Playwright, real pointer): opening a node's menu and
+      picking a colour swatch persists the colour on the node and the
+      colour's Spanish name appears in the node's accessible description,
+      while its label/type/zone text remain unchanged [PC16].
+- [ ] D2.23 GREEN: six-swatch colour row in `ContextMenu`, `composeNode
+      AccessibleName` extended with an optional colour-name segment,
+      `ForjaNode` renders a small colour dot alongside (never instead of)
+      the icon/label/subtitle.
+- [ ] D2.24 RED (Playwright, real interaction): trigger a connection
+      refusal AND open a node's context menu near the top of the canvas;
+      every site navigation link stays visible and clickable in both cases
+      [PC17].
+- [ ] D2.25 GREEN: playground root gets `relative isolate` (own stacking
+      context); `ContextMenu` is `position: absolute` inside that root,
+      never `position: fixed`, clamped to the root's own bounding box via a
+      pure `clampMenuPosition` helper (also satisfies PC15's "stay within
+      the viewport").
+- [ ] D2.26 Commit(s): `feat(forja): per-node context menu`,
+      `feat(forja): player-assigned node colour`,
+      `fix(forja): contain canvas overlays inside their own stacking
+      context` — split across the 400-line-per-commit budget; exact split
+      recorded in apply-progress once landed.
+
 ## R1-E — Result panel + local ranking [RK1, RK5, RK7 + B3 blocker]
 
 - [ ] E.1 RED (Playwright — **B3 blocker**): after submit, the score is
