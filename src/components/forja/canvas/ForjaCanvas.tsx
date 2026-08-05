@@ -31,6 +31,7 @@ import { CATALOG } from '../../../lib/forja/engine/catalog'
 import type { ComponentType, ConnectionVerdict, Layer } from '../../../lib/forja/engine/types'
 import { projectEdges, projectNodes, type ForjaFlowEdge, type ForjaFlowNode } from '../../../lib/forja/canvas/project'
 import { bandForType, bandXRange, clampToBand } from '../../../lib/forja/canvas/bands'
+import { CANVAS_EDGE_STYLE_VARS } from '../../../lib/forja/canvas/edge-theme'
 import { useForjaStore } from '../../../lib/forja/store/useForjaStore'
 import { CATALOG_UI } from '../../../lib/forja/canvas/catalog-ui'
 import { PLAYER_COLORS, PLAYER_COLOR_ORDER } from '../../../lib/forja/canvas/player-colors'
@@ -491,6 +492,15 @@ function ForjaCanvasInner() {
               // for now — following the site's live toggle is a follow-up,
               // not a R1-D1 gesture concern.
               colorMode="dark"
+              // R1-E contrast fix: React Flow's own dark-mode default edge
+              // stroke (#3e3e3e on its own #141414 pane) measures ~1.72:1,
+              // under WCAG 1.4.11's 3:1 floor for a graphical object — see
+              // edge-theme.ts and tests/canvas/edge-contrast.test.ts. Inline
+              // style wins the cascade over the library's own
+              // `.react-flow.dark` class rule for the same custom
+              // properties, which an ancestor override or a same-specificity
+              // utility class could not guarantee.
+              style={CANVAS_EDGE_STYLE_VARS as React.CSSProperties}
             >
               <BandLane />
               <Background />
