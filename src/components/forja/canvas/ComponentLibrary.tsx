@@ -30,7 +30,10 @@ export function ComponentLibrary({ onCreate }: ComponentLibraryProps) {
   return (
     <nav
       aria-label="Biblioteca de componentes"
-      className="flex h-full flex-col gap-4 overflow-y-auto border-r border-border-subtle bg-bg-surface p-3"
+      // Fixed width, never grows: the spec ("full viewport width") wants
+      // surplus horizontal space going to the canvas, not stretching this
+      // sidebar. `shrink-0` pairs with the canvas's own `flex-1` next to it.
+      className="flex h-full w-[220px] shrink-0 flex-col gap-4 overflow-y-auto border-r border-border-subtle bg-bg-surface p-3"
     >
       {LAYERS.map((layer) => (
         <div key={layer}>

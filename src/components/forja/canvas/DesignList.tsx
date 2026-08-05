@@ -18,7 +18,7 @@ export interface DesignListProps {
 
 export function DesignList({ design, findings, onDeleteNode, onDeleteEdge }: DesignListProps) {
   return (
-    <div className="flex h-full flex-col gap-4 overflow-y-auto p-4" data-testid="design-list">
+    <div className="flex h-full min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-4" data-testid="design-list">
       <section aria-labelledby="design-list-nodes">
         <h3 id="design-list-nodes" className="mb-2 text-xs font-semibold uppercase tracking-wide text-txt-muted">
           Componentes ({design.nodes.length})

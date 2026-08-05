@@ -15,7 +15,19 @@ import { ForjaCanvas } from '../../components/forja/canvas/ForjaCanvas';
   footerVariant="simple"
   noindex={true}
 >
-  <section class="mx-auto max-w-[1200px] px-4 py-8">
+  <!--
+    The playground is a tool, not an article — it must not inherit the
+    site's own centered `max-w-[1440px] mx-auto` shell (BaseLayout.astro,
+    shared by every route — out of scope to edit here). `w-screen` +
+    `ml/mr-[calc(50%-50vw)]` is the standard "full-bleed breakout": it
+    spans the true viewport width and re-centers itself under any
+    ancestor, regardless of that ancestor's own max-width. BaseLayout's
+    `overflow-x-hidden` on <body> (already present, unrelated to this
+    page) absorbs any sub-pixel rounding, so this never causes a
+    horizontal scrollbar. Full width minus a small gutter; the intro copy
+    alone keeps a readable measure via its own `max-w-2xl`.
+  -->
+  <section class="relative ml-[calc(50%_-_50vw)] mr-[calc(50%_-_50vw)] w-screen px-4 py-8 md:px-6">
     <header class="mb-6">
       <h1 class="text-2xl font-heading font-bold text-txt-primary">La Forja — Playground</h1>
       <p class="mt-2 max-w-2xl text-sm text-txt-secondary">
