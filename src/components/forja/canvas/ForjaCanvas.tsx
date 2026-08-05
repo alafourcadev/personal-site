@@ -33,6 +33,7 @@ import type { ComponentType, ConnectionVerdict, Finding, Layer } from '../../../
 import { projectEdges, projectNodes, type ForjaFlowEdge, type ForjaFlowNode } from '../../../lib/forja/canvas/project'
 import { bandForType, bandXRange, clampToBand } from '../../../lib/forja/canvas/bands'
 import { CANVAS_EDGE_STYLE_VARS } from '../../../lib/forja/canvas/edge-theme'
+import { isFullyVisible } from '../../../lib/forja/canvas/viewport-fit'
 import { useForjaStore } from '../../../lib/forja/store/useForjaStore'
 import { CATALOG_UI } from '../../../lib/forja/canvas/catalog-ui'
 import { PLAYER_COLORS, PLAYER_COLOR_ORDER } from '../../../lib/forja/canvas/player-colors'
@@ -103,7 +104,7 @@ function ForjaCanvasInner({ exercise }: ForjaCanvasInnerProps) {
     ),
   )
   const { store, design } = useForjaStore(initialDesign)
-  const { screenToFlowPosition } = useReactFlow()
+  const { screenToFlowPosition, fitView } = useReactFlow()
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set())
   const [selectedEdgeIds, setSelectedEdgeIds] = useState<Set<string>>(new Set())
   const [view, setView] = useState<'canvas' | 'list' | 'result'>('canvas')
@@ -127,6 +128,11 @@ function ForjaCanvasInner({ exercise }: ForjaCanvasInnerProps) {
   // it (see the JSX below) is what keeps ContextMenu's `position: absolute`
   // contained to the playground's own box, never the site header.
   const containerRef = useRef<HTMLDivElement>(null)
+  // R1-I ("the canvas frames its own content"): the React Flow pane's own
+  // box — NOT containerRef, which also spans the toolbar/status bar above
+  // it — is what a node's rect is compared against to decide whether a
+  // just-created node landed somewhere the player can actually see.
+  const paneRef = useRef<HTMLDivElement>(null)
   // "Every panel that opens can be closed": closing the result panel
   // returns focus HERE, to the exact control that opened it.
   const submitButtonRef = useRef<HTMLButtonElement>(null)
@@ -190,15 +196,70 @@ function ForjaCanvasInner({ exercise }: ForjaCanvasInnerProps) {
     setEdges(projectEdges(design, selectedEdgeIds, errorEdgeIds, dimmedEdgeIds))
   }, [design, selectedEdgeIds, errorEdgeIds, dimmedEdgeIds])
 
+  // R1-I ("the canvas frames its own content"), scenario "a newly added
+  // component is brought into view": the same layout effect that already
+  // moves focus to a just-created/duplicated node (both go through
+  // pendingFocusId) also checks whether that node's real rendered rect
+  // fits inside the pane's own rect — nextCreatePosition/duplicateNode can
+  // place a node past the pane's visible bottom edge once enough siblings
+  // stack up in the same band. `fitView()` (the exact same instance method
+  // the "encuadrar" control already calls) re-frames every current node,
+  // never just the new one, so the rest of the design stays visible too.
+  //
+  // `{ preventScroll: true }` on the focus call is deliberate: a plain
+  // `el.focus()` on an element the browser considers off-screen triggers
+  // its OWN native scroll-into-view, at the PAGE level — a second, uncoded
+  // scroll mechanism racing the pane-relative `fitView()` right below it.
+  // Measured directly: without this, five rapid creates left the page
+  // scrolled to a page-level y of -143 (partially above the window) while
+  // fitView had already framed the content correctly relative to the pane,
+  // and the two corrections fought each other into a broken final state.
+  // `fitView()` (or, for a loaded exercise, the mount/reset scrollIntoView
+  // above) stays the single, deliberate mechanism for bringing content into
+  // view; focus should only ever move focus.
   useLayoutEffect(() => {
     if (!pendingFocusId.current) return
     const id = pendingFocusId.current
     const el = document.querySelector<HTMLElement>(`.react-flow__node[data-id="${id}"]`)
     if (el) {
-      el.focus()
+      el.focus({ preventScroll: true })
       pendingFocusId.current = null
+      const paneRect = paneRef.current?.getBoundingClientRect() ?? null
+      if (!isFullyVisible(el.getBoundingClientRect(), paneRect)) {
+        void fitView()
+      }
     }
-  }, [nodes])
+  }, [nodes, fitView])
+
+  // R1-I ("the canvas frames its own content"), the scenario that actually
+  // measures the defect: "GIVEN an exercise whose starting design is taller
+  // than the visible canvas ... every node and connection MUST be inside
+  // the visible canvas area." `fitView()` alone re-frames the CAMERA inside
+  // the pane's own box — it cannot fix the pane's own box sitting below the
+  // fold. Measured directly (production build, 1920x1080): the exercise
+  // brief above the canvas pushes the pane's own top to y≈795, so its lower
+  // edges (e.g. the connection the brief is literally about) land at
+  // y≈1249 — 169px past the window's bottom edge — with the CAMERA already
+  // fitted to the content and totally unchanged, because the content
+  // already fits comfortably inside the pane's own (729px) box; the pane
+  // itself is just positioned off-window by ordinary page layout. A plain
+  // `scrollIntoView()` on the playground's own root (not just the React
+  // Flow pane, so the toolbar/reset/submit controls land in view too) is
+  // what a player would otherwise have to do by hand — confirmed against
+  // the same measurement: it alone moves that edge from y≈1249 to y≈636.
+  // Reduced motion is already handled site-wide for every `scrollIntoView`
+  // call (BaseLayout.astro's own `@media (prefers-reduced-motion: reduce)`
+  // forces `scroll-behavior: auto`), so no extra branching is needed here.
+  useEffect(() => {
+    if (!exercise) return
+    containerRef.current?.scrollIntoView({ block: 'start' })
+    // Mount-once, deliberately: this is "when an exercise opens", not
+    // "whenever the exercise prop happens to be re-evaluated" — Astro's
+    // multi-page routing remounts this island fresh on every real
+    // navigation to a different exercise, which is the only time "opens"
+    // actually recurs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const announceVerdict = useCallback((verdict: ConnectionVerdict) => {
     setStatus(verdict.ok ? '' : `Conexión rechazada: ${verdict.why ?? ''} ${verdict.consequence ?? ''}`.trim())
@@ -218,13 +279,21 @@ function ForjaCanvasInner({ exercise }: ForjaCanvasInnerProps) {
   // (free play has no startingDesign to reset to); a normal store commit,
   // so it stays undoable like every other mutation, and the existing
   // auto-persist effect below saves it as the new "volver y seguir" state.
+  // R1-I: "the same MUST hold after a reset" — re-frames the starting
+  // design exactly like the initial open does, unconditionally (never
+  // gated on whether anything actually landed off-screen): the same
+  // scrollIntoView() that brings the whole playground back on-screen, plus
+  // fitView() as the within-pane backstop for a starting design taller than
+  // the pane's own box.
   const handleReset = useCallback(() => {
     if (!exercise) return
     store.resetTo(exercise.startingDesign)
     setSelectedNodeIds(new Set())
     setSelectedEdgeIds(new Set())
     setStatus('Ejercicio reiniciado al diseño inicial.')
-  }, [store, exercise])
+    containerRef.current?.scrollIntoView({ block: 'start' })
+    void fitView()
+  }, [store, exercise, fitView])
 
   // R1-G requirement 6, "volver y seguir": persists the current design as a
   // draft (score: null — RK7, never a score) every time it actually changes,
@@ -691,11 +760,23 @@ function ForjaCanvasInner({ exercise }: ForjaCanvasInnerProps) {
           // to shrink below its content's intrinsic width, which is what
           // actually lets the fixed-width ResultPanel sidebar coexist with
           // it instead of overflowing the row.
-          <div className="min-w-0 flex-1" data-testid="forja-canvas">
+          <div ref={paneRef} className="min-w-0 flex-1" data-testid="forja-canvas">
             <ReactFlow
               nodes={nodes}
               edges={edges}
               nodeTypes={NODE_TYPES}
+              // R1-I: "when an exercise opens, the canvas MUST frame its
+              // starting design" — React Flow's own `fitView` prop fires
+              // exactly once, the first time `nodes` becomes non-empty AND
+              // measured (its internal `fitViewQueued && nodesInitialized`
+              // gate — see @xyflow/react's index.mjs), which is precisely
+              // the loaded exercise's starting design landing in `nodes`
+              // after the layout effect above runs. Scoped to `Boolean(
+              // exercise)` deliberately: free play's own empty-canvas start
+              // is untouched (design D8/PC8's empty-canvas hint, R1-D2), so
+              // this never changes free play's default zoom/pan for its
+              // very first player-created node.
+              fitView={Boolean(exercise)}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onNodeDragStop={onNodeDragStop}
