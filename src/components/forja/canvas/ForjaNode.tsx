@@ -7,11 +7,12 @@
 // visible content inside it.
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { CATALOG_COLOR_CLASS, CATALOG_UI } from '../../../lib/forja/canvas/catalog-ui'
+import { describeComponent } from '../../../lib/forja/canvas/catalog-descriptions'
 import { PLAYER_COLORS } from '../../../lib/forja/canvas/player-colors'
 import type { ForjaFlowNode } from '../../../lib/forja/canvas/project'
 import { Icon } from './Icon'
 
-export function ForjaNode({ data, selected }: NodeProps<ForjaFlowNode>) {
+export function ForjaNode({ id, data, selected }: NodeProps<ForjaFlowNode>) {
   const ui = CATALOG_UI[data.componentType]
   // PC16: the player colour is a small dot NEXT TO the icon/label, never a
   // replacement for either — §13.9 forbids conveying meaning by colour
@@ -22,7 +23,7 @@ export function ForjaNode({ data, selected }: NodeProps<ForjaFlowNode>) {
 
   return (
     <div
-      className={`min-w-[168px] rounded-lg border bg-bg-surface px-3 py-2.5 shadow-sm transition-opacity ${CATALOG_COLOR_CLASS[ui.color]} ${
+      className={`relative min-w-[168px] rounded-lg border bg-bg-surface px-3 py-2.5 shadow-sm transition-opacity ${CATALOG_COLOR_CLASS[ui.color]} ${
         selected ? 'ring-2 ring-accent ring-offset-2 ring-offset-bg-deep' : ''
       } ${data.hasError ? 'border-accent-red' : ''} ${data.dimmed ? 'opacity-30' : 'opacity-100'}`}
     >
@@ -43,6 +44,19 @@ export function ForjaNode({ data, selected }: NodeProps<ForjaFlowNode>) {
       </p>
       {data.hasError && <p className="mt-1 text-xs font-semibold text-accent-red">Con advertencia</p>}
       <Handle type="source" position={Position.Right} className="!h-2.5 !w-2.5 !border-none !bg-txt-muted" />
+      {/* "Every component explains itself on hover and on focus" — the
+          reveal is plain CSS (node-tooltip.css) keyed off the stable
+          `.react-flow__node-forja` class React Flow always adds; this id
+          is what project.ts's `domAttributes['aria-describedby']` points
+          at on the actual focusable wrapper element. */}
+      <span
+        id={`node-desc-${id}`}
+        role="tooltip"
+        data-testid={`node-description-${id}`}
+        className="forja-node-tooltip pointer-events-none absolute left-0 top-full z-20 mt-1 w-56 rounded-md border border-border-subtle bg-bg-deep px-2 py-1.5 text-xs text-txt-secondary shadow-lg"
+      >
+        {describeComponent(data.componentType)}
+      </span>
     </div>
   )
 }

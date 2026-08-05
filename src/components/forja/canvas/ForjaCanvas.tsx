@@ -25,6 +25,7 @@ import {
   type OnSelectionChangeFunc,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
+import './node-tooltip.css'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { checkConnection, evaluate, evaluateLegality } from '../../../lib/forja/engine'
 import { CATALOG } from '../../../lib/forja/engine/catalog'

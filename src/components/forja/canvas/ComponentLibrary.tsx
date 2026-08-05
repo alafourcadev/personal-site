@@ -5,6 +5,7 @@
 import { CATALOG } from '../../../lib/forja/engine/catalog'
 import type { ComponentType, Layer } from '../../../lib/forja/engine/types'
 import { CATALOG_COLOR_CLASS, CATALOG_UI } from '../../../lib/forja/canvas/catalog-ui'
+import { describeComponent } from '../../../lib/forja/canvas/catalog-descriptions'
 import { Icon } from './Icon'
 
 const LAYER_LABEL: Record<Layer, string> = {
@@ -41,17 +42,37 @@ export function ComponentLibrary({ onCreate }: ComponentLibraryProps) {
           <ul className="flex flex-col gap-1">
             {TYPES_BY_LAYER[layer].map((type) => {
               const ui = CATALOG_UI[type]
+              const descriptionId = `palette-desc-${type}`
               return (
-                <li key={type}>
+                // "Every component explains itself on hover and on focus":
+                // `group` + `group-hover`/`group-focus-within` reveal the
+                // description visually; `aria-describedby` on the button
+                // itself is what reaches assistive technology regardless
+                // of the visual reveal — never `title` (mouse-only, no
+                // keyboard path, and slow to appear).
+                <li key={type} className="group relative">
                   <button
                     type="button"
                     data-testid={`palette-item-${type}`}
                     onClick={() => onCreate(type)}
+                    aria-describedby={descriptionId}
                     className={`flex w-full items-center gap-2 rounded-md border border-transparent px-2 py-1.5 text-left text-sm text-txt-secondary transition-colors hover:border-border-subtle hover:bg-bg-surface-hover hover:text-txt-primary ${CATALOG_COLOR_CLASS[ui.color]}`}
                   >
                     <Icon icon={ui.icon} className="h-4 w-4 shrink-0" />
                     <span className="truncate">{ui.label}</span>
                   </button>
+                  <span
+                    id={descriptionId}
+                    role="tooltip"
+                    data-testid={`palette-description-${type}`}
+                    // Never `hidden`/`display:none`: opacity-0 stays out of
+                    // the visual flow while remaining in the accessibility
+                    // tree unconditionally, which is what an explanation
+                    // that MUST be reachable by keyboard alone requires.
+                    className="pointer-events-none absolute left-0 top-full z-20 mt-1 w-56 rounded-md border border-border-subtle bg-bg-deep px-2 py-1.5 text-xs text-txt-secondary opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+                  >
+                    {describeComponent(type)}
+                  </span>
                 </li>
               )
             })}

@@ -43,6 +43,13 @@ export function projectNodes(
       sourcePosition: Position.Right,
       targetPosition: Position.Left,
       ariaLabel: composeNodeAccessibleName({ ...node, colorLabel }, { selected, hasError }),
+      // "Every component explains itself on hover and on focus": the
+      // description ForjaNode renders as a child span (id `node-desc-
+      // {id}`) is bound to the actual focusable wrapper element via this
+      // — `domAttributes` is the only way to reach `.react-flow__node`
+      // itself (className/event handlers are excluded from its type on
+      // purpose, so this never fights the library's own gesture wiring).
+      domAttributes: { 'aria-describedby': `node-desc-${node.id}` },
       data: {
         label: node.label,
         componentType: node.type,
