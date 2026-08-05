@@ -204,8 +204,14 @@ test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
       // PC7's real fit-to-content: the new pieces spread further down the
       // canvas than the container's own visible height — the same "pan
       // without manual panning" gesture a real player uses (Controls'
-      // fit-view button), not a test-only shortcut.
+      // fit-view button), not a test-only shortcut. fitView animates its
+      // pan/zoom transition (canvas-polish.spec.ts's own precedent) — every
+      // node position used for a drag below is read only once the two
+      // endpoints of the FIRST connection are both settled in the viewport,
+      // never mid-animation.
       await page.locator('.react-flow__controls-fitview').click()
+      await expect(nodeByLabel(page, /Servicio de pagos/)).toBeInViewport({ timeout: 10000 })
+      await expect(nodeByLabel(page, /Cola de mensajes/)).toBeInViewport({ timeout: 10000 })
 
       await connectByPointer(page, nodeByLabel(page, /Servicio de pagos/), nodeByLabel(page, /Cola de mensajes/))
       await expect(edgeByLabel(page, 'Servicio de pagos a Cola de mensajes')).toBeVisible()
@@ -235,6 +241,8 @@ test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
       await createNode(page, 'observability')
       await expect(nodeByLabel(page, /Observabilidad/)).toBeVisible()
       await page.locator('.react-flow__controls-fitview').click()
+      await expect(nodeByLabel(page, /Servicio de checkout/)).toBeInViewport({ timeout: 10000 })
+      await expect(nodeByLabel(page, /Servicio de inventario/)).toBeInViewport({ timeout: 10000 })
       await connectByPointer(page, nodeByLabel(page, /Servicio de checkout/), nodeByLabel(page, /Servicio de inventario/))
       await expect(edgeByLabel(page, 'Servicio de checkout a Servicio de inventario')).toBeVisible()
       await connectByPointer(page, nodeByLabel(page, /Servicio de checkout/), nodeByLabel(page, /Observabilidad/))
