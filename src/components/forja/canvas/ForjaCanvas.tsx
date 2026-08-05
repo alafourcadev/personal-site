@@ -573,10 +573,12 @@ function ForjaCanvasInner() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Fixed-width sidebar (spec "full viewport width"): shown only
-            alongside the canvas, hidden for 'result' so its width goes to
-            ResultPanel instead. */}
-        {view === 'canvas' && <ComponentLibrary onCreate={handleCreate} />}
+        {/* "The correction loop never loses its tools": shown alongside the
+            canvas AND the result panel — only 'list' hides it, since that
+            view replaces the canvas workspace entirely. Reading a finding
+            and immediately adding the component it implies is missing must
+            never require leaving the Resultado tab first. */}
+        {view !== 'list' && <ComponentLibrary onCreate={handleCreate} />}
         {view !== 'list' ? (
           // Mounted for BOTH 'canvas' and 'result' — never unmounted when
           // switching to Resultado, unlike the Lienzo/Vista de lista toggle
