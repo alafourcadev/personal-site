@@ -432,22 +432,103 @@ clamp, empty state and 8 Playwright blocker tests add it back.
 
 ## R1-E — Result panel + local ranking [RK1, RK5, RK7 + B3 blocker]
 
-- [ ] E.1 RED (Playwright — **B3 blocker**): after submit, the score is
-      visible without scrolling at a standard viewport.
-- [ ] E.2 GREEN: `ResultPanel` layout as an Astro layout concern (D5), tab
-      switches to "Resultado".
-- [ ] E.3 RED (Playwright — **B1 blocker, RK1**): ranking strip has non-zero
-      screen space in every view (map, level, playground, results).
-- [ ] E.4 GREEN: `RankingStrip.astro` rendered in the page shell, outside
+> **Apply Progress Update (2026-08-05):** R1-E is COMPLETE — all 10 original
+> tasks (E.1–E.10) plus 4 owner-requested additions (E.11–E.14, added mid-
+> slice, see below) are done. Delivered as 10 commits on `feat/la-forja` (no
+> PRs, per the owner's explicit override): `f77743f` ranking port + local
+> adapter (267 lines), `59a4e16` connection-line contrast fix (108 lines),
+> `28258ed` full viewport width layout (77 lines), `c4a046a` result panel
+> core — score/findings/canvas-highlight/dismiss (364 lines), `96499c3`
+> result panel Playwright suite (158 lines), `a3be7da` ranking strip
+> (84 lines), `4f0582d` ranking Playwright suite (65 lines), `831a2eb`
+> self-explaining components (139 lines), `c25439d` explainer Playwright
+> suite (60 lines), `e95eb47` plain-language fix in the list view
+> (16 lines). Every commit stays under the 400-line budget. `npm test`:
+> 135/135 across 25 files. `npx tsc --noEmit`: clean. `npm run build`: 51
+> pages green throughout. Playwright: 63/63 across the full suite (a
+> pre-existing, out-of-scope "post-create focus race" flake in two R1-D1
+> gesture tests was found and measured via aggressive stress-testing —
+> see apply-progress for the full investigation; it predates this slice
+> and reproduces on `749839f` too, so it was left alone rather than
+> "fixed" outside its own scope). Full evidence in Engram
+> `sdd/la-forja-integracion/apply-progress`. Next: R1-F (level 4 content
+> and admission gates).
+
+- [x] E.1 RED (Playwright — **B3 blocker**): after submit, the score is
+      visible without scrolling at a standard viewport. **Scope note:**
+      measured at all four orchestrator-specified viewports
+      (1920/1440/1280/900), not just one — `tests/e2e/result.spec.ts`.
+- [x] E.2 GREEN: `ResultPanel` layout as an Astro layout concern (D5), tab
+      switches to "Resultado". **Deviation:** `ResultPanel` ships as a React
+      `.tsx` side panel inside the island (`src/components/forja/canvas/
+      ResultPanel.tsx`), not a separate Astro layout file — the canvas stays
+      mounted next to it (never unmounted, unlike the Lienzo/Vista de lista
+      toggle), which is what lets a finding's highlight actually reach real
+      canvas nodes. See apply-progress for the full rationale.
+- [x] E.3 RED (Playwright — **B1 blocker, RK1**): ranking strip has non-zero
+      screen space in every view (map, level, playground, results). **Scope
+      note:** only the playground route exists in R1 (map/level/results are
+      R1-F+); tested across the three tab-states that exist today (canvas/
+      list/result) — `tests/e2e/ranking.spec.ts`.
+- [x] E.4 GREEN: `RankingStrip.astro` rendered in the page shell, outside
       the island.
-- [ ] E.5 RED: findings highlight the correct `nodeIds`/`edgeIds` on canvas.
-- [ ] E.6 GREEN: wire `findings` → canvas highlight.
-- [ ] E.7 RED: `LocalRankingAdapter.submit()` stores the attempt as a
+- [x] E.5 RED: findings highlight the correct `nodeIds`/`edgeIds` on canvas.
+- [x] E.6 GREEN: wire `findings` → canvas highlight (hover dims everything
+      outside the finding's own nodeIds/edgeIds; click persists the
+      highlight as the canvas's own selection, surviving a tab switch).
+- [x] E.7 RED: `LocalRankingAdapter.submit()` stores the attempt as a
       **graph** (not just score) in `localStorage`, synchronously [RK7].
-- [ ] E.8 GREEN: `port.ts`, `local-adapter.ts`.
-- [ ] E.9 GREEN: ranking strip labelled "local" honestly [RK5] — full label
+- [x] E.8 GREEN: `port.ts`, `local-adapter.ts`.
+- [x] E.9 GREEN: ranking strip labelled "local" honestly [RK5] — full label
       text finalized in R3 once a global source exists.
-- [ ] E.10 Commit: `feat(forja): result panel and local ranking`.
+- [x] E.10 Commit: `feat(forja): result panel and local ranking`. **Scope
+      note:** delivered as 10 commits per the 400-line-per-slice discipline
+      (the original ~330-line estimate grew once the four owner-requested
+      additions below landed mid-slice); see Apply Progress Update above.
+
+### R1-E additions — owner-requested mid-slice (E.11–E.14)
+
+> **Orchestrator gap, not the implementer's:** four requirements were
+> dictated by the owner while reviewing `/forja` live during this exact
+> slice (same pattern as R1-D2b's PC15–17). They now exist as formal
+> requirements at the end of `specs/forja-playground-canvas/spec.md`
+> ("Every panel that opens can be closed", "Every component explains
+> itself on hover and on focus", "Plain language everywhere except
+> canonical technical terms", "The playground uses the full viewport
+> width") — this subsection is their task breakdown, written retroactively.
+
+- [x] E.11 The playground uses the full viewport width — a standard
+      full-bleed CSS breakout (`w-screen` + `ml/mr-[calc(50%_-_50vw)]`)
+      escapes BaseLayout's shared `max-w-[1440px]` shell without editing
+      that file; the component library gets a fixed 220px width so surplus
+      space goes to the canvas. Measured with real Playwright bounding
+      boxes at 1440/1920/2560px — zero dead margin, canvas strictly wider
+      than both sidebars at every width (`tests/e2e/layout.spec.ts`).
+- [x] E.12 Every panel that opens can be closed — the result panel has a
+      visible close control and Escape, both returning focus to the submit
+      button without discarding the result (reopening shows the same
+      evaluation). Click-outside is deliberately not implemented: the
+      panel sits beside an always-interactive canvas, so an outside click
+      is itself a legitimate canvas gesture — the requirement's own stated
+      exception (`tests/e2e/result-panel-close.spec.ts`).
+- [x] E.13 Every component explains itself on hover and on focus — each
+      library entry and each canvas node exposes what it is, what it is
+      for, and its `opsUnits` cost (read live from `CATALOG`, never
+      duplicated), via `aria-describedby`, reachable by real pointer hover
+      and real keyboard focus, never `title`
+      (`tests/e2e/component-explainers.spec.ts`). Canvas nodes bind the
+      description via React Flow's own `domAttributes` node prop (the only
+      typed way to reach the actual focusable `.react-flow__node` wrapper).
+      A real, pre-existing "post-create focus race" flake in two unrelated
+      R1-D1 gesture tests was investigated as a possible regression from
+      this change (aggressive stress-testing raised suspicion); ruled out
+      by reproducing the same flake rate on `749839f`, before this slice
+      existed — see apply-progress for the full investigation.
+- [x] E.14 Plain language everywhere except canonical technical terms —
+      finding severity renders as a Spanish word (Bloqueante/Advertencia/
+      Nota) in both `ResultPanel` and `DesignList`, never the engine's
+      literal English value; the internal rule id stays a `data-rule` test
+      attribute, never visible text.
 
 ## R1-F — Level 4 content + admission gates [EC1–EC7, PR1, PR2, PR5, C2 pending]
 
