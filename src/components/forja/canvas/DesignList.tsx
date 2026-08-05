@@ -6,8 +6,17 @@
 // Deviation from D5's literal "DesignList.astro" naming — noted in apply
 // progress. `finding.why` stands in for the spec's "consequence text": the
 // shipped Finding type (R1-B) has no separate `consequence` field.
-import type { Design, Finding } from '../../../lib/forja/engine/types'
+// "Plain language everywhere except canonical technical terms": severity
+// renders as a Spanish word — the engine's own literal value ('blocking')
+// stays out of player-facing text.
+import type { Design, Finding, Severity } from '../../../lib/forja/engine/types'
 import { CATALOG_UI } from '../../../lib/forja/canvas/catalog-ui'
+
+const SEVERITY_LABEL: Record<Severity, string> = {
+  blocking: 'Bloqueante',
+  warning: 'Advertencia',
+  note: 'Nota',
+}
 
 export interface DesignListProps {
   design: Design
@@ -84,7 +93,8 @@ export function DesignList({ design, findings, onDeleteNode, onDeleteEdge }: Des
             {findings.map((finding) => (
               <li key={finding.id} data-rule={finding.rule} className="rounded-md border border-border-subtle px-2 py-1.5 text-sm">
                 <p className="font-semibold text-txt-primary">
-                  [{finding.severity}] {finding.title}
+                  <span className="font-normal text-txt-muted">{SEVERITY_LABEL[finding.severity]} · </span>
+                  {finding.title}
                 </p>
                 <p className="text-txt-secondary">{finding.why}</p>
               </li>

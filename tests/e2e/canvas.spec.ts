@@ -243,6 +243,9 @@ test.describe('La Forja canvas — R1-D1 gestures', () => {
     await expect(list).toContainText('Cola sin consumidor')
     const finding = list.locator('[data-rule="orphan-queue"]')
     await expect(finding).toBeVisible()
-    await expect(finding).toContainText('blocking')
+    // Plain-language requirement (added later, honored retroactively here):
+    // severity renders as a Spanish word, never the engine's literal
+    // English value — 'blocking' -> 'Bloqueante'.
+    await expect(finding).toContainText('Bloqueante')
   })
 })
