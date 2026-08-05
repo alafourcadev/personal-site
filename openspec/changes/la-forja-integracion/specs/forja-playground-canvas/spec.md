@@ -255,3 +255,66 @@ taken from the diagram the player is reasoning about.
 - WHEN the layout reflows
 - THEN the canvas MUST absorb the majority of the added width
 - AND neither the library nor the side panel may grow without bound
+
+### Requirement: Every panel that opens can be closed
+Any panel, drawer or overlay the playground opens MUST be dismissible by the
+player: a visible close control, the Escape key, and — where it does not
+conflict with canvas selection — a click outside. Closing MUST return focus to
+the control that opened it, and MUST NOT discard the player's work.
+
+Rationale: the result panel currently slides in from the right and cannot be
+closed. On a canvas the player is still reasoning about, a panel that cannot be
+dismissed permanently steals horizontal space from the work surface.
+
+#### Scenario: The result panel closes and the score survives
+- GIVEN the player has submitted a design and the result panel is open
+- WHEN the player activates its close control or presses Escape
+- THEN the panel MUST close and focus MUST return to the submit control
+- AND reopening it MUST show the same result, not a cleared one
+
+### Requirement: Every component explains itself on hover and on focus
+Each entry in the component library, and each node on the canvas, MUST expose a
+short explanation available both on pointer hover and on keyboard focus. The
+explanation MUST state what the component is, what it is for, and its
+operational cost in `opsUnits`. It MUST be exposed to assistive technology via
+`aria-describedby`, MUST NOT rely on the `title` attribute, and MUST NOT be the
+only way to identify the component.
+
+Rationale: an explicit owner requirement — "qué cosa es un servicio suelto". La
+Forja teaches architecture, so it cannot assume the architectural vocabulary it
+exists to teach. The library is the first surface where the product teaches, and
+an icon plus a bare noun teaches nothing to the level-1 player.
+
+#### Scenario: Hovering a library entry explains it
+- GIVEN the component library is visible
+- WHEN the player hovers or keyboard-focuses any entry
+- THEN an explanation MUST appear stating what it is, what it is for, and its
+  operational cost
+- AND it MUST be reachable by keyboard alone, without a pointer
+
+#### Scenario: The explanation is not the only identifier
+- GIVEN a component whose explanation is not displayed
+- WHEN the player looks at it
+- THEN its icon and text label MUST still identify it
+
+### Requirement: Plain language everywhere except canonical technical terms
+Interface prose — instructions, findings, panel copy, empty states, errors —
+MUST be written in plain language a competent developer reads without effort.
+Canonical architectural terms MUST be kept exactly (a queue is "cola de
+mensajes", not a simplified metaphor), because renaming them would teach the
+wrong vocabulary. When such a term first appears to the player, it MUST be
+explained once, in place.
+
+Interface prose MUST NOT expose the engine's internal vocabulary — rule ids,
+predicate names, axis keys, schema fields — as player-facing copy.
+
+Rationale: an explicit owner requirement, and it matches the brand rule "ninguna
+afirmación sin su porqué". The already-approved finding copy is the reference
+register: it states a production consequence in ordinary words without
+softening the technical noun.
+
+#### Scenario: A finding reads as a consequence, not as a rule id
+- GIVEN a finding produced by the engine
+- WHEN it is rendered to the player
+- THEN it MUST state the consequence in plain language
+- AND its internal rule id MUST NOT be the player-facing title
