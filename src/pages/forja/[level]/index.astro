@@ -1,0 +1,59 @@
+---
+// The per-level exercise list [EC6, F.9/F.10]. Static output (no server
+// adapter — astro.config.mjs), so every one of the 12 levels gets a path at
+// build time; a level with no playable content yet (every level but 4 in
+// R1) shows an honest "not published yet" message instead of a 404.
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { LEVELS, levelById } from '../../../lib/forja/progression/levels';
+import { isPlayable, ROLE_LABEL } from '../../../lib/forja/progression/types';
+
+export async function getStaticPaths() {
+  return LEVELS.map((level) => ({ params: { level: String(level.id) } }));
+}
+
+const { level: levelParam } = Astro.params;
+const levelId = Number(levelParam);
+const level = levelById(levelId);
+
+// EC6: only PILOT/PUBLISHED exercises are ever served to a player — this
+// filter is the enforcement, not just the schema's own `status` field.
+const allExercises = await getCollection('forjaExercises', ({ data }) => data.level === levelId && isPlayable(data.status));
+---
+
+<BaseLayout
+  title={`${level?.name ?? 'Nivel'} — La Forja | Ingeniería sin filtros`}
+  description={`Ejercicios del nivel ${levelId} de La Forja: ${level?.name ?? ''}.`}
+  navVariant="blog"
+  footerVariant="simple"
+  noindex={true}
+>
+  <section class="mx-auto max-w-3xl px-4 py-8 md:px-6">
+    <a href="/forja/niveles" class="text-sm text-txt-secondary hover:text-txt-primary">&larr; Niveles</a>
+    <header class="mt-4 mb-6">
+      <h1 class="text-2xl font-heading font-bold text-txt-primary">
+        Nivel {levelId} — {level?.name ?? 'Nivel desconocido'}
+      </h1>
+    </header>
+
+    {
+      allExercises.length === 0 ? (
+        <p data-testid="level-empty" class="text-sm text-txt-secondary">
+          Todavía no hay ejercicios publicados para este nivel.
+        </p>
+      ) : (
+        <ul class="flex flex-col gap-3" data-testid="exercise-list">
+          {allExercises.map((exercise) => (
+            <li data-testid="exercise-list-item" class="rounded-lg border border-border-subtle bg-bg-surface p-4">
+              <span data-testid="exercise-role-tag" class="mb-1 inline-block rounded-md bg-accent-dim px-2 py-0.5 text-xs font-medium text-accent">
+                {ROLE_LABEL[exercise.data.role]}
+              </span>
+              <h2 class="text-base font-semibold text-txt-primary">{exercise.data.title}</h2>
+              <p class="mt-1 text-sm text-txt-secondary">{exercise.data.domain}</p>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+</BaseLayout>

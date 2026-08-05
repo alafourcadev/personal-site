@@ -15,6 +15,7 @@ import { evaluate } from '../../src/lib/forja/engine'
 import type { Design, ExerciseSpec } from '../../src/lib/forja/engine/types'
 import { exerciseSchema, type ExerciseFrontmatter } from '../../src/lib/forja/content/exercise-schema'
 import { requiredRoles } from '../../src/lib/forja/progression/unlock'
+import { isPlayable } from '../../src/lib/forja/progression/types'
 
 const EXERCISES_DIR = path.join(process.cwd(), 'src/content/forja/exercises')
 
@@ -38,9 +39,19 @@ function toExerciseSpec(exercise: ExerciseFrontmatter): ExerciseSpec {
 }
 
 describe('level 4 — beta composition (assertBetaComposition, floor is 8)', () => {
-  const exercises = loadExercises().filter((e) => e.level === 4)
+  // EC6: a DRAFT exercise exists in the same level (one is mid-authoring,
+  // "El reintento que cobra dos veces") — beta composition counts only what
+  // is actually playable (PILOT/PUBLISHED), same filter the level route
+  // itself applies.
+  const allLevel4 = loadExercises().filter((e) => e.level === 4)
+  const exercises = allLevel4.filter((e) => isPlayable(e.status))
 
-  it('ships exactly 1 calibration + 4 core + 1 contrasted tradeoff pair (2) + 1 synthesis = 8', () => {
+  it('has at least one DRAFT exercise not counted toward the beta floor', () => {
+    expect(allLevel4.some((e) => e.status === 'DRAFT')).toBe(true)
+    expect(allLevel4.length).toBeGreaterThan(exercises.length)
+  })
+
+  it('ships exactly 1 calibration + 4 core + 1 contrasted tradeoff pair (2) + 1 synthesis = 8 playable', () => {
     expect(exercises).toHaveLength(8)
     const countByRole = exercises.reduce<Record<string, number>>((acc, e) => {
       acc[e.role] = (acc[e.role] ?? 0) + 1

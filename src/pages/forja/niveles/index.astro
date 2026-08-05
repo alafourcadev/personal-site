@@ -1,0 +1,56 @@
+---
+// The level map [PR5]. Static, informational — no player account exists
+// yet (R3), so "locked" here means "no playable content yet", not a
+// per-player progress gate. Level 4 is the first (and, in R1, only) level
+// with playable exercises — proven by content alone, not by a hardcoded
+// flag, so it stays correct once R2 adds more levels.
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { LEVELS } from '../../../lib/forja/progression/levels';
+import { isPlayable } from '../../../lib/forja/progression/types';
+
+const playableExercises = await getCollection('forjaExercises', ({ data }) => isPlayable(data.status));
+const playableLevelIds = new Set(playableExercises.map((e) => e.data.level));
+---
+
+<BaseLayout
+  title="Niveles — La Forja | Ingeniería sin filtros"
+  description="El mapa de 12 niveles de La Forja."
+  navVariant="blog"
+  footerVariant="simple"
+  noindex={true}
+>
+  <section class="mx-auto max-w-3xl px-4 py-8 md:px-6">
+    <header class="mb-6">
+      <h1 class="text-2xl font-heading font-bold text-txt-primary">Niveles</h1>
+    </header>
+    <ul class="flex flex-col gap-3">
+      {
+        LEVELS.map((level) => {
+          const playable = playableLevelIds.has(level.id);
+          return (
+            <li
+              data-testid="level-card"
+              data-level-id={level.id}
+              data-playable={playable}
+              class="rounded-lg border border-border-subtle bg-bg-surface p-4"
+            >
+              {playable ? (
+                <a href={`/forja/${level.id}`} class="text-base font-semibold text-txt-primary hover:text-accent">
+                  Nivel {level.id} — {level.name}
+                </a>
+              ) : (
+                <span class="text-base font-semibold text-txt-muted">
+                  Nivel {level.id} — {level.name}
+                </span>
+              )}
+              <p class="mt-1 text-sm text-txt-secondary">
+                {playable ? 'Jugable' : 'Próximamente — todavía sin ejercicios publicados'}
+              </p>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </section>
+</BaseLayout>
