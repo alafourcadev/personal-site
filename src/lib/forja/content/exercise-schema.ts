@@ -94,6 +94,7 @@ const designNodeSchema = z.object({
   props: z.record(z.string(), z.string()).default({}),
   role: z.string().optional(),
   given: z.boolean().optional(),
+  position: z.object({ x: z.number(), y: z.number() }).optional(),
 })
 
 const designEdgeSchema = z.object({
@@ -163,6 +164,38 @@ const axisFields = Object.fromEntries(AXES.map((axis) => [axis, z.number().int()
   ZodNumber
 >
 
+// R1-H's new build-failing gate: "a guarantee MUST NOT anchor on a role
+// that no node in the starting design carries". Walks the predicate tree
+// collecting every `role` a NodeQuery references — the only way a role ever
+// enters a predicate, since `NodeQuery.role` is the sole role-bearing field
+// in the whole DSL (design D2). Never inlined at the call site: this is the
+// same mechanic that must stay in lockstep with every predicate op the DSL
+// grows, so one place enumerates the union exhaustively (a missing `case`
+// here is a TypeScript error, not a silent gap, per the `switch`'s implicit
+// exhaustiveness over `Predicate['op']`).
+function collectRoles(predicate: Predicate): string[] {
+  switch (predicate.op) {
+    case 'exists':
+      return predicate.node.role ? [predicate.node.role] : []
+    case 'path':
+      return [predicate.from.role, predicate.to.role, predicate.via?.role, predicate.forbid?.role].filter(
+        (role): role is string => !!role,
+      )
+    case 'noVolatileCut':
+      return [predicate.from.role, predicate.to.role].filter((role): role is string => !!role)
+    case 'covered':
+      return [predicate.target.role, predicate.by.role].filter((role): role is string => !!role)
+    case 'edgeAbsent':
+      return [predicate.from.role, predicate.to.role].filter((role): role is string => !!role)
+    case 'ruleSilent':
+      return []
+    case 'all':
+    case 'any':
+    case 'not':
+      return predicate.of.flatMap(collectRoles)
+  }
+}
+
 export const exerciseSchema = z
   .object({
     title: z.string().min(1),
@@ -183,6 +216,11 @@ export const exerciseSchema = z
     aiBudget: z.string().min(1),
     lambda: z.number().positive(),
     constraints: z.array(constraintSchema).default([]),
+    // R1-H (spec "An exercise ships the system it describes"): the nodes and
+    // connections the brief's system already has, loaded onto the canvas the
+    // moment the exercise opens — never a blank canvas, which is what made a
+    // role-anchored guarantee impossible to ever satisfy by playing.
+    startingDesign: designSchema,
     guarantees: z.array(guaranteeSchema).min(1),
     rubric: z.array(rubricDimensionSchema).min(1),
     // EC5 (schema-level floor): the build-failing legality/budget pass
@@ -251,6 +289,24 @@ export const exerciseSchema = z
           path: ['rubric', i],
           message: `la dimensión "${dimension.dimension}" referencia un guarantee inexistente: ${dimension.signal.guaranteeId}`,
         })
+      }
+    }
+
+    // R1-H: every role a guarantee anchors on must exist on a node in the
+    // starting design — otherwise that guarantee can never be satisfied by
+    // playing (the exact defect: no player gesture assigns a role, so a
+    // role-anchored guarantee with no matching given node was permanently
+    // stuck at 0). Fails naming the offending guarantee AND the missing role.
+    const startingRoles = new Set(data.startingDesign.nodes.map((n) => n.role).filter((role): role is string => !!role))
+    for (const guarantee of data.guarantees) {
+      for (const role of collectRoles(guarantee.predicate)) {
+        if (!startingRoles.has(role)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['startingDesign'],
+            message: `la garantía "${guarantee.id}" ancla en el role "${role}", pero ningún nodo del diseño inicial lo lleva`,
+          })
+        }
       }
     }
 

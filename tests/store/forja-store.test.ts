@@ -268,6 +268,33 @@ describe('ForjaStore — recolor [PC16]', () => {
   })
 })
 
+// R1-H item 4: "reiniciar el ejercicio" — a player must be able to go back
+// to the starting design without losing the page. Reset is a normal
+// mutation (goes through the same commit/undo history as everything else),
+// not a special escape hatch — so an accidental reset is itself undoable.
+describe('ForjaStore — resetTo [R1-H]', () => {
+  it('replaces the current design with the given one', () => {
+    const store = new ForjaStore()
+    store.createNode('service', 'Servicio', { x: 0, y: 0 })
+    const starting = { nodes: [{ id: 'given-1', type: 'service' as const, label: 'Dado', zone: 'private' as const, props: {} }], edges: [] }
+
+    store.resetTo(starting)
+
+    expect(store.getDesign()).toEqual(starting)
+  })
+
+  it('is undoable — reset is a commit like any other mutation', () => {
+    const store = new ForjaStore()
+    const node = store.createNode('service', 'Servicio', { x: 0, y: 0 })
+    store.resetTo({ nodes: [], edges: [] })
+
+    store.undo()
+
+    expect(store.getDesign().nodes).toHaveLength(1)
+    expect(store.getDesign().nodes[0].id).toBe(node.id)
+  })
+})
+
 describe('ForjaStore — subscriptions', () => {
   it('notifies listeners on a successful mutation but not on a refused connection', () => {
     const store = new ForjaStore()

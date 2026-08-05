@@ -31,6 +31,10 @@ function validExercise(overrides: Record<string, unknown> = {}) {
     aiBudget: 'libre',
     lambda: 0.5,
     constraints: [{ metric: 'componentes mínimos', operator: '>=', value: 3, unit: 'componentes' }],
+    startingDesign: {
+      nodes: [{ id: 'mc0', type: 'mobile-client', label: 'Cliente móvil', zone: 'public', props: {}, given: true }],
+      edges: [],
+    },
     guarantees: [
       {
         id: 'g-no-direct',
@@ -180,6 +184,70 @@ describe('forja-exercise-content — admission gates', () => {
 
   it('a DRAFT exercise is a valid entry — filtering it from play is a route concern, not a schema rejection [EC6]', () => {
     const result = exerciseSchema.safeParse(validExercise({ status: 'DRAFT' }))
+    expect(result.success).toBe(true)
+  })
+
+  it('an exercise with no startingDesign fails validation [R1-H]', () => {
+    const { startingDesign: _drop, ...rest } = validExercise()
+    const result = exerciseSchema.safeParse(rest)
+    expect(result.success).toBe(false)
+  })
+
+  it('a startingDesign with zero nodes fails validation — an exercise cannot ship an empty canvas [R1-H]', () => {
+    const result = exerciseSchema.safeParse(validExercise({ startingDesign: { nodes: [], edges: [] } }))
+    expect(result.success).toBe(false)
+  })
+
+  it('a guarantee anchored on a role no starting-design node carries fails the build, naming the role [R1-H]', () => {
+    const result = exerciseSchema.safeParse(
+      validExercise({
+        guarantees: [
+          {
+            id: 'g-no-volatile-cut',
+            label: 'la confirmación no depende de que el email salga primero',
+            weight: 2,
+            predicate: { op: 'noVolatileCut', from: { role: 'payment-service' }, to: { role: 'email-sent' } },
+            whyMissing: 'no hay ningún componente durable entre el pago y el email.',
+            consequence: 'se pierde la confirmación.',
+          },
+        ],
+        rubric: [{ dimension: 'sobrevive a un reinicio', signal: { kind: 'predicate', guaranteeId: 'g-no-volatile-cut' } }],
+        // startingDesign carries no `payment-service`/`email-sent` role —
+        // this is the exact defect: a guarantee that could never be
+        // satisfied by playing, no matter what the player builds.
+      }),
+    )
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      const message = JSON.stringify(result.error.issues)
+      expect(message).toMatch(/payment-service/)
+      expect(message).toMatch(/g-no-volatile-cut/)
+    }
+  })
+
+  it('a guarantee anchored on a role every one of the starting design nodes carries passes [R1-H]', () => {
+    const result = exerciseSchema.safeParse(
+      validExercise({
+        startingDesign: {
+          nodes: [
+            { id: 'pagos', type: 'service', label: 'Servicio de pagos', zone: 'private', props: {}, role: 'payment-service', given: true },
+            { id: 'proveedor', type: 'external-provider', label: 'Proveedor de email', zone: 'dmz', props: {}, role: 'email-sent', given: true },
+          ],
+          edges: [{ id: 'pagos-proveedor', from: { node: 'pagos' }, to: { node: 'proveedor' } }],
+        },
+        guarantees: [
+          {
+            id: 'g-no-volatile-cut',
+            label: 'la confirmación no depende de que el email salga primero',
+            weight: 2,
+            predicate: { op: 'noVolatileCut', from: { role: 'payment-service' }, to: { role: 'email-sent' } },
+            whyMissing: 'no hay ningún componente durable entre el pago y el email.',
+            consequence: 'se pierde la confirmación.',
+          },
+        ],
+        rubric: [{ dimension: 'sobrevive a un reinicio', signal: { kind: 'predicate', guaranteeId: 'g-no-volatile-cut' } }],
+      }),
+    )
     expect(result.success).toBe(true)
   })
 })

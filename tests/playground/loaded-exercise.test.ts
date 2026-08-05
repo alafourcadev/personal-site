@@ -23,6 +23,7 @@ const exercise: LoadedExercise = {
   ],
   budget: { opsUnits: 8 },
   lambda: 0.5,
+  startingDesign: { nodes: [{ id: 'given-1', type: 'service', label: 'Servicio de pagos', zone: 'private', props: {} }], edges: [] },
 }
 
 describe('toExerciseSpec', () => {
@@ -34,9 +35,10 @@ describe('toExerciseSpec', () => {
     })
   })
 
-  it('never leaks the exercise id or title into the engine-facing spec', () => {
+  it('never leaks the exercise id, title or startingDesign into the engine-facing spec', () => {
     const spec = toExerciseSpec(exercise) as unknown as Record<string, unknown>
     expect(spec.id).toBeUndefined()
     expect(spec.title).toBeUndefined()
+    expect(spec.startingDesign).toBeUndefined()
   })
 })

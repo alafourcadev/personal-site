@@ -5,7 +5,7 @@
 // difficulty axes/brief prose live in the Astro page and `ExerciseBrief`
 // only) — the canvas only ever needs what the engine evaluates against,
 // mirroring the engine's own `ExerciseSpec` minimalism (see engine/types.ts).
-import type { Budget, ExerciseSpec, Guarantee } from '../engine/types'
+import type { Budget, Design, ExerciseSpec, Guarantee } from '../engine/types'
 
 export interface LoadedExercise {
   id: string
@@ -13,6 +13,11 @@ export interface LoadedExercise {
   guarantees: Guarantee[]
   budget: Budget
   lambda: number
+  // R1-H: the system the brief describes, already on the canvas the moment
+  // the exercise opens — the fallback continuedDesign() uses on a first
+  // visit (never a blank canvas, which is what made a role-anchored
+  // guarantee impossible to ever satisfy by playing).
+  startingDesign: Design
 }
 
 // The single, pure adapter back to the engine's own evaluate() input — kept

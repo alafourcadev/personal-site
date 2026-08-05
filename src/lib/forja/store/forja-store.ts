@@ -179,6 +179,14 @@ export class ForjaStore {
     })
   }
 
+  // R1-H item 4: "reiniciar el ejercicio" — goes back to the given design
+  // (the exercise's own startingDesign) through the exact same commit path
+  // as every other mutation, so it is undoable like anything else — never a
+  // special escape hatch that bypasses history.
+  resetTo(design: Design): void {
+    this.commit(design)
+  }
+
   undo(): boolean {
     const previous = this.history.pop()
     if (!previous) return false
