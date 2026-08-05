@@ -336,3 +336,28 @@ takes the tools away.
 - WHEN they decide to add a component the finding implies is missing
 - THEN the component library MUST be usable without dismissing the result
 - AND the canvas MUST remain visible so the highlighted nodes stay in context
+
+### Requirement: The canvas frames its own content
+When an exercise opens, the canvas MUST frame its starting design so every node
+and connection is visible without the player panning, zooming or scrolling. The
+same MUST hold after a reset. When the player adds a component that would land
+outside the visible area, the canvas MUST bring it into view rather than place
+it where it cannot be seen.
+
+Rationale — measured at 1920x1080: the exercise opens with the connection its
+own brief is about ("Servicio de pagos a Proveedor de email") whose midpoint sits
+at y=1181, 101px below the bottom of the window. `elementFromPoint` returns
+nothing there, so the defect the player just read about is neither visible nor
+clickable until they discover the fit-view control. The gesture is not broken —
+after fit-view the same click selects and Delete removes it — the framing is.
+
+#### Scenario: Every part of the starting design is visible on open
+- GIVEN an exercise whose starting design is taller than the visible canvas
+- WHEN the player opens it, performing no gesture
+- THEN every node and every connection MUST be inside the visible canvas area
+- AND clicking any connection's rendered midpoint MUST select it
+
+#### Scenario: A newly added component is brought into view
+- GIVEN a canvas whose content already fills the visible area
+- WHEN the player adds a component from the library
+- THEN the new component MUST be visible without a manual pan or fit
