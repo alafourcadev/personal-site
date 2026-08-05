@@ -1,0 +1,29 @@
+---
+// La Forja — playground canvas (R1-D1). Free-play only: no level/exercise
+// content exists yet (R1-F), so this route hosts the canvas alone so the
+// gestures are directly playable. `client:only="react"` per design D5 — the
+// island measures the DOM (React Flow), so SSR output would be wasted work.
+// This is the ONLY React island on the site: no other route pays for it.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ForjaCanvas } from '../../components/forja/canvas/ForjaCanvas';
+---
+
+<BaseLayout
+  title="La Forja — Playground | Ingeniería sin filtros"
+  description="Construí un diseño de sistema en el lienzo y recibí feedback del motor de evaluación de La Forja."
+  navVariant="blog"
+  footerVariant="simple"
+  noindex={true}
+>
+  <section class="mx-auto max-w-[1200px] px-4 py-8">
+    <header class="mb-6">
+      <h1 class="text-2xl font-heading font-bold text-txt-primary">La Forja — Playground</h1>
+      <p class="mt-2 max-w-2xl text-sm text-txt-secondary">
+        Agregá componentes desde la biblioteca, conectalos y el motor te va a decir qué anda mal y por qué. Todo
+        gesto tiene equivalente por teclado: Tab para moverte, Enter para crear/conectar, flechas para mover un
+        componente seleccionado, Delete para borrar, Ctrl+Z para deshacer.
+      </p>
+    </header>
+    <ForjaCanvas client:only="react" />
+  </section>
+</BaseLayout>

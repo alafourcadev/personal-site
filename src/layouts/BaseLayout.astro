@@ -22,6 +22,7 @@ interface Props {
   type?: string;
   navVariant?: 'home' | 'blog';
   footerVariant?: 'full' | 'simple';
+  noindex?: boolean;
 }
 
 const {
@@ -31,6 +32,7 @@ const {
   type = 'website',
   navVariant = 'home',
   footerVariant = 'full',
+  noindex = false,
 } = Astro.props;
 
 const ogImage = image || 'https://alafourca.dev/og-image.png';
@@ -44,6 +46,7 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
     <meta name="description" content={description} />
     <meta name="author" content="Alejandro Lafourcade" />
     <link rel="canonical" href={Astro.url.href} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="alternate" type="application/rss+xml" title="Ingeniería sin filtros" href="/rss.xml" />
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
