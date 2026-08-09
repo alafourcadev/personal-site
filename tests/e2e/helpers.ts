@@ -27,16 +27,24 @@ async function cameraAndScroll(page: Page): Promise<string> {
 }
 
 export async function waitForCanvasToSettle(page: Page) {
+  let previous = await cameraAndScroll(page)
+  let stableSamples = 0
   await expect
     .poll(
       async () => {
-        const before = await cameraAndScroll(page)
         await page.waitForTimeout(60)
-        return before === (await cameraAndScroll(page))
+        const current = await cameraAndScroll(page)
+        stableSamples = current === previous ? stableSamples + 1 : 0
+        previous = current
+        return stableSamples
       },
       { timeout: 10000 },
     )
-    .toBe(true)
+    // One equal pair can land before delayed work even starts. The canvas's
+    // rail re-frame deliberately waits for two animation frames and a 50ms
+    // settle task, so require a sustained quiet window that spans that whole
+    // schedule on both a fast laptop and a slower CI runner.
+    .toBeGreaterThanOrEqual(3)
 }
 
 // Brings the playground into the window the way a player does: real wheel

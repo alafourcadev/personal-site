@@ -106,6 +106,7 @@ import {
   type PlaygroundView,
 } from '../../../lib/forja/canvas/responsive-layout'
 import { useForjaStore } from '../../../lib/forja/store/useForjaStore'
+import type { ArrowDirection } from '../../../lib/forja/store/forja-store'
 import { CATALOG_UI } from '../../../lib/forja/canvas/catalog-ui'
 import {
   PLAYER_COLORS,
@@ -215,6 +216,18 @@ const CANVAS_CONTROL_LABELS = {
   'controls.fitView.ariaLabel': 'Encuadrar el diagrama',
 }
 const DELETE_KEYS = ['Backspace', 'Delete']
+
+// React Flow can move a focused node with the arrow keys in its own local
+// state, but this canvas is controlled: the domain store is the source of
+// truth and can project the old position back over that transient move. Route
+// the gesture through the same store command as every other committed move so
+// keyboard movement is durable, undoable and band-clamped on every browser.
+const NODE_MOVE_DIRECTIONS: Partial<Record<string, ArrowDirection>> = {
+  ArrowUp: 'up',
+  ArrowDown: 'down',
+  ArrowLeft: 'left',
+  ArrowRight: 'right',
+}
 
 // The region the tools rail's pleca folds, named so `aria-controls` has a real
 // target. The statement rail's own id lives in ExerciseBrief.astro, where that
@@ -668,7 +681,10 @@ function ForjaCanvasInner({
   const [hoveredFindingId, setHoveredFindingId] = useState<string | null>(null)
   const [connectSourceId, setConnectSourceId] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
-  const pendingFocusId = useRef<string | null>(null)
+  const pendingFocus = useRef<{
+    nodeId: string
+    origin: Element | null
+  } | null>(null)
   // R1-I ("the canvas frames its own content"): the React Flow pane's own
   // box, and NOT containerRef, which also spans the toolbar and status bar
   // above it, is what a node's rect is compared against to decide whether a
@@ -850,12 +866,28 @@ function ForjaCanvasInner({
   // commit and before the browser paints, in declaration order, in the same
   // pass as the pending-focus effect below. Two rapid creations in a row
   // (fast enough that a plain `useEffect` doesn't get a chance to flush
-  // between them) could otherwise leave the first `pendingFocusId` write
+  // between them) could otherwise leave the first pending-focus write
   // unresolved before the second overwrote it, or focus a node before its
   // own render had actually committed, reproducible under Playwright's
   // faster-than-human input, though invisible to a real player.
+  //
+  // Keep React Flow's measured box when only domain data or selection is
+  // projected. Supplying a fresh node without `measured` tells React Flow to
+  // hide and re-measure its wrapper; that replacement drops keyboard focus
+  // after a pointer selection. New nodes still have no prior measurement and
+  // therefore take the normal measurement path.
   useLayoutEffect(() => {
-    setNodes(projectNodes(design, selectedNodeIds, errorNodeIds, dimmedNodeIds))
+    setNodes((current) => {
+      const measuredById = new Map(
+        current.map((node) => [node.id, node.measured] as const),
+      )
+      return projectNodes(
+        design,
+        selectedNodeIds,
+        errorNodeIds,
+        dimmedNodeIds,
+      ).map((node) => ({ ...node, measured: measuredById.get(node.id) }))
+    })
   }, [design, selectedNodeIds, errorNodeIds, dimmedNodeIds])
 
   useLayoutEffect(() => {
@@ -865,7 +897,7 @@ function ForjaCanvasInner({
   // R1-I ("the canvas frames its own content"), scenario "a newly added
   // component is brought into view": the same layout effect that already
   // moves focus to a just-created/duplicated node (both go through
-  // pendingFocusId) also checks whether that node's real rendered rect
+  // pendingFocus) also checks whether that node's real rendered rect
   // fits inside the pane's own rect: nextCreatePosition and duplicateNode can
   // place a node past the pane's visible bottom edge once enough siblings
   // stack up in the same band. `fitView()` (the exact same instance method
@@ -884,14 +916,34 @@ function ForjaCanvasInner({
   // above) stays the single, deliberate mechanism for bringing content into
   // view; focus should only ever move focus.
   useLayoutEffect(() => {
-    if (!pendingFocusId.current) return
-    const id = pendingFocusId.current
+    const request = pendingFocus.current
+    if (!request) return
+    const active = document.activeElement
+    // A player may continue through the palette before React Flow finishes
+    // measuring the node they just created. Never steal focus back from the
+    // control they deliberately reached; <body> is allowed because a closing
+    // context menu naturally leaves focus there before its duplicate appears.
+    if (
+      active !== request.origin &&
+      active !== document.body &&
+      active !== null
+    ) {
+      pendingFocus.current = null
+      return
+    }
+    const id = request.nodeId
     const el = document.querySelector<HTMLElement>(
       `.react-flow__node[data-id="${id}"]`,
     )
-    if (el) {
+    // React Flow may first mount the wrapper with `visibility: hidden` while
+    // it measures the custom node, then replace that provisional wrapper with
+    // the visible one. Focusing the provisional element loses focus to
+    // <body> on that replacement, so the next keyboard gesture never reaches
+    // the node. Keep the request pending until the measured wrapper is real;
+    // its dimension change updates `nodes` and runs this effect again.
+    if (el && getComputedStyle(el).visibility === 'visible') {
       el.focus({ preventScroll: true })
-      pendingFocusId.current = null
+      pendingFocus.current = null
       const paneRect = paneRef.current?.getBoundingClientRect() ?? null
       if (!isFullyVisible(el.getBoundingClientRect(), paneRect)) {
         frameDiagram()
@@ -1336,8 +1388,9 @@ function ForjaCanvasInner({
         occupied: occupiedRects(nodesRef.current),
         viewport: visibleFlowRect(),
       })
+      const focusOrigin = document.activeElement
       const node = store.createNode(type, CATALOG_UI[type].label, position)
-      pendingFocusId.current = node.id
+      pendingFocus.current = { nodeId: node.id, origin: focusOrigin }
       // Creation moves keyboard focus and opens the new node's decisions,
       // but does not claim that the graph selection changed before the player
       // selects it. Those are separate states in the accessible name.
@@ -1744,7 +1797,7 @@ function ForjaCanvasInner({
   const closeContextMenu = useCallback(
     (returnFocus: boolean) => {
       if (returnFocus && contextMenu?.kind === 'node') {
-        pendingFocusId.current = null
+        pendingFocus.current = null
         const el = document.querySelector<HTMLElement>(
           `.react-flow__node[data-id="${contextMenu.nodeId}"]`,
         )
@@ -1794,8 +1847,11 @@ function ForjaCanvasInner({
         id: 'duplicate',
         label: 'Duplicar',
         onSelect: () => {
+          const focusOrigin = document.activeElement
           const copy = store.duplicateNode(nodeId)
-          if (copy) pendingFocusId.current = copy.id
+          if (copy) {
+            pendingFocus.current = { nodeId: copy.id, origin: focusOrigin }
+          }
         },
       },
       ...(playerNodePropertyDefinitions(domainNode.type).length > 0
@@ -1889,8 +1945,9 @@ function ForjaCanvasInner({
           viewport: visibleFlowRect(),
           preferred: flowPosition,
         })
+        const focusOrigin = document.activeElement
         const node = store.createNode(type, CATALOG_UI[type].label, position)
-        pendingFocusId.current = node.id
+        pendingFocus.current = { nodeId: node.id, origin: focusOrigin }
         setStatus(`${CATALOG_UI[type].label} creado.`)
       },
     }))
@@ -1903,6 +1960,17 @@ function ForjaCanvasInner({
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       const active = document.activeElement
+      const moveDirection = NODE_MOVE_DIRECTIONS[event.key]
+      if (
+        moveDirection &&
+        isForjaNodeElement(active) &&
+        active.classList.contains('selected')
+      ) {
+        event.preventDefault()
+        event.stopPropagation()
+        store.moveNodeByKeyboard(active.getAttribute('data-id')!, moveDirection)
+        return
+      }
       // PC15: ContextMenu key or Shift+F10 opens the focused node's menu,
       // anchored near the node itself since there is no pointer coordinate
       // for a keyboard-triggered open.
@@ -1980,6 +2048,7 @@ function ForjaCanvasInner({
     contextMenu,
     handleCloseResultPanel,
     openEdgeMenu,
+    store,
   ])
 
   // The three game actions, built once and rendered in whichever row owns them.
