@@ -1,8 +1,15 @@
 // PC13: "each node's accessible name MUST include its display label,
-// component type, trust zone, and current state". Pure function — the raw
-// spec scenario names "database"/"restricted"/"selected" as literal
-// substrings the queried name must contain; state words are Spanish per
-// project convention (this is player-facing copy, not code).
+// component type, trust zone, and current state". Pure function.
+//
+// The raw spec scenario named "database"/"restricted" as the literal
+// substrings the queried name must contain, and this suite pinned exactly
+// that — which is how the leak survived two rounds of vocabulary cleanup.
+// PC13 asks for the type and the zone, not for their internal keys: a screen
+// reader was announcing "App de familias, mobile-client, zona public", the one
+// surface where the player cannot compensate by looking at the drawing.
+// The identifiers here are now the names the rest of the product uses
+// (CATALOG[type].name, ZONE_NAMES) — see player-vocabulary-ui.test.ts, which
+// sweeps every type/zone pair so neither can regress.
 import { describe, expect, it } from 'vitest'
 import { composeNodeAccessibleName } from '../../src/lib/forja/canvas/accessible-name'
 
@@ -14,8 +21,8 @@ describe('composeNodeAccessibleName [PC13]', () => {
     )
 
     expect(name).toContain('Base de pedidos')
-    expect(name).toContain('database')
-    expect(name).toContain('restricted')
+    expect(name).toContain('Base de datos')
+    expect(name).toContain('núcleo restringido')
     expect(name).toContain('seleccionado')
   })
 
@@ -23,8 +30,8 @@ describe('composeNodeAccessibleName [PC13]', () => {
     const name = composeNodeAccessibleName({ label: 'Cola de eventos', type: 'queue', zone: 'private' })
 
     expect(name).not.toContain('seleccionado')
-    expect(name).toContain('queue')
-    expect(name).toContain('private')
+    expect(name).toContain('Cola de mensajes')
+    expect(name).toContain('red interna')
   })
 
   it('appends an error descriptor when the node carries a blocking finding', () => {
@@ -43,8 +50,8 @@ describe('composeNodeAccessibleName [PC13]', () => {
     )
 
     expect(name).toContain('Base de pedidos')
-    expect(name).toContain('database')
-    expect(name).toContain('restricted')
+    expect(name).toContain('Base de datos')
+    expect(name).toContain('núcleo restringido')
     expect(name).toContain('seleccionado')
     expect(name).toContain('color Violeta')
   })

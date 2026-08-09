@@ -9,7 +9,7 @@ image: "/blog/100-architecture-days-intro-v2.webp"
 
 Tengo una frustración que me viene carcomiendo hace años.
 
-Los seniors escriben código, no artículos. Los que enseñan muchas veces no tienen experiencia real. Y los juniors se quedan sin referentes — navegando entre tutoriales genéricos y cursos que te venden "arquitectura de microservicios" sin haber mantenido un monolito en producción.
+Los seniors escriben código, no artículos. Los que enseñan muchas veces no tienen experiencia real. Y los juniors se quedan sin referentes, navegando entre tutoriales genéricos y cursos que te venden "arquitectura de microservicios" sin haber mantenido un monolito en producción.
 
 Así que decidí hacer algo al respecto.
 
@@ -21,10 +21,10 @@ No voy a explicarte qué es el patrón Strategy con un ejemplo de animales que h
 
 Cada día vas a ver:
 
-1. **Un problema real** — de esos que te aparecen un martes a las 3pm y nadie sabe por qué.
-2. **Código ANTES** — el que escribimos cuando tenemos prisa, presión, o simplemente no sabemos algo mejor.
-3. **Código DESPUÉS** — la solución con contexto, trade-offs, y explicación de por qué funciona.
-4. **Métricas reales** — no "es más rápido". Cuánto más rápido. Medido. Con números.
+1. **Un problema real.** De esos que te aparecen un martes a las 3pm y nadie sabe por qué.
+2. **Código ANTES.** El que escribimos cuando tenemos prisa, presión, o simplemente no sabemos algo mejor.
+3. **Código DESPUÉS.** La solución con contexto, trade-offs, y explicación de por qué funciona.
+4. **Métricas reales.** No "es más rápido". Cuánto más rápido. Medido. Con números.
 
 ## Los 5 bloques
 
@@ -61,7 +61,7 @@ Me puse reglas estrictas. Si no las cumplo, el ejercicio no tiene sentido:
 
 ## ¿Por qué 110 si se llama #100?
 
-Porque los últimos 10 días son checkpoints y retrospectivas — no son problemas nuevos, son pausas para consolidar lo aprendido. Los 100 días de contenido técnico puro están ahí. Los 10 extras son los respiros que necesitás para no volverte loco y para conectar los conceptos entre sí. Podría haberlos escondido, pero preferí ser transparente. Ingeniería sin filtros, ¿no?
+Porque los últimos 10 días son checkpoints y retrospectivas: no son problemas nuevos, son pausas para consolidar lo aprendido. Los 100 días de contenido técnico puro están ahí. Los 10 extras son los respiros que necesitás para no volverte loco y para conectar los conceptos entre sí. Podría haberlos escondido, pero preferí ser transparente. Ingeniería sin filtros, ¿no?
 
 ## Para quién es esto
 
@@ -73,7 +73,7 @@ No necesitás ser senior. Necesitás tener curiosidad y ganas de entender cómo 
 
 ## Por qué lo hago
 
-Porque me hubiera encantado tener algo así cuando estaba creciendo como developer. Porque la arquitectura de software no debería ser un conocimiento reservado para los que tuvieron la suerte de trabajar con buenos mentores. Y porque estoy convencido de que la mejor forma de aprender es hacer — y la mejor forma de enseñar es mostrar.
+Porque me hubiera encantado tener algo así cuando estaba creciendo como developer. Porque la arquitectura de software no debería ser un conocimiento reservado para los que tuvieron la suerte de trabajar con buenos mentores. Y porque estoy convencido de que la mejor forma de aprender es hacer, y la mejor forma de enseñar es mostrar.
 
 **110 días. 110 problemas. Código real.**
 
@@ -83,4 +83,4 @@ Si querés seguir la serie, suscribite al newsletter o seguime en redes. Cada nu
 
 Esto recién empieza.
 
-💻 Todo el código de la serie está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te copa el proyecto, dejame una ⭐ — es gratis y ayuda a que más gente lo encuentre.
+💻 Todo el código de la serie está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te copa el proyecto, dejame una ⭐. Es gratis y ayuda a que más gente lo encuentre.

@@ -3,7 +3,7 @@
 // vocabulario interno del motor." `opsUnits` is a field name from the
 // engine's own `Budget` type — the brief must never print that literal
 // identifier, only "unidades operativas" (the same phrase the exercise
-// prose itself already uses, e.g. core-el-pago-que-espera-al-email.md).
+// prose itself already uses, e.g. n4-el-pago-que-espera-al-email.md).
 import { describe, expect, it } from 'vitest'
 import { formatBudget, formatConstraint } from '../../src/lib/forja/content/format'
 

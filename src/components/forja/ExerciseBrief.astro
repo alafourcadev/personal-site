@@ -1,14 +1,37 @@
 ---
-// R1-G requirement 2: "el enunciado a la vista — contexto, problema,
-// restricciones con sus números, y el presupuesto de dinero y de
-// opsUnits" — the player must know what they are designing against BEFORE
-// touching the canvas. Server-rendered (design D5: only canvas + result
-// hydrate), so this is on the page from the very first paint, no JS
-// required to read it. Deliberately never shows `hiddenFacts` — those are
-// meant to be discovered by playing (each one's own `discoveryPath` says
-// so), not spoiled here.
+// The statement, as the workbench's LEFT RAIL.
+//
+// The owner put it there in as many words: the enunciado on the left, the tools
+// on the right, and a pleca on each rail's edge. What it stopped being is a
+// card floating in the middle of the canvas.
+//
+// WHY IT HAS TWO DESKTOP MODES. A real rail is clearer because it can never
+// cover the diagram. It starts at 1280px, where a 320px statement, the 300px
+// tools and the 640px canvas floor all fit. Below that, measurement still
+// favours anchoring the statement over the pane. On
+// `/forja/1/n1-el-comprobante-que-no-se-guarda`:
+//
+//   viewport   statement in the row         statement anchored over the pane
+//   1133       299px, zoom 0.26,  3.64px    833px, zoom 0.797, 11.16px
+//   1440       606px, zoom 0.525, 7.36px   1140px, zoom 0.689,  9.64px (open)
+//   1440                                   1140px, zoom 1.102, 15.43px (folded)
+//
+// The compact mode stays full height, flush with the workspace and scrollable.
+// The wide mode becomes an actual column and its pleca returns that column to
+// the canvas. One component serves both, so the statement keeps one semantic
+// position and one disclosure target.
+//
+// WHAT SURVIVES THE FOLD. The budget and the constraints, which are the numbers
+// the player re-reads on every move and the only part of the brief that cannot
+// be recalled from memory. They become a strip along the pane's top edge, which
+// is what the camera keeps clear. The narrative is read once and folds.
+//
+// Server-rendered, so the statement is on the page from the very first paint
+// with no JavaScript. Deliberately never shows `hiddenFacts`: those are meant
+// to be discovered by playing, not spoiled here.
 import { formatBudget, formatConstraint } from '../../lib/forja/content/format';
-import { ROLE_LABEL } from '../../lib/forja/progression/types';
+import { domainLabel } from '../../lib/forja/progression/domain-label';
+import { PLECA_CLASS, PLECA_DIRECTION_ATTRIBUTE, plecaDirection } from '../../lib/forja/canvas/rail-pleca';
 import type { ExerciseFrontmatter } from '../../lib/forja/content/exercise-schema';
 
 interface Props {
@@ -16,41 +39,135 @@ interface Props {
 }
 
 const { exercise } = Astro.props;
+
+// The pleca renders in the OPEN direction, because that is the state the page
+// ships in: the fold preference is applied by the page's own first-paint script
+// before anything is painted, and it flips this attribute along with the one on
+// <html>. Rendering the open direction and letting that script correct it is
+// what keeps the control from pointing the wrong way for one frame.
+const openDirection = plecaDirection('left', false);
 ---
 
+{/* `md:w-[400px]` is written out rather than interpolated from
+    BRIEF_CARD_WIDTH_PX: Tailwind compiles utilities by scanning source text,
+    so a class assembled at runtime never gets generated. The rail's geometry
+    beyond that width lives in exercise-brief.css, which needs `calc()` over
+    the custom properties the island publishes and does not fit in a class.
+    tests/canvas/forja-shell-markup.test.ts ties the copies together.
+
+    `bg-bg-raised`, not the panel surface. The rail is anchored over the pane
+    with the diagram drawn underneath it, so it is the one element in the
+    composition that really is on top of something. Painted `bg-bg-surface` it
+    shared a plane with the top bar above it and carried an outline
+    indistinguishable from a divider, so the thing on top read as part of the
+    chrome. Both themes already calibrate this token (BaseLayout.astro): on dark
+    it is a lighter surface, on light it is white and `--elevation-1` carries
+    the signal. */}
 <section
   data-testid="exercise-brief"
-  class="mb-6 rounded-lg border border-border-subtle bg-bg-surface p-4 md:p-6"
+  data-brief-card
+  class="forja-brief rounded-lg border border-border-card bg-bg-raised p-4 shadow-elevation-1 md:w-[400px]"
 >
-  <span
-    data-testid="exercise-role-tag"
-    class="mb-2 inline-block rounded-md bg-accent-dim px-2 py-0.5 text-xs font-medium text-accent"
-  >
-    {ROLE_LABEL[exercise.role]}
-  </span>
-  <h1 class="text-2xl font-heading font-bold text-txt-primary">{exercise.title}</h1>
-  <p class="mt-1 text-sm text-txt-secondary">{exercise.domain}</p>
-
-  <div data-testid="exercise-body" class="prose prose-invert mt-4 max-w-none text-sm text-txt-secondary">
-    <slot />
+  <div data-statement-rail-label class="hidden">
+    <span class="font-heading text-sm font-semibold text-txt-primary">Consigna</span>
+    <span class="text-xs text-txt-muted">Qué tiene que resolver tu arquitectura</span>
   </div>
 
-  <dl class="mt-4 grid grid-cols-1 gap-3 border-t border-border-subtle pt-4 sm:grid-cols-2" data-testid="exercise-constraints">
+  <div data-brief-head>
+    <div data-brief-heading class="min-w-0">
+      {/* The exercise's `role` is deliberately absent. It is authoring
+          metadata, and naming a `trap` to the player destroys it: the exercise
+          works by letting the trained reflex fire and showing why it fails.
+          The domain gets a display label so the player never reads the raw
+          key (`facturacion`). */}
+      <span
+        data-testid="exercise-domain-tag"
+        class="inline-block rounded-md bg-accent-dim px-2 py-0.5 text-xs font-medium text-accent-ink"
+      >
+        {domainLabel(exercise.domain)}
+      </span>
+      <h1 data-statement-title class="mt-2 font-heading text-xl font-bold leading-tight text-txt-primary">
+        {exercise.title}
+      </h1>
+    </div>
+  </div>
+
+  {/* What folds. */}
+  <div id="exercise-statement-narrative" data-statement-narrative>
+    {/* The `prose prose-invert` this used to ask for was never compiled,
+        because @tailwindcss/typography is not installed. Tailwind's own
+        preflight left every paragraph at `margin: 0` and the six paragraphs of
+        a brief rendered as one block with nothing between them. These four rules are
+        the smallest thing that makes the card readable: separation between
+        paragraphs, a line height a paragraph can be tracked at, and emphasis
+        that is actually emphatic. */}
+    <div
+      data-testid="exercise-body"
+      class="mt-4 text-[15px] leading-relaxed text-txt-secondary [&>blockquote]:mt-3 [&>blockquote]:border-l [&>blockquote]:border-border-card [&>blockquote]:pl-3 [&>p]:mt-3 [&_strong]:font-semibold [&_strong]:text-txt-primary"
+    >
+      <slot />
+    </div>
+
+    <p class="mt-3 text-xs text-txt-muted" data-testid="exercise-ai-budget">Uso de IA: {exercise.aiBudget}</p>
+  </div>
+
+  <dl
+    data-statement-facts
+    class="mt-4 grid grid-cols-1 gap-3 border-t border-border-subtle pt-4"
+    data-testid="exercise-constraints"
+  >
     <div>
       <dt class="text-xs font-semibold uppercase tracking-wide text-txt-muted">Presupuesto</dt>
-      <dd data-testid="exercise-budget" class="text-sm text-txt-primary">{formatBudget(exercise.budget)}</dd>
+      {/* `title` because the folded strip truncates these to one line each.
+          The full text is one click away, and meanwhile a hover reads it. */}
+      <dd data-testid="exercise-budget" title={formatBudget(exercise.budget)} class="text-[15px] text-txt-primary">
+        {formatBudget(exercise.budget)}
+      </dd>
     </div>
     {
       exercise.constraints.map((constraint) => (
         <div>
           <dt class="text-xs font-semibold uppercase tracking-wide text-txt-muted">Restricción</dt>
-          <dd data-testid="exercise-constraint" class="text-sm text-txt-primary">
+          <dd data-testid="exercise-constraint" title={formatConstraint(constraint)} class="text-[15px] text-txt-primary">
             {formatConstraint(constraint)}
           </dd>
         </div>
       ))
     }
   </dl>
-
-  <p class="mt-3 text-xs text-txt-muted" data-testid="exercise-ai-budget">Uso de IA: {exercise.aiBudget}</p>
 </section>
+
+{/* THE PLECA. A sibling of the rail rather than a child, and that is structural
+    rather than stylistic: the rail scrolls its own prose (`overflow-y: auto`),
+    and a control inside a scrolling box is a control that scrolls away from the
+    edge it is supposed to ride. Outside it, it rides that edge in both states,
+    which is the same thing the tools rail's pleca does on the other side.
+
+    A real <button>, so Tab reaches it and Enter and Space work with no key
+    handling: this playground can already be finished without a mouse, and
+    folding the statement must not be the one gesture that needs one.
+    `aria-expanded` and `aria-controls` name the region it folds. The page's own
+    first-paint script keeps both the state and the chevron's direction in sync,
+    and CSS picks the label, so a screen reader and a pair of eyes never read
+    different things.
+
+    The label is visually hidden and the chevron is the visible half. That is
+    the trade the pleca makes: 20px of the pane instead of a 120px button, in
+    exchange for the name living only in the accessibility tree. Both labels
+    stay in the markup and CSS picks one, so the control never announces
+    "Ocultar consigna" over a folded statement in the frame before a script
+    runs. */}
+<button
+  type="button"
+  data-statement-toggle
+  data-testid="statement-toggle"
+  data-pleca-side="left"
+  aria-expanded="true"
+  aria-controls="exercise-statement-narrative"
+  class={`${PLECA_CLASS} forja-brief-pleca`}
+  {...{ [PLECA_DIRECTION_ATTRIBUTE]: openDirection }}
+>
+  <span class="forja-pleca__chevron" aria-hidden="true"></span>
+  <span class="sr-only" data-statement-toggle-label="hide">Ocultar consigna</span>
+  <span class="sr-only" data-statement-toggle-label="show">Ver consigna</span>
+</button>

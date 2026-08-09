@@ -1,6 +1,6 @@
 ---
 title: "Día 6: Tu caché no funciona y es tu culpa"
-description: "Pusiste @Cacheable en todo y la app sigue lenta. El problema no es el caché — es lo que estás cacheando. Día 6 de #100ArchitectureDays."
+description: "Pusiste @Cacheable en todo y la app sigue lenta. El problema no es el caché: es lo que estás cacheando. Día 6 de #100ArchitectureDays."
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-06
 readTime: "7 min read"
@@ -57,8 +57,8 @@ El caché no falló. **Vos cacheaste lo que no debías.**
 
 El caché funciona cuando se dan **dos condiciones juntas**:
 
-1. **El dato cambia pocas veces** — Categorías de producto, configuraciones del sistema, catálogos, roles de usuario.
-2. **El dato se lee muchas veces** — Endpoints que reciben cientos o miles de requests por minuto.
+1. **El dato cambia pocas veces.** Categorías de producto, configuraciones del sistema, catálogos, roles de usuario.
+2. **El dato se lee muchas veces.** Endpoints que reciben cientos o miles de requests por minuto.
 
 Si falta una de las dos, el caché no te sirve. O peor: te perjudica.
 
@@ -136,11 +136,11 @@ Si no tenés una estrategia clara de invalidación, **no lo cachees**. Un caché
 
 Esto aplica a cualquier caché. Redis, Memcached, CDN, browser cache, lo que sea:
 
-- **Datos financieros en tiempo real** — Precios, saldos, tasas de cambio. El costo de un dato stale es demasiado alto.
-- **Stock e inventario** — Vender algo que no tenés es peor que una query lenta.
-- **Datos de sesión o autenticación** — Un usuario ve los datos de otro. Pesadilla de seguridad.
-- **Resultados que dependen del momento** — Rankings en vivo, dashboards real-time, contadores de stock.
-- **Datos que cambian con cada request** — Si cada llamada devuelve algo distinto, cachear no tiene sentido.
+- **Datos financieros en tiempo real.** Precios, saldos, tasas de cambio. El costo de un dato stale es demasiado alto.
+- **Stock e inventario.** Vender algo que no tenés es peor que una query lenta.
+- **Datos de sesión o autenticación.** Un usuario ve los datos de otro. Pesadilla de seguridad.
+- **Resultados que dependen del momento.** Rankings en vivo, dashboards real-time, contadores de stock.
+- **Datos que cambian con cada request.** Si cada llamada devuelve algo distinto, cachear no tiene sentido.
 
 La regla es simple: **si el costo de servir un dato viejo es mayor que el costo de una query lenta, no cachees.**
 
@@ -171,10 +171,10 @@ Si no podés articular ese contrato, no cachees.
 
 ## Esto es el Día 6
 
-Este artículo es parte de **#100ArchitectureDays** — una serie de problemas reales de arquitectura con soluciones reales. No teoría abstracta. Código que podés correr y medir.
+Este artículo es parte de **#100ArchitectureDays**, una serie de problemas reales de arquitectura con soluciones reales. No teoría abstracta. Código que podés correr y medir.
 
 La próxima vez que estés por poner `@Cacheable` en un método, pará 30 segundos y hacete las 4 preguntas. Te van a ahorrar semanas de debugging de bugs fantasma que nadie puede reproducir.
 
 Seguí la saga completa en **#100ArchitectureDays**.
 
-Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una estrella — es gratis y ayuda a que más gente lo encuentre.
+Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una estrella. Es gratis y ayuda a que más gente lo encuentre.

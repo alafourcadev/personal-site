@@ -19,7 +19,7 @@ const { quote, attribution, role } = Astro.props;
   {attribution && (
     <figcaption class="mt-4 text-sm text-txt-muted">
       <span class="font-medium text-txt-secondary">{attribution}</span>
-      {role && <span> — {role}</span>}
+      {role && <span>, {role}</span>}
     </figcaption>
   )}
 </figure>

@@ -15,7 +15,7 @@ Esta es la historia de una feature que todos queríamos, que Java finalmente nos
 
 **String Templates** llegó en Java 21 como preview feature. Era elegante. Era útil. Resolvía un problema real. Y en Java 23, Oracle la retiró sin reemplazo. Así de simple.
 
-¿Por qué escribo sobre una feature muerta? Porque lo que intentaba resolver sigue sin resolverse. Y porque la historia dice mucho sobre cómo evoluciona Java — y sobre por qué no deberías apostar tu código de producción en preview features.
+¿Por qué escribo sobre una feature muerta? Porque lo que intentaba resolver sigue sin resolverse. Y porque la historia dice mucho sobre cómo evoluciona Java, y sobre por qué no deberías apostar tu código de producción en preview features.
 
 ## El dolor que intentaba resolver
 
@@ -80,7 +80,7 @@ Podés meter cualquier expresión Java válida dentro de `\{ }`.
 
 ## Multi-line Templates
 
-Una de las mejores partes — strings multi-línea con templates:
+Una de las mejores partes: strings multi-línea con templates:
 
 ```java
 String html = STR."""
@@ -149,7 +149,7 @@ Oracle retiró String Templates en Java 23 (JEP 465). Sin reemplazo directo. Sin
 
 1. **No uses preview features en producción.** Por algo se llaman preview. Esta es la prueba de que pueden desaparecer.
 2. **El problema sigue siendo real.** Seguimos concatenando strings como en 2005. Java evolucionó en muchas cosas, pero en esto nos quedamos atrás.
-3. **Kotlin, TypeScript, Python, Go** — todos resolvieron esto hace años. Java sigue sin hacerlo.
+3. **Kotlin, TypeScript, Python, Go.** Todos resolvieron esto hace años. Java sigue sin hacerlo.
 
 Si me preguntás a mí, String Templates era exactamente lo que Java necesitaba. Ojalá Oracle reconsidere y traiga algo similar. Pero hasta entonces, seguimos con `String.format()` y resignación.
 

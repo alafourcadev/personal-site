@@ -1,0 +1,82 @@
+/* The pleca, drawn once for both rails.
+ *
+ * There are two of them and they cannot share an implementation: the
+ * statement's rail is server-rendered Astro outside the React island, the
+ * tools' rail is inside it. They CAN share this, and they have to, because a
+ * control the player is meant to learn once must not be two slightly different
+ * controls depending on which side of the canvas they reached.
+ *
+ * WHY THE CHEVRON IS CSS AND NOT AN SVG. An icon would be the one part of the
+ * pleca that lives twice in markup, in two languages, which is exactly the
+ * duplication rail-pleca.ts exists to prevent. Two borders on a rotated square
+ * is a crisp chevron at any size, it inherits `currentColor`, and it leaves the
+ * markup with nothing to copy.
+ *
+ * WHY IT IS A TALL TAB AT 24px. 24 is WCAG 2.2's target-size minimum (2.5.8,
+ * level AA), which PRODUCT.md calls this product's floor. The tab also runs the
+ * full height of its rail, so the real target is 24 x ~700px, but the width is
+ * the number that has to stand on its own for the state where the rail has
+ * folded to nothing but this. A rail's edge is also where a pointer already is
+ * when it wants more canvas.
+ */
+
+.forja-pleca {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  flex: 0 0 24px;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background-color: rgb(var(--bg-surface));
+  color: rgb(var(--txt-muted));
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.forja-pleca:hover {
+  background-color: rgb(var(--bg-surface-hover));
+  color: rgb(var(--txt-primary));
+}
+
+/* The focus ring is the site's own, and it is drawn INSIDE the tab: an outline
+ * on a 20px element flush against the pane's edge is half clipped by the
+ * neighbour, which is the one state a keyboard player cannot afford to lose. */
+.forja-pleca:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: -3px;
+}
+
+/* The line between the pleca and the canvas. It sits on the side facing the
+ * diagram, so the rail reads as one edge whether it is holding a panel or
+ * nothing at all. */
+.forja-pleca[data-pleca-side='right'] {
+  border-left: 1px solid rgb(var(--border-subtle));
+}
+
+.forja-pleca[data-pleca-side='left'] {
+  border-right: 1px solid rgb(var(--border-subtle));
+}
+
+/* Two borders on a square rotated 45deg. `currentColor` so the hover above
+ * moves the glyph with the tab. */
+.forja-pleca__chevron {
+  width: 7px;
+  height: 7px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+}
+
+/* Rotating the square puts its corner where the arrowhead belongs, which
+ * leaves the glyph off-centre by half its own diagonal. The nudge is what puts
+ * the point, rather than the box, in the middle of the tab. */
+[data-pleca-direction='right'] .forja-pleca__chevron {
+  transform: rotate(45deg) translate(-1px, 1px);
+}
+
+[data-pleca-direction='left'] .forja-pleca__chevron {
+  transform: rotate(-135deg) translate(-1px, 1px);
+}

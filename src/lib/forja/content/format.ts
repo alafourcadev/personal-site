@@ -1,6 +1,6 @@
 // R1-G requirement 2: the exercise brief must state its budget and
 // constraints in plain language, never the engine's own field names
-// (`opsUnits`) or comparator symbols (`<=`). Pure formatting only — no
+// (`opsUnits`) or comparator symbols (`<=`). Pure formatting only, with no
 // content-schema or engine import here, so `ExerciseBrief.astro` can call
 // these directly without pulling in the evaluator.
 import type { Budget } from '../engine/types'

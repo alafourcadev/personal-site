@@ -26,7 +26,7 @@ Cuando metés una operación de 4 minutos dentro de un request HTTP, estás pele
 - La **conexión TCP** tiene un timeout
 - Tu **thread pool** tiene un límite de threads
 
-Todo conspira contra vos. Y no es un bug — es que estás usando la herramienta equivocada para el trabajo.
+Todo conspira contra vos. Y no es un bug: es que estás usando la herramienta equivocada para el trabajo.
 
 Es como mandar un paquete de 200 kilos por correo postal. Técnicamente podrías. Pero no fue diseñado para eso. Necesitás un flete.
 
@@ -97,7 +97,7 @@ public ResponseEntity<ImportacionResponse> importar(
 
 El usuario sube el archivo y en menos de un segundo recibe un ID de trabajo y una URL para consultar el progreso. No espera. No hay timeout. No hay pantalla de "cargando" durante 4 minutos.
 
-**HTTP 202 Accepted** — "recibí tu pedido, te aviso cuando esté". Ese es el status code correcto para operaciones asíncronas. No 200. No 201. **202**.
+**HTTP 202 Accepted**: "recibí tu pedido, te aviso cuando esté". Ese es el status code correcto para operaciones asíncronas. No 200. No 201. **202**.
 
 ### Paso 2: Procesá en background por batches
 
@@ -143,7 +143,7 @@ public void procesar(String jobId, Path archivoPath) {
 Tres cosas clave cambiaron:
 
 1. **Stream en vez de lista**: no cargás 500K filas en memoria. Las leés de a poco. En Python es un generator. En Node es un readable stream. En Go es un scanner.
-2. **Batches de 1000**: en vez de un INSERT por fila, hacés un `saveAll` cada 1000 registros. La base de datos te lo agradece — un bulk insert de 1000 es *mucho* más rápido que 1000 inserts individuales.
+2. **Batches de 1000**: en vez de un INSERT por fila, hacés un `saveAll` cada 1000 registros. La base de datos te lo agradece, porque un bulk insert de 1000 es *mucho* más rápido que 1000 inserts individuales.
 3. **Progreso persistido**: el usuario puede consultar cuántas filas se procesaron y cuántas fallaron. Sin adivinar.
 
 ### Paso 3: Configurá el thread pool
@@ -195,21 +195,21 @@ Si tarda **minutos**, tiene que ser asíncrona. Recibí, encolá, procesá en ba
 
 Si tarda **horas**, necesitás un sistema de colas dedicado (RabbitMQ, SQS, Kafka) o un framework de batch processing (Spring Batch, Celery, Temporal). Y probablemente necesitás retry, dead letter queue, y monitoreo.
 
-No es una cuestión de elegancia. Es que **HTTP no fue diseñado para operaciones de larga duración**. El timeout del load balancer, el timeout del browser, el timeout del proxy — todo te va a explotar en la cara si intentás forzar una operación de minutos en un protocol de milisegundos.
+No es una cuestión de elegancia. Es que **HTTP no fue diseñado para operaciones de larga duración**. El timeout del load balancer, el timeout del browser, el timeout del proxy: todo te va a explotar en la cara si intentás forzar una operación de minutos en un protocol de milisegundos.
 
 ## Cuándo NO usar async
 
-- **Operaciones que tardan menos de 5 segundos** — La complejidad del async no se justifica. Dejalo síncrono.
-- **Cuando el usuario necesita el resultado para continuar** — Si el paso siguiente depende del resultado, async no ayuda. El usuario va a quedarse esperando igual, pero haciendo polling.
-- **Sin infraestructura para monitoreo** — Los jobs async que fallan silenciosamente son un clásico de terror. Si no podés ver los jobs fallidos, estás volando a ciegas.
-- **Con archivos pequeños** — 100 registros no justifican toda esta maquinaria. Procesalos síncrono, respondé en 200ms, y seguí con tu vida.
+- **Operaciones que tardan menos de 5 segundos.** La complejidad del async no se justifica. Dejalo síncrono.
+- **Cuando el usuario necesita el resultado para continuar.** Si el paso siguiente depende del resultado, async no ayuda. El usuario va a quedarse esperando igual, pero haciendo polling.
+- **Sin infraestructura para monitoreo.** Los jobs async que fallan silenciosamente son un clásico de terror. Si no podés ver los jobs fallidos, estás volando a ciegas.
+- **Con archivos pequeños.** 100 registros no justifican toda esta maquinaria. Procesalos síncrono, respondé en 200ms, y seguí con tu vida.
 
 ## Esto es el Día 8
 
-Este artículo es parte de **#100ArchitectureDays** — una serie de problemas reales de arquitectura con soluciones reales. Si tu endpoint tiene un timeout de 4 minutos, no necesitás un timeout más largo. Necesitás otra arquitectura.
+Este artículo es parte de **#100ArchitectureDays**, una serie de problemas reales de arquitectura con soluciones reales. Si tu endpoint tiene un timeout de 4 minutos, no necesitás un timeout más largo. Necesitás otra arquitectura.
 
 Y lo más importante: tratá al usuario como adulto. Decile "esto tarda 3 minutos" y mostrále el progreso. Es mil veces mejor que una pantalla en blanco con un spinner eterno.
 
 Seguí la saga completa en **#100ArchitectureDays**.
 
-Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una estrella — es gratis y ayuda a que más gente lo encuentre.
+Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una estrella. Es gratis y ayuda a que más gente lo encuentre.

@@ -29,7 +29,7 @@ Sin rate limiting, tu API es un buffet libre donde un solo comensal se puede com
 
 ## Rate limiting: el concepto
 
-La idea es simple: **poner un límite a cuántas requests puede hacer cada cliente en un período de tiempo**. Si lo supera, la API le responde con un error claro (HTTP 429 — Too Many Requests) en vez de intentar procesar todo y colapsar.
+La idea es simple: **poner un límite a cuántas requests puede hacer cada cliente en un período de tiempo**. Si lo supera, la API le responde con un error claro (HTTP 429, Too Many Requests) en vez de intentar procesar todo y colapsar.
 
 El algoritmo más usado se llama **Token Bucket** y funciona así:
 
@@ -42,14 +42,14 @@ Es elegante porque permite ráfagas cortas (si el balde está lleno, puedes hace
 
 Este algoritmo lo usan:
 
-- **AWS API Gateway** — Token Bucket con burst
-- **Stripe API** — 100 requests por segundo por defecto
-- **GitHub API** — 5.000 requests por hora para autenticados
-- **Twitter/X API** — Rate limits por endpoint y por ventana de tiempo
-- **Cloudflare** — Token Bucket configurable por zona
-- **nginx** — `limit_req` con leaky bucket (variante similar)
+- **AWS API Gateway**: Token Bucket con burst
+- **Stripe API**: 100 requests por segundo por defecto
+- **GitHub API**: 5.000 requests por hora para autenticados
+- **Twitter/X API**: rate limits por endpoint y por ventana de tiempo
+- **Cloudflare**: Token Bucket configurable por zona
+- **nginx**: `limit_req` con leaky bucket (variante similar)
 
-No es un concepto oscuro ni experimental. Es **infraestructura estándar** que cualquier API pública del mundo implementa. La pregunta no es "¿necesito rate limiting?" — es "¿por qué todavía no lo tengo?"
+No es un concepto oscuro ni experimental. Es **infraestructura estándar** que cualquier API pública del mundo implementa. La pregunta no es "¿necesito rate limiting?". Es "¿por qué todavía no lo tengo?"
 
 ## Implementación: cómo se ve
 
@@ -163,7 +163,7 @@ El frontend (o el bot, o el partner de integración) puede leer estos headers y 
 | CPU promedio en pico | 95% | 45% |
 | Disponibilidad bajo carga | 78% | 99.5% |
 
-El rate limiting no hizo que "Comprar" fuera más rápido. Hizo que **todo lo demás siguiera funcionando**. El login, la página de inicio, el carrito — todo siguió vivo porque un grupo de clientes impacientes no pudo agotar los recursos del servidor.
+El rate limiting no hizo que "Comprar" fuera más rápido. Hizo que **todo lo demás siguiera funcionando**. El login, la página de inicio, el carrito: todo siguió vivo porque un grupo de clientes impacientes no pudo agotar los recursos del servidor.
 
 ## ¿Rate limiting en el backend o en el API Gateway?
 
@@ -180,12 +180,12 @@ Esto es importante: rate limiting no es ser malo con tus clientes. Es **proteger
 
 Es como el límite de velocidad en una autopista. No existe para molestarte. Existe para que la autopista funcione para todos.
 
-Una API sin rate limiting es una autopista sin límite de velocidad. Funciona bien con poco tráfico. El día que aparece un camión, un bot, o 5.000 personas emocionadas — se pudre todo.
+Una API sin rate limiting es una autopista sin límite de velocidad. Funciona bien con poco tráfico. El día que aparece un camión, un bot, o 5.000 personas emocionadas, se pudre todo.
 
 ## Esto es el Día 12
 
-Este artículo es parte de **#100ArchitectureDays** — una serie de problemas reales de arquitectura con soluciones reales. Si tu API no tiene rate limiting, el próximo bot, el próximo lanzamiento, o el próximo Black Friday te va a recordar por qué lo necesitas.
+Este artículo es parte de **#100ArchitectureDays**, una serie de problemas reales de arquitectura con soluciones reales. Si tu API no tiene rate limiting, el próximo bot, el próximo lanzamiento, o el próximo Black Friday te va a recordar por qué lo necesitas.
 
 Sigue la saga completa en **#100ArchitectureDays**.
 
-Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days) — con una implementación manual del Token Bucket sin dependencias externas para que entiendas el algoritmo por dentro. Si te está sirviendo, déjame una estrella — es gratis y ayuda a que más gente lo encuentre.
+Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days), con una implementación manual del Token Bucket sin dependencias externas para que entiendas el algoritmo por dentro. Si te está sirviendo, déjame una estrella. Es gratis y ayuda a que más gente lo encuentre.

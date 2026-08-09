@@ -16,10 +16,10 @@ const blog = defineCollection({
     }),
 })
 
-// La Forja — level 4's exercise content (R1-F). Additive: `blog` above is
+// La Forja: level 4's exercise content (R1-F). Additive, since `blog` above is
 // untouched. The markdown body is the player-facing brief prose; every
 // computable admission gate lives in exerciseSchema's superRefine, which
-// imports and RUNS the real engine (design D9's build-failing class) — a
+// imports and RUNS the real engine (design D9's build-failing class). A
 // content entry that cannot be evaluated does not compile.
 const forjaExercises = defineCollection({
     loader: glob({ pattern: '**/*.md', base: './src/content/forja/exercises' }),

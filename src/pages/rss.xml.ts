@@ -8,7 +8,7 @@ export async function GET(context: APIContext) {
 
   return rss({
     title: 'Ingeniería sin filtros',
-    description: 'Alejandro Lafourcade — Ingeniero de Software. Artículos sobre arquitectura, Java, Go y decisiones técnicas reales.',
+    description: 'Alejandro Lafourcade, ingeniero de software. Artículos sobre arquitectura, Java, Go y decisiones técnicas reales.',
     site: context.site!,
     items: sortedPosts.map((post) => ({
       title: post.data.title,

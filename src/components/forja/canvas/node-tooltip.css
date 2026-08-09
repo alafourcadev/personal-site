@@ -3,9 +3,9 @@
   React Flow's own node wrapper (`.react-flow__node`, tabindex="0", the
   actually focusable/hoverable element) cannot receive Tailwind's `group`
   marker class through the library's typed `domAttributes` (className is
-  explicitly excluded from that type — see project.ts's comment). RF DOES
+  explicitly excluded from that type; see project.ts's comment). RF DOES
   always append a per-type class, `.react-flow__node-forja` here, which is
-  just as stable as a hand-placed `group` class — so this is a plain CSS
+  just as stable as a hand-placed `group` class, so this is a plain CSS
   descendant selector on that class instead of a Tailwind utility.
 
   `opacity` only, never `display`/`visibility`: the tooltip stays in the

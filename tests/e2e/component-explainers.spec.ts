@@ -35,7 +35,7 @@ test.describe('La Forja — components explain themselves', () => {
 
   test('an icon plus label alone still identifies the component when its explanation is not showing', async ({ page }) => {
     const button = page.getByTestId('palette-item-cache')
-    await expect(button).toContainText('Cache')
+    await expect(button).toContainText('Caché')
   })
 
   test('hovering a canvas node reveals its explanation and binds it via aria-describedby', async ({ page }) => {

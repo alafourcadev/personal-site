@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest'
 import { toExerciseSpec, type LoadedExercise } from '../../src/lib/forja/playground/loaded-exercise'
 
 const exercise: LoadedExercise = {
-  id: 'core-el-pago-que-espera-al-email',
+  id: 'n4-el-pago-que-espera-al-email',
   title: 'El pago que espera al email',
   guarantees: [
     {

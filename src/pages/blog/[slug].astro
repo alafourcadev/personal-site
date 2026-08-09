@@ -40,7 +40,7 @@ const relatedPosts = scored
   .slice(0, 3)
   .map((s) => s.post);
 
-// Prev/next within #100ArchitectureDays — inferred from the `day` field, no frontmatter changes
+// Prev/next within #100ArchitectureDays, inferred from the `day` field, with no frontmatter changes
 let prevDay: typeof post | null = null;
 let nextDay: typeof post | null = null;
 if (typeof post.data.day === "number") {
@@ -69,7 +69,7 @@ const tocItems = headings
 ---
 
 <BaseLayout
-  title={`${post.data.title} — Ingeniería sin filtros`}
+  title={`${post.data.title} | Ingeniería sin filtros`}
   description={post.data.description}
   image={'https://alafourca.dev' + post.data.image}
   type="article"

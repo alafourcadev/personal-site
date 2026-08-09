@@ -70,7 +70,7 @@ Es como tener un restaurante con 4 meseros (carrier threads) que atienden a 1,00
 ### Antes (hilos tradicionales)
 
 ```java
-// Pool fijo — limita la concurrencia
+// Pool fijo: limita la concurrencia
 ExecutorService executor = Executors.newFixedThreadPool(200);
 
 server.setExecutor(executor);
@@ -80,7 +80,7 @@ server.setExecutor(executor);
 ### Después (hilos virtuales)
 
 ```java
-// Un hilo virtual por request — sin límite práctico
+// Un hilo virtual por request: sin límite práctico
 ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
 server.setExecutor(executor);
@@ -130,7 +130,7 @@ La diferencia es brutal para cargas de trabajo I/O bound.
 
 ## Mi opinión después de usarlo en producción
 
-Proyecto Loom no es solo una mejora — es la razón por la que dejé de recomendar WebFlux.
+Proyecto Loom no es solo una mejora. Es la razón por la que dejé de recomendar WebFlux.
 
 En los últimos dos proyectos donde lo implementé, eliminamos toda la capa reactiva. El código quedó más simple, los juniors lo entienden sin necesitar un curso de programación reactiva, y el rendimiento mejoró porque dejamos de pelear con el framework.
 

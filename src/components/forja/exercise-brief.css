@@ -1,0 +1,294 @@
+/* Where the statement rail sits in the compact workbench, and what it becomes
+ * when it folds.
+ *
+ * WHY IT IS PLAIN CSS. Most of these rules need `calc()` over the custom
+ * properties the island publishes for its own pane box, and Tailwind's
+ * arbitrary values cannot carry them legibly. The rest have to beat classes
+ * that live in a media query, and an attribute-selector pair outranks a single
+ * class regardless of source order, so the outcome does not depend on how a
+ * build tool sorted its variants.
+ *
+ * WHY IT IS ANCHORED TO THE PANE AND NOT TO THE WINDOW. The island measures its
+ * own pane and publishes --forja-pane-top/left/width/height (forja-shell.ts),
+ * and the rail reads them. Hard-coding numbers here would be right most of the
+ * time and wrong exactly when it matters: the pane's left edge and its width
+ * both move when the tools rail folds, and the rail would be anchored to a box
+ * that is no longer there. The fallbacks are the values of the common case, so
+ * the first paint, before any React exists, is already right.
+ *
+ * WHY COMPACT MODE OVERLAYS. A statement column inside the layout row leaves
+ * the canvas 433px at 1133 with the tools up; anchored over the pane it keeps
+ * all 833px and node titles stay at 11.16px instead of falling under 6px. The
+ * wide override at the end starts only when three columns preserve the 640px
+ * canvas floor.
+ *
+ * WHAT SURVIVES THE FOLD. The narrative folds; the budget and the constraints
+ * do not. Those are the numbers the player checks on every move and the only
+ * part of the brief that cannot be recalled from memory, so folded they become
+ * a strip along the top edge of the pane, which is exactly what the camera
+ * keeps clear. The statement stops being a rail, it does not stop existing.
+ *
+ * NO MOTION, deliberately. Folding the rail does not resize the canvas; what it
+ * changes is the room the camera may use, and React Flow's own 240ms re-frame
+ * already reads `prefers-reduced-motion` before it starts. Animating the rail on
+ * top of that would be two easings on the same gesture. BaseLayout.astro's own
+ * reduced-motion block already cuts every transition on the page to 0.01ms.
+ */
+
+/* Below the playable width there is no canvas: the page is a reading screen
+ * and the statement is just the document, in normal flow, scrolling with the
+ * page. Everything below is scoped to the width where a workbench exists. */
+@media (min-width: 768px) {
+  .forja-brief {
+    position: fixed;
+    /* 48px is BRIEF_CARD_TOP_PX. The pane's top edge already carries the three
+     * band names, drawn in its own screen space, and a rail starting at the
+     * plain 16px inset stood over "NEGOCIO", which then read as the fragment
+     * "CIO". The names are the model this product teaches, so the rail starts
+     * under their row. */
+    top: calc(var(--forja-pane-top, 72px) + 48px);
+    /* Flush with the pane's own left edge. There is no inset here on purpose:
+     * a rail that floats 16px off the edge is a card again. The 16px of air the
+     * camera charges for on this side (BRIEF_CARD_FOOTPRINT_PX) is spent
+     * between the rail and the diagram instead, where it separates two things
+     * rather than framing one. */
+    left: var(--forja-pane-left, 0px);
+    /* Full height, which is what makes it read as a rail rather than as a panel
+     * that happens to be tall. `height` and not only `max-height`: a short
+     * brief in a shrink-wrapped box is a card. */
+    height: calc(var(--forja-pane-height, 70vh) - 64px);
+    max-height: calc(var(--forja-pane-height, 70vh) - 64px);
+    overflow-y: auto;
+    /* Square, with one line down the side facing the diagram. A rail has an
+     * edge, not a border. */
+    border-radius: 0;
+    border-width: 0 1px 0 0;
+    /* Under the top bar (z-40) and over the canvas. The rail belongs to the
+     * pane, not to the chrome. */
+    z-index: 30;
+  }
+
+  /* The pleca rides the rail's outer edge: the side the rail will disappear
+   * into, which for the left rail is its right side. Full height of the rail,
+   * so the target is 20px wide and ~700px tall.
+   *
+   * WHY THE SELECTOR IS A PAIR AND NOT A CLASS. `position: fixed` here has to
+   * beat `position: relative` on the shared `.forja-pleca`, which the tools
+   * rail needs because there the pleca IS a flex item. Two single classes have
+   * the same specificity, so which one wins is decided by whatever order the
+   * build tool happened to emit them in. It emitted the wrong one, and the
+   * result was not a cosmetic slip: an in-flow pleca whose height comes from
+   * --forja-pane-height sits inside the statement wrapper, which is a flex
+   * child of the same column the canvas is in, so it took height from the pane
+   * that publishes the property it is sized by. The pane oscillated between
+   * 632px and 200px roughly every 5ms, for as long as the page was open.
+   * An attribute plus a class outranks a class, whatever the order. */
+  [data-statement-toggle].forja-brief-pleca {
+    position: fixed;
+    top: calc(var(--forja-pane-top, 72px) + 48px);
+    left: calc(var(--forja-pane-left, 0px) + 400px);
+    height: calc(var(--forja-pane-height, 70vh) - 64px);
+    z-index: 30;
+    /* The rail's own surface, not the shared pleca's. The tools' pleca sits
+     * between a canvas and a panel that are both `--bg-surface`, so the shared
+     * value belongs there. This one is the edge of the one element that is
+     * raised over the pane, and folded it sits inside the strip: painted the
+     * panel surface it read as a hole punched in the strip's left end. */
+    background-color: rgb(var(--bg-raised));
+    border-color: rgb(var(--border-card));
+  }
+
+  /* The pleca's 24px sit just inside the 432px the camera keeps clear for the
+   * rail (BRIEF_CARD_FOOTPRINT_PX = 16 + 400 + 16), so the grip costs the
+   * diagram nothing it was not already being charged. */
+
+  /* Folded: a strip along the pane's top edge, the full width of the pane.
+   * 40px is BRIEF_STRIP_HEIGHT_PX, which is exactly what the camera keeps
+   * clear at the top once the rail is folded. */
+  [data-statement-collapsed='true'] .forja-brief {
+    top: var(--forja-pane-top, 72px);
+    left: var(--forja-pane-left, 0px);
+    width: var(--forja-pane-width, auto);
+    max-width: none;
+    height: 40px;
+    max-height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    overflow: hidden;
+    /* The strip starts after the pleca, which sits at its left end. */
+    padding: 0 0.75rem 0 calc(24px + 0.75rem);
+    border-radius: 0;
+    border-width: 0 0 1px 0;
+  }
+
+  /* Folded, the pleca is where the rail's outer edge now is, which is the pane's
+   * own left edge, and it is exactly as tall as the strip.
+   *
+   * It used to be proposed as a full-height tab there, and measuring it killed
+   * that: the pane's left 24px are where React Flow draws its zoom controls and
+   * where the first band name starts once the camera's left padding is the plain
+   * 16px inset. The tab covered the "N" of "NEGOCIO" and stood on the corner of
+   * the first node. Inside the strip it costs nothing, because the strip's 40px
+   * are already what the camera keeps clear when the statement is folded
+   * (BRIEF_STRIP_HEIGHT_PX). */
+  [data-statement-collapsed='true'] [data-statement-toggle].forja-brief-pleca {
+    top: var(--forja-pane-top, 72px);
+    left: var(--forja-pane-left, 0px);
+    height: 40px;
+  }
+
+  /* Which way the chevron points. The rule is rail-pleca.ts's: an open rail's
+   * pleca points at the edge the rail will leave through, a folded one's points
+   * back into the workspace. The page's own first-paint script writes the
+   * attribute, so this file only has to draw what the attribute says, exactly
+   * like the React pleca on the other rail. */
+
+  /* The title and the domain tag go with the narrative: the top bar already
+   * names the exercise, and a strip that repeats it has less room for the
+   * numbers that are the reason the strip exists. */
+  [data-statement-collapsed='true'] .forja-brief [data-brief-head] {
+    display: none;
+  }
+
+  [data-statement-collapsed='true'] .forja-brief [data-statement-facts] {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    gap: 1.25rem;
+    margin-top: 0;
+    padding-top: 0;
+    border-top-width: 0;
+  }
+
+  /* On one line each: the strip is a reminder, not a second reading of the
+   * brief. The full text is one press away and the title attribute carries it
+   * meanwhile. */
+  [data-statement-collapsed='true'] .forja-brief [data-statement-facts] > div {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    min-width: 0;
+    flex-shrink: 1;
+  }
+
+  [data-statement-collapsed='true'] .forja-brief [data-statement-facts] dd {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  [data-statement-collapsed='true'] [data-statement-narrative] {
+    display: none;
+  }
+}
+
+/* Folding belongs to the workbench, not to the reading screen. Under the
+ * playable width there is no canvas for the fold to give room to, so a folded
+ * statement would be a page whose only content is hidden, and a pleca would be
+ * a control that breaks the page it is on. The preference is still remembered;
+ * it just does not apply where it buys nothing, and the control that sets it is
+ * not offered there either. This is what the two plecas mean at 390px: nothing,
+ * so neither of them is there. */
+@media (max-width: 767.98px) {
+  /* The pair again, and for the same reason: `.forja-pleca` declares
+   * `display: flex`, so a single class here would be a coin toss. */
+  [data-statement-toggle].forja-brief-pleca {
+    display: none;
+  }
+}
+
+/* Both labels are in the markup and CSS picks one, so the control never reads
+ * "Ocultar consigna" over a folded statement in the frame before a script
+ * runs. This is also why the page renders the attribute with an explicit
+ * 'false' rather than leaving it off. */
+[data-statement-collapsed='false'] [data-statement-toggle-label='show'],
+[data-statement-collapsed='true'] [data-statement-toggle-label='hide'] {
+  display: none;
+}
+
+/* WIDE WORKBENCH.
+ *
+ * From 1280px the reference composition becomes honest arithmetic: a 320px
+ * statement rail, a canvas that keeps its 640px workspace floor, and the
+ * existing 300px tools rail. Both rails are now in layout flow, so neither can
+ * cover a node or intercept a canvas gesture. Between 768px and this threshold
+ * the measured overlay above stays in force because three real columns would
+ * starve the diagram. */
+@media (min-width: 1280px) {
+  [data-forja-workbench] {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    height: 100%;
+    overflow: hidden;
+  }
+
+  [data-statement-collapsed='true'] [data-forja-workbench] {
+    grid-template-columns: 24px minmax(0, 1fr);
+  }
+
+  [data-forja-statement] {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  [data-forja-workspace] {
+    min-width: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .forja-brief {
+    position: relative;
+    top: auto;
+    left: auto;
+    z-index: 1;
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    overflow-y: auto;
+    border-width: 0;
+    border-radius: 0;
+    background-color: rgb(var(--bg-surface));
+    box-shadow: none;
+  }
+
+  .forja-brief [data-statement-rail-label] {
+    display: flex;
+    min-height: 42px;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: -1rem -1rem 1rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgb(var(--border-subtle));
+  }
+
+  .forja-brief [data-statement-rail-label] > :last-child {
+    max-width: 13rem;
+    text-align: right;
+  }
+
+  [data-statement-toggle].forja-brief-pleca,
+  [data-statement-collapsed='true'] [data-statement-toggle].forja-brief-pleca {
+    position: relative;
+    top: auto;
+    left: auto;
+    z-index: 1;
+    height: 100%;
+    background-color: rgb(var(--bg-surface));
+    border-color: rgb(var(--border-subtle));
+  }
+
+  [data-statement-collapsed='true'] .forja-brief {
+    display: none;
+  }
+}

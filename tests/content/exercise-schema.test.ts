@@ -161,6 +161,54 @@ describe('forja-exercise-content — admission gates', () => {
     if (!result.success) expect(JSON.stringify(result.error.issues)).toMatch(/excede el presupuesto/)
   })
 
+  it('rejects a reference that needs a node property no player control exposes', () => {
+    const weeklyDatabase = (id: string) => ({
+      id,
+      type: 'database',
+      label: 'Base de pedidos',
+      zone: 'restricted',
+      props: { backup: 'semanal' },
+    })
+    const result = exerciseSchema.safeParse(
+      validExercise({
+        role: 'greenfield',
+        startingDesign: { nodes: [], edges: [] },
+        guarantees: [
+          {
+            id: 'g-weekly-backup',
+            label: 'La base tiene respaldo semanal',
+            weight: 1,
+            predicate: { op: 'exists', node: { type: ['database'], propEquals: { backup: 'semanal' } } },
+            whyMissing: 'La base no tiene el respaldo semanal requerido.',
+            consequence: 'Una pérdida de datos no se puede recuperar dentro de la semana.',
+          },
+        ],
+        rubric: [{ dimension: 'Respaldo disponible', signal: { kind: 'predicate', guaranteeId: 'g-weekly-backup' } }],
+        referenceSolutions: [
+          {
+            label: 'Una base con respaldo semanal',
+            contextInversion: 'Una sola base alcanza cuando no hay otra fuente de escritura.',
+            design: { nodes: [weeklyDatabase('db-a')], edges: [] },
+          },
+          {
+            label: 'Una base y la persona que carga datos',
+            contextInversion: 'La persona se hace visible cuando el flujo manual también importa.',
+            design: {
+              nodes: [
+                weeklyDatabase('db-b'),
+                { id: 'actor', type: 'actor', label: 'Operador', zone: 'public', props: {} },
+              ],
+              edges: [],
+            },
+          },
+        ],
+      }),
+    )
+
+    expect(result.success).toBe(false)
+    if (!result.success) expect(JSON.stringify(result.error.issues)).toMatch(/controles del jugador/)
+  })
+
   it('a rubric dimension without a linked predicate or metric is rejected [EC7]', () => {
     const result = exerciseSchema.safeParse(
       validExercise({ rubric: [{ dimension: 'Algo', signal: { kind: 'predicate', guaranteeId: 'no-existe' } }] }),
@@ -193,8 +241,39 @@ describe('forja-exercise-content — admission gates', () => {
     expect(result.success).toBe(false)
   })
 
-  it('a startingDesign with zero nodes fails validation — an exercise cannot ship an empty canvas [R1-H]', () => {
+  it('a startingDesign with zero nodes fails validation for every role but one [R1-H]', () => {
     const result = exerciseSchema.safeParse(validExercise({ startingDesign: { nodes: [], edges: [] } }))
+    expect(result.success).toBe(false)
+  })
+
+  // The one exception, and the reason the role exists at all: `greenfield` IS
+  // the empty canvas. Making it the only role that may open blank means the
+  // rule cuts both ways, so neither an author nor a reader has to guess which
+  // exercises start from zero.
+  it('a greenfield exercise opens on an empty canvas [PRODUCT: levels 1 to 4]', () => {
+    const result = exerciseSchema.safeParse(
+      validExercise({ role: 'greenfield', startingDesign: { nodes: [], edges: [] } }),
+    )
+    expect(result.success).toBe(true)
+  })
+
+  it('a greenfield exercise that ships a starting system is rejected', () => {
+    const result = exerciseSchema.safeParse(validExercise({ role: 'greenfield' }))
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(JSON.stringify(result.error.issues)).toMatch(/greenfield/)
+    }
+  })
+
+  it('a greenfield exercise above level 4 is rejected', () => {
+    const result = exerciseSchema.safeParse(
+      validExercise({
+        role: 'greenfield',
+        level: 5,
+        prerequisiteLevels: [4],
+        startingDesign: { nodes: [], edges: [] },
+      }),
+    )
     expect(result.success).toBe(false)
   })
 
@@ -246,6 +325,42 @@ describe('forja-exercise-content — admission gates', () => {
           },
         ],
         rubric: [{ dimension: 'sobrevive a un reinicio', signal: { kind: 'predicate', guaranteeId: 'g-no-volatile-cut' } }],
+        referenceSolutions: [
+          {
+            label: 'Cola durable antes del envío',
+            contextInversion: 'La cola conserva la confirmación hasta que el proveedor vuelve a responder.',
+            design: {
+              nodes: [
+                { id: 'pagos', type: 'service', label: 'Servicio de pagos', zone: 'private', props: {}, role: 'payment-service' },
+                { id: 'cola', type: 'queue', label: 'Cola de avisos', zone: 'private', props: { delivery: 'at-least-once', dlq: 'sí' } },
+                { id: 'worker', type: 'worker', label: 'Procesador', zone: 'private', props: {} },
+                { id: 'proveedor', type: 'external-provider', label: 'Proveedor de email', zone: 'dmz', props: {}, role: 'email-sent' },
+              ],
+              edges: [
+                { id: 'pagos-cola', from: { node: 'pagos' }, to: { node: 'cola' } },
+                { id: 'cola-worker', from: { node: 'cola' }, to: { node: 'worker' } },
+                { id: 'worker-proveedor', from: { node: 'worker' }, to: { node: 'proveedor' } },
+              ],
+            },
+          },
+          {
+            label: 'Registro durable antes del envío',
+            contextInversion: 'El registro conserva el evento y permite que varios consumidores lo procesen.',
+            design: {
+              nodes: [
+                { id: 'pagos', type: 'service', label: 'Servicio de pagos', zone: 'private', props: {}, role: 'payment-service' },
+                { id: 'registro', type: 'stream', label: 'Registro de pagos', zone: 'private', props: {} },
+                { id: 'worker', type: 'worker', label: 'Procesador', zone: 'private', props: {} },
+                { id: 'proveedor', type: 'external-provider', label: 'Proveedor de email', zone: 'dmz', props: {}, role: 'email-sent' },
+              ],
+              edges: [
+                { id: 'pagos-registro', from: { node: 'pagos' }, to: { node: 'registro' } },
+                { id: 'registro-worker', from: { node: 'registro' }, to: { node: 'worker' } },
+                { id: 'worker-proveedor', from: { node: 'worker' }, to: { node: 'proveedor' } },
+              ],
+            },
+          },
+        ],
       }),
     )
     expect(result.success).toBe(true)

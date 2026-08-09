@@ -1,11 +1,12 @@
-// La Forja evaluation engine — pure TypeScript, no DOM, no React, no Astro
+// La Forja evaluation engine. Pure TypeScript, no DOM, no React, no Astro
 // imports. R1-C wires the full public surface per the design's Interfaces
 // contract: evaluate() (legality -> guarantees -> cost -> ledger) and
 // checkConnection() (the same legality module the scorer gates on, reused
 // live for the connection gesture).
+import { CATALOG } from './catalog'
 import { computeCost } from './cost'
 import { isPortCompatible, isTrustZoneJump } from './legality'
-import { evaluateRules, WHY } from './rules'
+import { evaluateRules, WHY, zoneJumpEvidence } from './rules'
 import { computeLedger } from './score'
 import type { ConnectionVerdict, Design, Evaluation, ExerciseSpec, Finding } from './types'
 
@@ -50,7 +51,7 @@ function guaranteeStubs(exercise: ExerciseSpec): { id: string; satisfied: boolea
 }
 
 // EE9, layer (a) of the pipeline: an empty design is scored before any
-// guarantee or cost axis runs — 100 points of loss, one finding, done.
+// guarantee or cost axis runs: 100 points of loss, one finding, done.
 function emptyEvaluation(exercise: ExerciseSpec, findings: Finding[]): Evaluation {
   return {
     status: 'scored',
@@ -64,8 +65,8 @@ function emptyEvaluation(exercise: ExerciseSpec, findings: Finding[]): Evaluatio
 }
 
 // Legality gates scoring (EE2): an illegal design produces no score at all,
-// never a low one. Cost is still reported as information — it never gates
-// anything here, only the score field does.
+// never a low one. Cost is still reported as information. It never gates
+// anything here; only the score field does.
 function illegalEvaluation(design: Design, exercise: ExerciseSpec, findings: Finding[]): Evaluation {
   return {
     status: 'illegal',
@@ -99,7 +100,7 @@ export function evaluate(design: Design, exercise: ExerciseSpec): Evaluation {
 }
 
 // The connection gesture reuses the exact same legality checks the scorer
-// gates on — one implementation of "is this legal", checked live before the
+// gates on: one implementation of "is this legal", checked live before the
 // edge is ever created.
 export function checkConnection(
   design: Design,
@@ -111,15 +112,17 @@ export function checkConnection(
   if (!a || !b) return { ok: false, why: 'Uno de los dos extremos no existe en el diseño.' }
 
   if (isTrustZoneJump(a.zone, b.zone)) {
-    return { ok: false, why: WHY.trustZoneJump, consequence: `${a.label} (${a.zone}) → ${b.label} (${b.zone})` }
+    return { ok: false, why: WHY.trustZoneJump, consequence: zoneJumpEvidence(a, b) }
   }
 
   if (!isPortCompatible(a.type, b.type)) {
     const humanSource = a.type === 'actor' || a.type === 'approver'
     return {
       ok: false,
-      why: humanSource ? WHY.portMismatchHuman(b.type) : WHY.portMismatchStructural(a.type, b.type),
-      consequence: `${a.type} → ${b.type}`,
+      why: humanSource
+        ? WHY.portMismatchHuman(CATALOG[b.type].name)
+        : WHY.portMismatchStructural(CATALOG[a.type].name, CATALOG[b.type].name),
+      consequence: `${a.label} → ${b.label}`,
     }
   }
 

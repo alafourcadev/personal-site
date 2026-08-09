@@ -1,5 +1,5 @@
 // Doc §14.4's nine-axis difficulty index. Pure and level-generic on purpose
-// — it gates level 4's content in R1-F, and every remaining level in R2
+// It gates level 4's content in R1-F, and every remaining level in R2
 // reuses this exact math without a second implementation.
 //
 // "El TEMA y sus prerrequisitos determinan EN QUÉ NIVEL vive el ejercicio.
@@ -28,7 +28,7 @@ export const AXIS_LABEL: Record<Axis, string> = {
 }
 
 // "Vale 3 desde" / "vale 4 desde" per axis, verbatim from the doc's own
-// table — the level at which an axis is FIRST allowed to reach that value.
+// table: the level at which an axis is FIRST allowed to reach that value.
 const AXIS_THRESHOLDS: Record<Axis, { tier3: number; tier4: number }> = {
   D1: { tier3: 5, tier4: 8 },
   D2: { tier3: 5, tier4: 9 },
@@ -41,7 +41,7 @@ const AXIS_THRESHOLDS: Record<Axis, { tier3: number; tier4: number }> = {
   D9: { tier3: 6, tier4: 10 },
 }
 
-// The highest value a single axis may declare at a given level — one of the
+// The highest value a single axis may declare at a given level. One of the
 // three computable admission gates (EC3, "per-axis ceiling"); the other two
 // are difficultyIndex()'s band membership and the prerequisite gate in
 // levels.ts.
@@ -56,7 +56,7 @@ export function difficultyIndex(axes: DifficultyAxes): number {
   return AXES.reduce((sum, axis) => sum + axes[axis], 0)
 }
 
-// [2+2(N-1), 10+2(N-1)] — bands overlap on purpose (the doc's own note):
+// [2+2(N-1), 10+2(N-1)]. Bands overlap on purpose (the doc's own note):
 // what separates one level from another is the prerequisite, not the load.
 export function levelBand(level: number): [number, number] {
   return [2 + 2 * (level - 1), 10 + 2 * (level - 1)]

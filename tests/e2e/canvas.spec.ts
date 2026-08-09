@@ -31,14 +31,26 @@ test.describe('La Forja canvas — R1-D1 gestures', () => {
   test('moves a focused, selected node with real arrow key presses [PC2]', async ({ page }) => {
     await createNode(page, 'service')
     const node = nodeByLabel(page, /Servicio/)
-    const before = (await node.boundingBox())!
     await node.click()
+    // The two preconditions the title states — FOCUSED and SELECTED — are
+    // what React Flow's arrow-key handler requires, and they are asserted
+    // rather than assumed: a key pressed before the click's state landed is
+    // dropped in silence, so the test read "the node did not move" as a
+    // product failure when it was only an early keystroke (measured: fails
+    // roughly 1 full run in 2 under six parallel workers, passes 8/8 alone).
+    await expect(node).toBeFocused()
+    await expect(node).toHaveClass(/selected/)
+
+    const before = (await node.boundingBox())!
     await page.keyboard.press('ArrowRight')
     await page.keyboard.press('ArrowRight')
     await page.keyboard.press('ArrowDown')
-    const after = (await node.boundingBox())!
-    expect(after.x).toBeGreaterThan(before.x)
-    expect(after.y).toBeGreaterThan(before.y)
+
+    // Polled, not sampled once: React Flow commits the move through
+    // onNodesChange on its own schedule, and this is still measuring the
+    // rendered box a player sees, not an internal store value.
+    await expect.poll(async () => (await node.boundingBox())!.x).toBeGreaterThan(before.x)
+    await expect.poll(async () => (await node.boundingBox())!.y).toBeGreaterThan(before.y)
   })
 
   test('moves a node by a real pointer drag', async ({ page }) => {
@@ -85,6 +97,12 @@ test.describe('La Forja canvas — R1-D1 gestures', () => {
     await page.keyboard.press('Enter')
 
     await expect(page.locator('.react-flow__edge')).toHaveCount(1)
+    // A connection that WORKED used to write the empty string, which also
+    // wiped the "Modo conectar activo" line above, so the successful half
+    // of the gesture was the silent one, while the rejected half spoke.
+    await expect(page.getByTestId('canvas-status')).toContainText('Conexión creada')
+    await expect(page.getByTestId('canvas-status')).toContainText('Cliente web')
+    await expect(page.getByTestId('canvas-status')).toContainText('Puerta de entrada')
   })
 
   test('cancels the keyboard connect command with Escape, creating no edge', async ({ page }) => {
@@ -211,13 +229,20 @@ test.describe('La Forja canvas — R1-D1 gestures', () => {
     await expect(page.locator('.react-flow__edge')).toHaveCount(0)
   })
 
-  test('accessible name includes label, raw type, raw zone, and selection state [PC13]', async ({ page }) => {
+  // Was "raw type, raw zone" — and it passed, which is how a screen reader
+  // ended up announcing "App de familias, mobile-client, zona public" for two
+  // rounds. PC13 asks for the type and the zone, not for their internal keys;
+  // the names below are the ones CATALOG[type].name and ZONE_NAMES carry,
+  // swept over every type/zone pair in tests/canvas/player-vocabulary-ui.test.ts.
+  test('accessible name includes label, type, zone, and selection state, by name [PC13]', async ({ page }) => {
     await createNode(page, 'database')
     const node = page.locator('.react-flow__node').first()
 
     const before = await node.getAttribute('aria-label')
-    expect(before).toContain('database')
-    expect(before).toContain('restricted')
+    expect(before).toContain('Base de datos')
+    expect(before).toContain('núcleo restringido')
+    expect(before).not.toContain('database')
+    expect(before).not.toContain('restricted')
     expect(before).not.toContain('seleccionado')
 
     await node.click()
@@ -228,8 +253,8 @@ test.describe('La Forja canvas — R1-D1 gestures', () => {
     await expect(node).toHaveAttribute('aria-label', /seleccionado/)
 
     const after = await node.getAttribute('aria-label')
-    expect(after).toContain('database')
-    expect(after).toContain('restricted')
+    expect(after).toContain('Base de datos')
+    expect(after).toContain('núcleo restringido')
   })
 
   test('list view shows the same blocking finding as the canvas, with rule id and text [PC10]', async ({ page }) => {

@@ -108,7 +108,7 @@ No necesitás Lombok para esto. Java ya lo resolvió.
 
 Lombok no es malo. Fue increíblemente útil en su momento. Pero ese momento ya pasó.
 
-Java evolucionó. Records, pattern matching, sealed classes — el lenguaje resolvió los problemas que Lombok intentaba parchar.
+Java evolucionó. Records, pattern matching, sealed classes: el lenguaje resolvió los problemas que Lombok intentaba parchar.
 
 **Seguir usando Lombok en 2025 es como llevar paraguas en un día soleado.** No te hace daño, pero dice mucho de tus hábitos.
 

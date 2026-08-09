@@ -1,4 +1,4 @@
-// R1-I ("the canvas frames its own content") — pure geometry only, no DOM,
+// R1-I ("the canvas frames its own content"). Pure geometry only, no DOM,
 // no React Flow import. ForjaCanvas.tsx is the only caller, feeding it real
 // `getBoundingClientRect()` rectangles (both node and pane come from the
 // same viewport coordinate space, so a direct comparison is valid without
@@ -10,7 +10,7 @@ export interface ScreenRect {
   bottom: number
 }
 
-// Whether `inner` sits entirely inside `outer` — used to decide whether a
+// Whether `inner` sits entirely inside `outer`. Used to decide whether a
 // just-created node already landed somewhere the player can see, or whether
 // the camera needs to be refit so it does (spec "A newly added component is
 // brought into view"). A `null`/collapsed outer rect (the pane hasn't

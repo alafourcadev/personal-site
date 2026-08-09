@@ -3,6 +3,7 @@ import sitemap from '@astrojs/sitemap'
 import mdx from '@astrojs/mdx'
 import react from '@astrojs/react'
 import remarkDirective from 'remark-directive'
+import { remarkClockTimes } from './src/plugins/remark-clock-times.mjs'
 import { remarkEditorialBlocks } from './src/plugins/remark-editorial-blocks.mjs'
 
 export default defineConfig({
@@ -21,7 +22,10 @@ export default defineConfig({
     },
   },
   markdown: {
-    remarkPlugins: [remarkDirective, remarkEditorialBlocks],
+    // `remarkClockTimes` runs right after the directive parser and undoes its
+    // only false positive: `:56` in "las 23:56" is not a directive, it is the
+    // minutes of a time of day (see src/plugins/remark-clock-times.mjs).
+    remarkPlugins: [remarkDirective, remarkClockTimes, remarkEditorialBlocks],
     shikiConfig: {
       themes: {
         light: 'github-light',

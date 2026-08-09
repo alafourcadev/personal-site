@@ -17,7 +17,7 @@ const dayPosts = allPosts.filter((p) => typeof p.data.day === 'number');
 const TOTAL_DAYS = 110;
 const latestDay = dayPosts.length ? Math.max(...dayPosts.map((p) => p.data.day ?? 0)) : 0;
 
-// "Para empezar" — earliest days. "Últimos días" — most recently published.
+// "Para empezar" is the earliest days. "Últimos días" is the most recently published.
 const firstDays = [...dayPosts].sort((a, b) => (a.data.day ?? 0) - (b.data.day ?? 0)).slice(0, 3);
 const recentDays = [...dayPosts].sort((a, b) => b.data.date.getTime() - a.data.date.getTime()).slice(0, 6);
 
@@ -38,14 +38,14 @@ const paths = [
   { icon: 'server', title: 'Si venís por producción', text: 'Buscá logs, performance, resiliencia, bases de datos y observabilidad.' },
 ];
 
-// Temporadas — fuente de verdad: roadmap-100-architecture-days.md (días 16–110).
+// Temporadas. Fuente de verdad: roadmap-100-architecture-days.md (días 16–110).
 const seasons = [
   { n: 1, name: 'Clean Code y principios de diseño', range: 'Días 16–23', start: 16, end: 23, blurb: 'Los principios que no caducan, aplicados a código real.', temas: ['Open/Closed', 'Liskov', 'Dependency Inversion', 'Naming', 'YAGNI'] },
   { n: 2, name: 'Testing que de verdad importa', range: 'Días 24–31', start: 24, end: 31, blurb: 'Tests que atrapan bugs, no que inflan coverage.', temas: ['TDD', 'Test doubles', 'Testcontainers', 'Contract testing'] },
   { n: 3, name: 'Modelar el dominio: DDD aplicado', range: 'Días 32–40', start: 32, end: 40, blurb: 'El dominio no es tu base de datos.', temas: ['Value Objects', 'Aggregates', 'Bounded Contexts', 'Domain Events'] },
   { n: 4, name: 'Diseño de datos y persistencia', range: 'Días 41–48', start: 41, end: 48, blurb: 'Transacciones, aislamiento, migraciones e idempotencia.', temas: ['SQL vs NoSQL', 'Repository', '@Transactional', 'Deadlocks'] },
   { n: 5, name: 'APIs y contratos', range: 'Días 49–55', start: 49, end: 55, blurb: 'El contrato como diseño, más allá del CRUD.', temas: ['REST', 'Versionado', 'Validación', 'gRPC vs GraphQL'] },
-  { n: 6, name: 'Estilos de arquitectura', range: 'Días 56–64', start: 56, end: 64, blurb: 'Monolito modular, hexagonal, event-driven, CQRS — con criterio.', temas: ['Hexagonal', 'Event-Driven', 'CQRS', 'Event Sourcing'] },
+  { n: 6, name: 'Estilos de arquitectura', range: 'Días 56–64', start: 56, end: 64, blurb: 'Monolito modular, hexagonal, event-driven, CQRS, con criterio.', temas: ['Hexagonal', 'Event-Driven', 'CQRS', 'Event Sourcing'] },
   { n: 7, name: 'Resiliencia y sistemas distribuidos', range: 'Días 65–74', start: 65, end: 74, blurb: 'Diseñar para el fallo, no para el happy path.', temas: ['Timeouts', 'Circuit Breaker', 'Saga', 'Outbox'] },
   { n: 8, name: 'Observabilidad y operación', range: 'Días 75–82', start: 75, end: 82, blurb: 'Logs, métricas y traces que responden preguntas reales.', temas: ['Tracing', 'RED/USE', 'SLO/SLI', 'Alertas'] },
   { n: 9, name: 'CI/CD y entrega', range: 'Días 83–90', start: 83, end: 90, blurb: 'Entregar seguido y volver atrás sin miedo.', temas: ['Pipeline CI', 'Trunk-based', 'Feature flags', 'Rollback'] },
@@ -197,7 +197,7 @@ const progressPct = Math.round((latestDay / TOTAL_DAYS) * 100);
     </Container>
   </section>
 
-  <!-- 5. Días destacados — Para empezar -->
+  <!-- 5. Días destacados: para empezar -->
   <section id="empezar" class="border-t border-border-subtle scroll-mt-24">
     <Container width="wide" class="flex flex-col gap-10 py-16 md:py-20">
       <SectionHeader

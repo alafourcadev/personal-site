@@ -1,6 +1,6 @@
 ---
 title: "Spring Boot 4: lo que cambió, lo que se rompió y lo que nadie te cuenta"
-description: "Llevo meses migrando proyectos a Boot 4. Esto es todo lo que aprendí — con las cicatrices para probarlo."
+description: "Llevo meses migrando proyectos a Boot 4. Esto es todo lo que aprendí, con las cicatrices para probarlo."
 tags: ["Java", "Spring Boot"]
 date: 2026-03-23
 readTime: "12 min read"
@@ -11,7 +11,7 @@ Vamos directo al grano: **Spring Boot 4 no es un bump de versión. Es una reescr
 
 Si pensás que migrar es cambiar el `<version>` en tu `pom.xml` y rezar, te tengo malas noticias. Spring Framework 7 trajo cambios que van a romper tu aplicación de formas que no esperás. Y lo sé porque llevo meses migrando proyectos reales a producción.
 
-Esto es todo lo que aprendí — lo bueno, lo que duele y lo que la documentación oficial no te dice con suficiente claridad.
+Esto es todo lo que aprendí: lo bueno, lo que duele y lo que la documentación oficial no te dice con suficiente claridad.
 
 ## Lo primero: las bases cambiaron
 
@@ -41,20 +41,20 @@ No es un cambio cosmético. Es un salto generacional en prácticamente todas las
 El reemplazo es `RestClient`, y es objetivamente mejor:
 
 ```java
-// Antes — RestTemplate (verbose, difícil de testear)
+// Antes: RestTemplate (verbose, difícil de testear)
 ResponseEntity<Usuario> response = restTemplate.exchange(
     "/api/users/{id}", HttpMethod.GET, null,
     new ParameterizedTypeReference<Usuario>() {}, id
 );
 
-// Ahora — RestClient (fluido, limpio)
+// Ahora: RestClient (fluido, limpio)
 Usuario usuario = restClient.get()
     .uri("/api/users/{id}", id)
     .retrieve()
     .body(Usuario.class);
 ```
 
-Pero lo mejor viene con `@HttpExchange` — interfaces declarativas que Boot 4 auto-configura:
+Pero lo mejor viene con `@HttpExchange`: interfaces declarativas que Boot 4 auto-configura:
 
 ```java
 @HttpExchange("/api/users")
@@ -98,7 +98,7 @@ Dos anotaciones. Cero dependencias adicionales. Esto antes requería Spring Retr
 
 ### Virtual threads + RestClient = combo letal
 
-RestClient en Boot 4 usa `JdkClientHttpRequestFactory` por defecto, que está construido sobre el `HttpClient` de Java — 100% compatible con virtual threads. Activás virtual threads y tu aplicación escala automáticamente:
+RestClient en Boot 4 usa `JdkClientHttpRequestFactory` por defecto, que está construido sobre el `HttpClient` de Java, 100% compatible con virtual threads. Activás virtual threads y tu aplicación escala automáticamente:
 
 ```yaml
 spring:
@@ -123,9 +123,9 @@ import tools.jackson.databind.ObjectMapper;
 
 Parece menor, pero hay cambios de comportamiento que te van a sorprender:
 
-- **Fechas en ISO-8601 por defecto** — ya no timestamps numéricos
-- **Excepciones unchecked** — `readValue()` ya no te obliga a hacer try-catch
-- **Locale en formato IETF** — `zh-CN` en vez de `zh_CN`
+- **Fechas en ISO-8601 por defecto**: ya no timestamps numéricos
+- **Excepciones unchecked**: `readValue()` ya no te obliga a hacer try-catch
+- **Locale en formato IETF**: `zh-CN` en vez de `zh_CN`
 
 Si no podés migrar de golpe, Boot 4 te deja usar Jackson 2 y 3 al mismo tiempo:
 
@@ -138,7 +138,7 @@ spring:
     use-jackson2-defaults: true
 ```
 
-Pero no te engañes — Jackson 2 se va. Planificá la migración.
+Pero no te engañes: Jackson 2 se va. Planificá la migración.
 
 ### Spring Data AOT: queries en compile-time
 
@@ -155,7 +155,7 @@ Acá es donde la documentación se queda corta. Esto me costó horas (y alguna n
 Si usás Spring Data JPA con Specifications, este código que tenías hace años **ya no funciona bien**:
 
 ```java
-// ANTES — funcionaba "por suerte"
+// ANTES: funcionaba "por suerte"
 Specification<Cliente> spec = Specification.where(null);
 if (filtro.getNombre() != null) {
     spec = spec.and(ClienteSpec.conNombre(filtro.getNombre()));
@@ -167,7 +167,7 @@ En Spring Data JPA 3.5+, `Specification.where(null)` es **ambiguo**. Puede gener
 La solución:
 
 ```java
-// AHORA — explícito y seguro
+// AHORA: explícito y seguro
 Specification<Cliente> spec = (root, query, cb) -> cb.conjunction();
 if (filtro.getNombre() != null) {
     spec = spec.and(ClienteSpec.conNombre(filtro.getNombre()));
@@ -244,7 +244,7 @@ Si usabas Undertow como servidor embebido: se fue. Incompatible con Servlet 6.1.
 
 ### ClientHttpRequestFactories no existe
 
-Si venís de Boot 3.x y usabas `ClientHttpRequestFactories` o `ClientHttpRequestFactorySettings` para configurar tu RestClient — esas clases **no existen en Boot 4.0.3**. Usá `SimpleClientHttpRequestFactory` directamente.
+Si venís de Boot 3.x y usabas `ClientHttpRequestFactories` o `ClientHttpRequestFactorySettings` para configurar tu RestClient, esas clases **no existen en Boot 4.0.3**. Usá `SimpleClientHttpRequestFactory` directamente.
 
 ## Cómo migrar sin morir en el intento
 

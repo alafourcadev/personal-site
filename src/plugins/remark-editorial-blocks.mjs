@@ -2,7 +2,7 @@ import { visit } from 'unist-util-visit';
 
 /**
  * Maps editorial container directives (`:::name`) to semantic <aside> blocks.
- * Authors keep writing plain .md — no MDX, no imports — and these directives
+ * Authors keep writing plain .md, with no MDX and no imports, and these directives
  * render as the brand's editorial blocks via global CSS (see BaseLayout.astro).
  *
  * Usage in any .md/.mdx post:

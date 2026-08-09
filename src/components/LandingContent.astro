@@ -15,7 +15,7 @@ const allPosts = await getCollection('blog', ({ data }) => !data.draft);
 const sorted = allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 const latestPosts = sorted.slice(0, 6);
 
-// #100ArchitectureDays progress — derived from content so it never goes stale.
+// #100ArchitectureDays progress, derived from content so it never goes stale.
 const dayPosts = allPosts
   .filter((p) => typeof p.data.day === 'number')
   .sort((a, b) => (b.data.day ?? 0) - (a.data.day ?? 0));
@@ -85,7 +85,7 @@ const BUTTONDOWN_ACTION = 'https://buttondown.email/api/emails/embed-subscribe/a
     <ManifestoBlock
       eyebrow="El problema"
       statement="La industria está copiando más código que nunca. Entender sistemas sigue siendo el diferencial."
-      supporting="La IA aceleró el desarrollo, pero amplificó un problema viejo: mucha gente genera código sin entender las decisiones que lo sostienen. Ingeniería sin filtros existe para volver al centro — arquitectura, producción, trade-offs, debugging, observabilidad y criterio. No se trata de odiar la IA: se trata de usarla sin entregar el volante."
+      supporting="La IA aceleró el desarrollo, pero amplificó un problema viejo: mucha gente genera código sin entender las decisiones que lo sostienen. Ingeniería sin filtros existe para volver al centro: arquitectura, producción, trade-offs, debugging, observabilidad y criterio. No se trata de odiar la IA: se trata de usarla sin entregar el volante."
     />
   </Container>
 </section>
@@ -117,13 +117,13 @@ const BUTTONDOWN_ACTION = 'https://buttondown.email/api/emails/embed-subscribe/a
     <Card tone="series" variant="featured" class="gap-6">
       <p class="text-txt-secondary leading-relaxed max-w-2xl">
         Cada día es una decisión de arquitectura con su contexto, sus trade-offs y su porqué.
-        Seguidos, son un camino de junior a criterio senior — no una lista de posts.
+        Seguidos, son un camino de junior a criterio senior, no una lista de posts.
       </p>
       <div class="flex flex-wrap items-center gap-3">
         <span class="rounded-md bg-accent/10 px-3 py-1 font-mono text-sm text-accent">Día {latestDay} de {TOTAL_DAYS}</span>
         {lastDayPost && (
           <span class="font-mono text-xs text-txt-muted">
-            Último publicado: <a href={`/blog/${lastDayPost.id}`} class="text-txt-secondary underline-offset-4 hover:text-accent hover:underline">Día {lastDayPost.data.day} — {lastDayPost.data.title}</a>
+            Último publicado: <a href={`/blog/${lastDayPost.id}`} class="text-txt-secondary underline-offset-4 hover:text-accent hover:underline">Día {lastDayPost.data.day} · {lastDayPost.data.title}</a>
           </span>
         )}
       </div>
@@ -182,7 +182,7 @@ const BUTTONDOWN_ACTION = 'https://buttondown.email/api/emails/embed-subscribe/a
   </Container>
 </section>
 
-<!-- 6. Newsletter — La Bitácora Sin Filtros -->
+<!-- 6. Newsletter: La Bitácora Sin Filtros -->
 <section id="newsletter" class="border-t border-border-subtle scroll-mt-24">
   <Container width="default" class="py-16 md:py-20">
     <div class="flex flex-col items-start gap-5 rounded-xl border border-accent/30 bg-accent/5 p-8 md:p-12">

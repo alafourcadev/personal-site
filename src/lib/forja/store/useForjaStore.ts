@@ -1,4 +1,4 @@
-// React binding for ForjaStore — the only place in the store layer that
+// React binding for ForjaStore, the only place in the store layer that
 // imports React, keeping forja-store.ts itself DOM/React-free and Vitest
 // testable in isolation.
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'

@@ -1,11 +1,11 @@
-// La Forja evaluation engine — the guarantee predicate DSL (design D2, doc
+// La Forja evaluation engine: the guarantee predicate DSL (design D2, doc
 // §14.3 layer b). An exercise declares a serialisable predicate tree over a
 // closed combinator vocabulary; this module compiles it into graph queries.
 // The engine never imports or references any specific exercise.
 import { CATALOG } from './catalog'
 import type { ComponentType, Design, DesignNode, Finding, NodeQuery, Predicate } from './types'
 
-// Every query returns a set, never `find` — duplicating an irrelevant node
+// Every query returns a set, never `find`: duplicating an irrelevant node
 // must never change which nodes match (defect 9 regression, D3).
 export function matchNodes(design: Design, query: NodeQuery): DesignNode[] {
   return design.nodes.filter((n) => {
@@ -22,7 +22,7 @@ export function matchNodes(design: Design, query: NodeQuery): DesignNode[] {
 
 // A node counts as a durable witness if its catalog entry says so explicitly
 // (`persistence: 'durable'`), is explicitly volatile (`cache`'s
-// `persistence: 'volatile'` — never a witness), or is one of the storage
+// `persistence: 'volatile'`, never a witness), or is one of the storage
 // types that are durable by nature even without declaring the prop.
 const DURABLE_BY_NATURE = new Set<ComponentType>(['queue', 'stream', 'object-storage', 'vector-store'])
 
@@ -40,7 +40,7 @@ interface PathOptions {
 }
 
 // DFS over the directed edge graph. Tracks, per branch, whether a `via` node
-// and/or a durable node has been seen so far — both are path properties, not
+// and/or a durable node has been seen so far. Both are path properties, not
 // node properties, so a plain visited-node set is not enough.
 function pathExists(design: Design, from: NodeQuery, to: NodeQuery, opts: PathOptions = {}): boolean {
   const starts = matchNodes(design, from)

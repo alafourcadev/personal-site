@@ -18,10 +18,10 @@ No paginar no es un shortcut. Es una bomba de tiempo.
 
 Con 50,000 registros sin paginar, tu endpoint:
 
-- **Carga todo en memoria** — potencial `OutOfMemoryError`
-- **Serializa todo a JSON** — CPU al 100%
-- **Transmite todo por la red** — ~10MB por request
-- **El cliente espera 30 segundos** — timeout y usuarios frustrados
+- **Carga todo en memoria**: potencial `OutOfMemoryError`
+- **Serializa todo a JSON**: CPU al 100%
+- **Transmite todo por la red**: ~10MB por request
+- **El cliente espera 30 segundos**: timeout y usuarios frustrados
 
 Y lo peor: escala linealmente. Hoy son 50,000, mañana son 200,000. El problema solo crece.
 
@@ -45,7 +45,7 @@ SELECT * FROM products;  -- 50,000 registros. RIP memoria.
 
 ## El DESPUÉS: dos estrategias, cada una con su lugar
 
-### Offset Pagination — la clásica
+### Offset Pagination: la clásica
 
 ```java
 @Service
@@ -75,7 +75,7 @@ Spring Data JPA te da `Pageable` out of the box. Le pasás página y tamaño, y 
 
 Página 1: lee 20 registros. Página 2000: lee 40,020 registros para devolver 20.
 
-### Cursor Pagination — la escalable
+### Cursor Pagination: la escalable
 
 ```java
 @Service
@@ -128,11 +128,11 @@ No hay una respuesta universal. Depende de tu caso de uso:
 
 | Escenario | Estrategia |
 |---|---|
-| Dashboard con tabla y paginitas numeradas | **Offset** — el usuario necesita saltar a la página 47 |
-| Scroll infinito (feed, timeline) | **Cursor** — rendimiento constante en cada scroll |
-| API pública | **Cursor** — no querés que un cliente pida página 999999 |
-| Exportar datos en lotes | **Cursor** — procesás de a chunks sin degradar |
-| Panel admin con pocos registros | **Offset** — la simplicidad gana, metadata completa |
+| Dashboard con tabla y paginitas numeradas | **Offset**: el usuario necesita saltar a la página 47 |
+| Scroll infinito (feed, timeline) | **Cursor**: rendimiento constante en cada scroll |
+| API pública | **Cursor**: no querés que un cliente pida página 999999 |
+| Exportar datos en lotes | **Cursor**: procesás de a chunks sin degradar |
+| Panel admin con pocos registros | **Offset**: la simplicidad gana, metadata completa |
 
 La regla general: **si el usuario necesita saltar a una página específica, usá offset. Si siempre avanza secuencialmente, usá cursor.**
 
@@ -172,14 +172,14 @@ Si usás Express con Prisma, es `skip/take` para offset y `cursor` como parámet
 
 Si usás FastAPI con SQLAlchemy, es `.offset().limit()` vs `.filter(Model.id > cursor).limit()`.
 
-**El patrón es el mismo en todos los lenguajes.** Offset usa `OFFSET` en SQL (o su equivalente) y se degrada linealmente. Cursor usa un `WHERE` con un valor de referencia y mantiene rendimiento constante. No importa el framework — la base de datos se comporta igual.
+**El patrón es el mismo en todos los lenguajes.** Offset usa `OFFSET` en SQL (o su equivalente) y se degrada linealmente. Cursor usa un `WHERE` con un valor de referencia y mantiene rendimiento constante. No importa el framework: la base de datos se comporta igual.
 
 ## Esto es el Día 4
 
-Este artículo es parte de **#100ArchitectureDays** — una serie de problemas reales de arquitectura con soluciones reales. Código que podés correr, medir, y ver cómo se degrada offset mientras cursor se mantiene firme.
+Este artículo es parte de **#100ArchitectureDays**, una serie de problemas reales de arquitectura con soluciones reales. Código que podés correr, medir, y ver cómo se degrada offset mientras cursor se mantiene firme.
 
 Si tu endpoint devuelve todo sin paginar, hoy es el día de arreglar eso. Tu base de datos, tu red, y tus usuarios te lo van a agradecer.
 
 Seguí la saga completa en **#100ArchitectureDays**.
 
-💻 Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una ⭐ — es gratis y ayuda a que más gente lo encuentre.
+💻 Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una ⭐. Es gratis y ayuda a que más gente lo encuentre.

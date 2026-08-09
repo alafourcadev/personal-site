@@ -1,4 +1,4 @@
-// La Forja evaluation engine — shared types. Pure data, no DOM/React/Astro imports.
+// La Forja evaluation engine: shared types. Pure data, no DOM, React or Astro imports.
 
 export type Layer = 'business' | 'application' | 'infrastructure'
 export type Zone = 'public' | 'dmz' | 'private' | 'restricted'
@@ -28,7 +28,7 @@ export type ComponentType =
   | 'observability'
   | 'generic'
 
-// PC16: a small, fixed palette a player can assign to any node — purely
+// PC16: a small, fixed palette a player can assign to any node, purely
 // presentational (see tests/engine/color-neutral.test.ts). Deliberately not
 // one of the four categorical CATALOG_UI colours, which already carry
 // component-type identity: this is a personal annotation, never a system
@@ -62,7 +62,7 @@ export interface Design {
   edges: DesignEdge[]
 }
 
-// Stable rule id — the same value across every finding raised by a rule,
+// Stable rule id: the same value across every finding raised by a rule,
 // so highlighting and "why" copy can be looked up deterministically.
 export type RuleId =
   | 'trust-zone-jump'
@@ -78,30 +78,34 @@ export type RuleId =
   | 'single-point-of-failure'
   | 'ops-budget-exceeded'
   | 'undeclared-data-class'
-  // EE9 empty-canvas guard — not one of the 13 §13.7 rules, a separate
+  // EE9 empty-canvas guard. Not one of the 13 §13.7 rules, but a separate
   // legality-layer requirement that an empty design must never pass silently.
   | 'empty-canvas'
 
 export interface Finding {
-  // Per-instance id — a rule can fire more than once per evaluation, so this
+  // Per-instance id. A rule can fire more than once per evaluation, so this
   // disambiguates instances; `rule` below is the stable, reusable rule id.
   id: string
   // Widened in R1-C: a legal-but-unsatisfied guarantee also produces a
-  // finding, per the design's Interfaces contract — `RuleId` alone covers
+  // finding, per the design's Interfaces contract. `RuleId` alone covers
   // only the 13 §13.7 rules plus `empty-canvas`.
   rule: RuleId | `guarantee-missing:${string}`
   severity: Severity
   title: string
   evidence: string
   why: string
+  // What the missing rule costs, in the exercise's own terms. Optional
+  // because only the guarantee findings have one written for them: `why`
+  // names what the design fails to do, this names who pays for it.
+  consequence?: string
   nodeIds: string[]
   edgeIds: string[]
-  // Allocated by score.ts's ledger (R1-C) — not populated by the legality/rules layer.
+  // Allocated by score.ts's ledger (R1-C), not by the legality or rules layer.
   costPoints?: number
 }
 
 // -- R1-C: guarantee predicate DSL (design D2) --------------------------
-// An exercise declares what it demands as data, never as a function — the
+// An exercise declares what it demands as data, never as a function. The
 // engine compiles this closed combinator vocabulary into graph queries and
 // never learns anything about any specific exercise.
 
@@ -116,7 +120,7 @@ export type Predicate =
   | { op: 'path'; from: NodeQuery; to: NodeQuery; via?: NodeQuery; forbid?: NodeQuery }
   // G2 in §14.3, verbatim: no cut in the path where the accepted state lives
   // only in volatile memory. Satisfied by an outbox, a durable queue, log
-  // tailing or a reconciliation job alike — the predicate is over structure.
+  // tailing or a reconciliation job alike, because the predicate is over structure.
   | { op: 'noVolatileCut'; from: NodeQuery; to: NodeQuery }
   | { op: 'covered'; target: NodeQuery; by: NodeQuery }
   | { op: 'edgeAbsent'; from: NodeQuery; to: NodeQuery }
@@ -141,7 +145,7 @@ export interface Guarantee {
   consequence: string // §13.1: rule, evidence, consequence
 }
 
-// Minimal projection the engine needs from an exercise — deliberately not
+// Minimal projection the engine needs from an exercise, deliberately not
 // the full content-collection schema (difficulty axes, prereqs, copy live
 // in R1-F). Mirrors R1-B's `opsCapacity` precedent: the engine only takes
 // what it evaluates against, so it stays exercise-agnostic.

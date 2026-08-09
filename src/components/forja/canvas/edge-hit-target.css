@@ -1,0 +1,49 @@
+/*
+  The pointer affordance for a connection. See edge-hit.ts for the
+  measurements that made it necessary: 73 of 964 connections across the 165
+  playable exercises could not be selected by clicking their own midpoint.
+
+  The visible dot is deliberately quiet at rest (a connection is not a
+  control, it is a line) and only becomes a solid handle under the pointer
+  or when its connection is selected. The hit area around it stays a
+  constant 24px regardless of how faint the dot looks. Size on screen is
+  set inline from edgeHitTargetStyle(), because it depends on the live zoom.
+*/
+.forja-edge-hit {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  cursor: pointer;
+  background: transparent;
+}
+
+.forja-edge-hit::after {
+  content: '';
+  width: 30%;
+  height: 30%;
+  border-radius: 9999px;
+  background: rgb(var(--txt-muted));
+  /* Per theme: --txt-muted sits closer to the pane on the light theme, so the
+     same 0.5 that reads 2.31:1 on dark reads 1.75:1 there. See BaseLayout. */
+  opacity: var(--forja-grip-rest-opacity);
+  transition:
+    opacity 120ms ease,
+    width 120ms ease,
+    height 120ms ease;
+}
+
+.forja-edge-hit:hover::after {
+  width: 46%;
+  height: 46%;
+  opacity: 1;
+}
+
+.forja-edge-hit[data-selected='true']::after {
+  width: 46%;
+  height: 46%;
+  opacity: 1;
+  /* The accent as a graphical object on the pane, which is 2.22:1 on the light
+     theme if it stays raw. Same token the selection ring spends. */
+  background: var(--forja-mark);
+}

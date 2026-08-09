@@ -82,7 +82,7 @@ No los necesita. Su trabajo es despachar. Decidir a quién delegar. El cómo man
 Eso lleva a una interfaz:
 
 ```java
-// Punto de extensión — nadie toca esto para agregar un canal
+// Punto de extensión: nadie toca esto para agregar un canal
 public interface NotificationSender {
     boolean supports(String channel);
     void send(NotificationRequest request);

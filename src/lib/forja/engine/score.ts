@@ -1,5 +1,5 @@
-// La Forja evaluation engine — the ledger (design D3, doc §14.3 layers b+c).
-// score = 100 · raw · pen. No node-count term anywhere in this file — that
+// La Forja evaluation engine: the ledger (design D3, doc §14.3 layers b+c).
+// score = 100 · raw · pen. No node-count term anywhere in this file, and that
 // single omission is what makes the monotonicity invariant hold by
 // construction rather than by tuning (EE6).
 import { computeCost, penalty } from './cost'
@@ -16,7 +16,7 @@ interface GuaranteeStatus {
 }
 
 // Σ wᵢ·satᵢ / Σ wᵢ ∈ [0,1]. An exercise with zero total weight has nothing to
-// satisfy, so it is vacuously fully satisfied (raw 1) — consistent with the
+// satisfy, so it is vacuously fully satisfied (raw 1), consistent with the
 // predicate DSL's own empty-set semantics (`covered`/`all` over an empty
 // set are vacuously true). Real content always declares 3–5 guarantees
 // (spec's floor), so this only guards a malformed exercise from ever
@@ -41,7 +41,7 @@ interface Bucket {
 // Largest-remainder allocation (Hamilton's method): floor every bucket, then
 // hand the leftover whole points to the buckets with the biggest fractional
 // part, tie-broken by original order for determinism. Buckets sum to `total`
-// in real arithmetic, so their integers sum to `total` exactly — the
+// in real arithmetic, so their integers sum to `total` exactly. The
 // feedback-accounting invariant is a construction property, not a rounding
 // hope.
 function allocate(buckets: Bucket[], total: number): Map<string, number> {
@@ -53,7 +53,7 @@ function allocate(buckets: Bucket[], total: number): Map<string, number> {
     .sort((a, b) => b.frac - a.frac || a.i - b.i)
   const result = new Map(buckets.map((b, i) => [b.key, floors[i]]))
   // `remaining` is at most `buckets.length − 1` whenever Σ real === total
-  // (each fractional part is < 1). The modulo is defence in depth only —
+  // (each fractional part is < 1). The modulo is defence in depth only:
   // it keeps this function total even if a future caller's buckets don't
   // sum to `total` exactly, rather than indexing past the end of `order`.
   for (let k = 0; k < remaining && order.length > 0; k++) {
@@ -79,6 +79,10 @@ function guaranteeMissingFinding(exercise: ExerciseSpec, status: GuaranteeStatus
     title: guarantee?.label ?? status.id,
     evidence: `peso ${status.weight}`,
     why: guarantee?.whyMissing ?? '',
+    // §13.1's third part: rule, evidence, consequence. It is required and
+    // non-empty on every `Guarantee`, and until now nothing read it: the
+    // player was told what was missing and never what it costs.
+    consequence: guarantee?.consequence || undefined,
     nodeIds: [],
     edgeIds: [],
     costPoints,
@@ -108,8 +112,8 @@ function opsBudgetFinding(cost: CostBreakdown, costPoints: number): Finding {
 //
 // This corrects the source note's literal per-guarantee term
 // `100·(wᵢ/Σw)·pen`, which does not sum exactly with its own budget-loss row
-// once both raw<1 and pen<1 hold at the same time — verified by direct
-// algebra, not by rounding tolerance. See apply-progress deviations.
+// once both raw<1 and pen<1 hold at the same time, verified by direct
+// algebra and not by rounding tolerance. See apply-progress deviations.
 export function computeLedger(design: Design, exercise: ExerciseSpec, priorFindings: Finding[]): LedgerResult {
   const { raw, statuses } = computeRaw(design, exercise, priorFindings)
   const cost = computeCost(design, exercise.budget)
@@ -120,7 +124,7 @@ export function computeLedger(design: Design, exercise: ExerciseSpec, priorFindi
   const buckets: Bucket[] = [{ key: 'score', real: scoreReal }]
   const unsatisfied = statuses.filter((g) => !g.satisfied)
   // Each unsatisfied guarantee's share of the aggregate 100·(1−raw) loss is
-  // its own declared weight over the exercise's total weight — the same
+  // its own declared weight over the exercise's total weight, the same
   // Σw that defines `raw` itself, so the shares sum back to 100·(1−raw)
   // exactly (1−raw = Σ_unsatisfied wᵢ / Σw by construction).
   unsatisfied.forEach((g) =>

@@ -61,10 +61,10 @@ Verificá que se cumplan de verdad, no que estén declaradas.
 
 ## Lo que hay que mirar con más dureza
 
-- **El par contrastado** (`tradeoff-el-stock-que-hay-que-saber-ya` y
-  `tradeoff-el-stock-que-puede-esperar`): ¿de verdad se invierte el ganador al
+- **El par contrastado** (`n4-el-stock-que-hay-que-saber-ya` y
+  `n4-el-stock-que-puede-esperar`): ¿de verdad se invierte el ganador al
   invertir el contexto, o son dos ejercicios distintos disfrazados de par?
-- **La síntesis** (`synthesis-el-checkout-con-presupuesto-ajustado`): ¿combina
+- **La síntesis** (`n4-el-checkout-con-presupuesto-ajustado`): ¿combina
   los conceptos del nivel o es sólo el más largo?
 - **Los números.** Presupuestos, `opsUnits`, volúmenes y latencias se
   escribieron a criterio y nadie los jugó. ¿Son verosímiles para alguien que

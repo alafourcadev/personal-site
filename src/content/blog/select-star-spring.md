@@ -10,7 +10,7 @@ day: 2
 
 50 usuarios. Un endpoint. 25 megabytes de JSON. El frontend solo necesitaba el nombre y el email.
 
-Tu API tarda 10 segundos en responder y vos mirás New Relic pensando que es un problema de red. No es la red. Es que estás trayendo la foto de perfil de cada usuario codificada en base64 — 500KB por usuario — porque alguien escribió `SELECT *` y nadie lo cuestionó.
+Tu API tarda 10 segundos en responder y vos mirás New Relic pensando que es un problema de red. No es la red. Es que estás trayendo la foto de perfil de cada usuario codificada en base64, 500KB por usuario, porque alguien escribió `SELECT *` y nadie lo cuestionó.
 
 ## El problema real
 
@@ -63,7 +63,7 @@ Resultado: **25 MB de payload** para mostrar una lista de nombres.
 
 ## El DESPUÉS: traer solo lo que necesitás
 
-Definí una **Interface Projection** — una interfaz con solo los getters que te importan:
+Definí una **Interface Projection**: una interfaz con solo los getters que te importan:
 
 ```java
 public interface UserSummary {
@@ -145,14 +145,14 @@ Si usás Entity Framework, es `.Select(u => new { u.Id, u.Name, u.Email })`.
 
 Si usás Prisma, es `select: { id: true, name: true, email: true }`.
 
-**El patrón es universal.** Cada ORM tiene su forma de decir "traeme solo estas columnas". El problema no es el framework — es el default de traer todo porque es más fácil. `SELECT *` es cómodo hasta que tu API se arrastra.
+**El patrón es universal.** Cada ORM tiene su forma de decir "traeme solo estas columnas". El problema no es el framework: es el default de traer todo porque es más fácil. `SELECT *` es cómodo hasta que tu API se arrastra.
 
 ## Esto es el Día 2
 
-Este artículo es parte de **#100ArchitectureDays** — una serie de problemas reales de arquitectura con soluciones reales. Código que podés clonar, correr y medir vos mismo.
+Este artículo es parte de **#100ArchitectureDays**, una serie de problemas reales de arquitectura con soluciones reales. Código que podés clonar, correr y medir vos mismo.
 
 La próxima vez que escribas un endpoint de listado, preguntate: "¿realmente necesito todas estas columnas?" Si la respuesta es no, ya sabés qué hacer.
 
 Seguí la saga completa en **#100ArchitectureDays**.
 
-💻 Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una ⭐ — es gratis y ayuda a que más gente lo encuentre.
+💻 Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una ⭐. Es gratis y ayuda a que más gente lo encuentre.

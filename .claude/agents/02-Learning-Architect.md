@@ -34,7 +34,7 @@ Compilá y levantá (`npm run build && npx astro preview --port 4322`, nunca
 pedagógica sobre un ejercicio que no resolviste no vale nada.
 
 Prestá atención especial al **par contrastado**
-(`tradeoff-el-stock-que-hay-que-saber-ya` y `tradeoff-el-stock-que-puede-esperar`):
+(`n4-el-stock-que-hay-que-saber-ya` y `n4-el-stock-que-puede-esperar`):
 mismo par de opciones, contexto invertido, gana la otra. Es el corazón
 pedagógico del nivel. Si jugarlos seguidos no te enseña *cuándo* una opción le
 gana a la otra, el nivel está mal calibrado y hay que decirlo.

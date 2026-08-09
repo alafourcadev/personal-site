@@ -8,7 +8,13 @@
 // global `localStorage` exists (verified: Node 24 needs
 // `--experimental-webstorage` + a file path, unusable for a test runner).
 import { describe, expect, it } from 'vitest'
-import { LocalRankingAdapter, type KeyValueStorage } from '../../src/lib/forja/ranking/local-adapter'
+import {
+  compactAttempts,
+  LocalRankingAdapter,
+  STORAGE_KEY,
+  type KeyValueStorage,
+} from '../../src/lib/forja/ranking/local-adapter'
+import type { Attempt } from '../../src/lib/forja/ranking/port'
 import type { Design } from '../../src/lib/forja/engine/types'
 
 function memoryStorage(): KeyValueStorage {
@@ -50,7 +56,28 @@ describe('LocalRankingAdapter — submit()', () => {
       },
     }
     const adapter = new LocalRankingAdapter(hostileStorage)
-    expect(() => adapter.submit({ exerciseId: 'ex-1', design, score: 10, ceiling: 100, engineVersion: 'v' })).not.toThrow()
+    const result = adapter.submit({ exerciseId: 'ex-1', design, score: 10, ceiling: 100, engineVersion: 'v' })
+    expect(result.storage).toEqual({ ok: false, outcome: 'failed', reason: 'write-failed', evicted: 0 })
+  })
+
+  it('reports quota failures explicitly without throwing', () => {
+    const quota = Object.assign(new Error('full'), { name: 'QuotaExceededError' })
+    const adapter = new LocalRankingAdapter({
+      getItem: () => null,
+      setItem: () => {
+        throw quota
+      },
+    })
+    const result = adapter.submit({ exerciseId: 'ex-1', design, score: 10, ceiling: 100, engineVersion: 'v' })
+    expect(result.storage).toEqual({ ok: false, outcome: 'failed', reason: 'quota-exceeded', evicted: 0 })
+  })
+
+  it('deduplicates an identical payload and reports that outcome', () => {
+    const adapter = new LocalRankingAdapter(memoryStorage())
+    const input = { exerciseId: 'ex-1', design, score: 100, ceiling: 100, engineVersion: 'v' }
+    expect(adapter.submit(input).storage).toMatchObject({ ok: true, outcome: 'stored' })
+    expect(adapter.submit(input).storage).toMatchObject({ ok: true, outcome: 'deduplicated', evicted: 1 })
+    expect(adapter.getHistory('ex-1')).toHaveLength(1)
   })
 
   it('an illegal attempt (score: null) is stored as personal history but excluded from the ranked snapshot', () => {
@@ -61,7 +88,47 @@ describe('LocalRankingAdapter — submit()', () => {
   })
 })
 
+describe('compactAttempts()', () => {
+  it('bounds history while retaining the newest attempts and the best score', () => {
+    const attempts: Attempt[] = Array.from({ length: 12 }, (_, index) => ({
+      id: `a-${index}`,
+      exerciseId: 'ex-1',
+      design,
+      score: index,
+      ceiling: 100,
+      engineVersion: 'v',
+      createdAt: new Date(Date.UTC(2026, 0, index + 1)).toISOString(),
+    }))
+    const compacted = compactAttempts(attempts, 3, 3)
+    expect(compacted.attempts).toHaveLength(3)
+    expect(compacted.attempts.map((attempt) => attempt.score)).toContain(11)
+    expect(compacted.evicted).toBe(9)
+  })
+})
+
 describe('LocalRankingAdapter — getSnapshot()', () => {
+  it('keeps attempts written by the original v1 format instead of erasing player progress', () => {
+    const storage = memoryStorage()
+    storage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([
+        {
+          exerciseId: 'ex-legacy',
+          design,
+          score: 75,
+          at: '2026-01-02T03:04:05.000Z',
+          engineVersion: 'legacy-v1',
+        },
+      ]),
+    )
+    const adapter = new LocalRankingAdapter(storage)
+
+    expect(adapter.getSnapshot('ex-legacy').entries).toEqual([
+      expect.objectContaining({ exerciseId: 'ex-legacy', score: 75, createdAt: '2026-01-02T03:04:05.000Z' }),
+    ])
+    expect(adapter.getHistory('ex-legacy')[0]).toMatchObject({ ceiling: 100 })
+  })
+
   it('sorts entries by score, descending', () => {
     const adapter = new LocalRankingAdapter(memoryStorage())
     adapter.submit({ exerciseId: 'ex-1', design, score: 40, ceiling: 100, engineVersion: 'v' })

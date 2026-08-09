@@ -16,7 +16,7 @@ El DBA te mira. Vos mirás el índice. El índice existe. Pero PostgreSQL lo ign
 
 10,000 órdenes. Una query simple: buscar por estado y rango de fechas. Debería ser instantáneo. Pero no lo es.
 
-El índice está ahí. Lo podés ver con `\di` en psql. Está creado, está sano, ocupa espacio en disco. Pero tu query hace **Seq Scan** — lee las 10,000 filas una por una como si el índice no existiera.
+El índice está ahí. Lo podés ver con `\di` en psql. Está creado, está sano, ocupa espacio en disco. Pero tu query hace **Seq Scan**: lee las 10,000 filas una por una como si el índice no existiera.
 
 Spoiler: el índice no era el problema. Era **cómo lo usabas**.
 
@@ -33,7 +33,7 @@ List<Order> findByStatusIgnoreCaseAndDateRange(
 
 Se ve razonable, ¿no? "Por las dudas hago LOWER() para que sea case-insensitive." El problema es que ese `LOWER()` le dice a PostgreSQL: "olvidate del índice".
 
-¿Por qué? Porque el índice está ordenado por el valor **original** de la columna: `PENDING`, `SHIPPED`, `DELIVERED`. Pero vos le estás pidiendo que busque por `LOWER(status)` — un valor **transformado**. PostgreSQL no puede usar un índice sobre `status` para buscar sobre `LOWER(status)`. Son cosas diferentes.
+¿Por qué? Porque el índice está ordenado por el valor **original** de la columna: `PENDING`, `SHIPPED`, `DELIVERED`. Pero vos le estás pidiendo que busque por `LOWER(status)`, un valor **transformado**. PostgreSQL no puede usar un índice sobre `status` para buscar sobre `LOWER(status)`. Son cosas diferentes.
 
 Entonces hace lo único que puede: leer **cada fila**, aplicarle `LOWER()`, y comparar. Fila por fila. Las 10,000. Eso es un Seq Scan.
 
@@ -128,11 +128,11 @@ Si tu query tiene Seq Scan y Rows Removed by Filter alto, no necesitás más RAM
 
 `LOWER()` no es la única culpable. Cualquier función aplicada a una columna en el WHERE invalida el índice:
 
-- `UPPER(column)` — mismo problema que LOWER
-- `TRIM(column)` — si necesitás trim, limpiá los datos al insertar
-- `CAST(column AS ...)` — cuidado con conversiones implícitas
-- `EXTRACT(YEAR FROM column)` — usá rangos de fechas en vez de extraer partes
-- `column + 1 = 5` — reescribí como `column = 4`
+- `UPPER(column)`: mismo problema que LOWER
+- `TRIM(column)`: si necesitás trim, limpiá los datos al insertar
+- `CAST(column AS ...)`: cuidado con conversiones implícitas
+- `EXTRACT(YEAR FROM column)`: usá rangos de fechas en vez de extraer partes
+- `column + 1 = 5`: reescribí como `column = 4`
 
 La regla de oro: **la columna indexada debe aparecer sola en un lado de la comparación.** Si le envolvés una función, el índice no se puede usar.
 
@@ -141,7 +141,7 @@ La regla de oro: **la columna indexada debe aparecer sola en un lado de la compa
 - **Tablas chicas.** Si tu tabla tiene 100 filas, un Seq Scan tarda microsegundos. PostgreSQL a veces elige Seq Scan a propósito porque es más rápido que buscar en el índice para tablas pequeñas.
 - **Queries que corren una vez al día.** Un reporte nocturno que tarda 2 segundos no necesita un índice. No optimices lo que no duele.
 - **Cuando el índice ralentiza las escrituras.** Cada índice que agregás hace que los INSERT y UPDATE sean más lentos. Si tu tabla tiene escritura intensiva, pensalo dos veces.
-- **Cuando el selectividad es baja.** Si el 80% de tus órdenes son `PENDING`, el índice en `status` no ayuda mucho — PostgreSQL va a leer casi toda la tabla de todas formas y prefiere Seq Scan.
+- **Cuando el selectividad es baja.** Si el 80% de tus órdenes son `PENDING`, el índice en `status` no ayuda mucho: PostgreSQL va a leer casi toda la tabla de todas formas y prefiere Seq Scan.
 
 ## Esto no es solo Java
 
@@ -155,10 +155,10 @@ Si usás cualquier ORM con cualquier base de datos relacional, la regla es la mi
 
 ## Esto es el Día 3
 
-Este artículo es parte de **#100ArchitectureDays** — una serie de problemas reales de arquitectura con soluciones reales. No teoría. Código que podés correr y medir.
+Este artículo es parte de **#100ArchitectureDays**, una serie de problemas reales de arquitectura con soluciones reales. No teoría. Código que podés correr y medir.
 
 La próxima vez que una query ande lenta, antes de agregar un índice, corré `EXPLAIN ANALYZE`. Puede que el índice ya exista y simplemente no lo estés usando. Diagnosticá primero, optimizá después.
 
 Seguí la saga completa en **#100ArchitectureDays**.
 
-💻 Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una ⭐ — es gratis y ayuda a que más gente lo encuentre.
+💻 Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una ⭐. Es gratis y ayuda a que más gente lo encuentre.

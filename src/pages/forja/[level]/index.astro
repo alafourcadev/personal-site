@@ -1,12 +1,28 @@
 ---
 // The per-level exercise list [EC6, F.9/F.10]. Static output (no server
-// adapter — astro.config.mjs), so every one of the 12 levels gets a path at
-// build time; a level with no playable content yet (every level but 4 in
-// R1) shows an honest "not published yet" message instead of a 404.
+// adapter, see astro.config.mjs), so every one of the 12 levels gets a path at
+// build time; a level with no playable content yet shows an honest "not
+// published yet" message instead of a 404.
+//
+// Three defects this page used to have, all of them in what the player reads:
+//   A. It rendered `getCollection`'s own order, the filesystem's alphabetical
+//      order of the slug, which put the counter-trap 8th and the trap it
+//      answers 14th, while the counter-trap's body says "el mismo hotel del
+//      ejercicio anterior". `orderLevelEntries` applies §14.4's sequence.
+//   B. It printed the authoring role ("Trampa", "Contra-trampa") above the
+//      title, telling the player which exercise is the trap before they read
+//      a word of it, and the raw `domain` key under it.
+//   C. It gave no sign of what the player had already solved, although every
+//      attempt has been persisted since R1.
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { LEVELS, levelById } from '../../../lib/forja/progression/levels';
-import { isPlayable, ROLE_LABEL } from '../../../lib/forja/progression/types';
+import { isPlayable } from '../../../lib/forja/progression/types';
+import { orderLevelEntries } from '../../../lib/forja/progression/level-listing';
+import { domainLabel } from '../../../lib/forja/progression/domain-label';
+import { publishedLabel } from '../../../lib/forja/progression/progress';
+import { arcForLevel } from '../../../lib/forja/progression/guided-route';
+import { learningConceptProfiles } from '../../../lib/forja/progression/learning-concepts';
 
 export async function getStaticPaths() {
   return LEVELS.map((level) => ({ params: { level: String(level.id) } }));
@@ -16,13 +32,25 @@ const { level: levelParam } = Astro.params;
 const levelId = Number(levelParam);
 const level = levelById(levelId);
 
-// EC6: only PILOT/PUBLISHED exercises are ever served to a player — this
+// EC6: only PILOT/PUBLISHED exercises are ever served to a player, and this
 // filter is the enforcement, not just the schema's own `status` field.
 const allExercises = await getCollection('forjaExercises', ({ data }) => data.level === levelId && isPlayable(data.status));
+
+// Fix A. The play order is the same function `nextExercise` uses, so the
+// list and the "next" button can never disagree about what comes after what.
+const exercises = orderLevelEntries(allExercises);
+const transferProfiles = learningConceptProfiles(exercises.map((exercise) => ({
+  id: exercise.id,
+  level: exercise.data.level,
+})));
+const arc = arcForLevel(levelId);
+const prerequisite = level?.prerequisiteLevel ? levelById(level.prerequisiteLevel) : undefined;
+const nextLevel = levelById(levelId + 1);
+const firstExercise = exercises[0];
 ---
 
 <BaseLayout
-  title={`${level?.name ?? 'Nivel'} — La Forja | Ingeniería sin filtros`}
+  title={`${level?.name ?? 'Nivel'} | La Forja | Ingeniería sin filtros`}
   description={`Ejercicios del nivel ${levelId} de La Forja: ${level?.name ?? ''}.`}
   navVariant="blog"
   footerVariant="simple"
@@ -31,39 +59,208 @@ const allExercises = await getCollection('forjaExercises', ({ data }) => data.le
   <section class="mx-auto max-w-3xl px-4 py-8 md:px-6">
     <a href="/forja/niveles" class="text-sm text-txt-secondary hover:text-txt-primary">&larr; Niveles</a>
     <header class="mt-4 mb-6">
+      {arc && <p class="font-mono text-xs font-semibold tracking-wider text-accent">{arc.name.toUpperCase()}</p>}
       <h1 class="text-2xl font-heading font-bold text-txt-primary">
-        Nivel {levelId} — {level?.name ?? 'Nivel desconocido'}
+        Nivel {levelId} · {level?.name ?? 'Nivel desconocido'}
       </h1>
+      {/* Fix C2. The progress lives in localStorage and this page is static,
+          so the server can only state the size of the level, which is true for every
+          player at once. The script below replaces it with this player's own
+          count; it never renders "0 de 14" first, which would be
+          indistinguishable from a page that has not finished loading. */}
+      <p data-testid="level-progress" class="mt-1 text-sm text-txt-secondary">
+        {publishedLabel(exercises.length)}
+      </p>
+      <p data-testid="level-prerequisite" class="mt-3 max-w-2xl text-sm leading-relaxed text-txt-muted">
+        {
+          prerequisite && level
+            ? `Te conviene llegar después del nivel ${prerequisite.id}, porque este nivel parte de ${level.enabledBy}. Podés entrar igual.`
+            : 'Este es el punto de partida. No exige experiencia previa con La Forja.'
+        }
+      </p>
+      <a href="/forja/ubicacion" class="mt-2 inline-flex min-h-[44px] items-center text-sm font-medium text-accent hover:underline">
+        ¿Ya tenés experiencia? Hacé la prueba de ubicación
+      </a>
     </header>
 
     {
-      allExercises.length === 0 ? (
+      exercises.length === 0 ? (
         <p data-testid="level-empty" class="text-sm text-txt-secondary">
           Todavía no hay ejercicios publicados para este nivel.
         </p>
       ) : (
-        <ul class="flex flex-col gap-3" data-testid="exercise-list">
-          {allExercises.map((exercise) => (
-            <li data-testid="exercise-list-item" class="rounded-lg border border-border-subtle bg-bg-surface p-4">
-              <span data-testid="exercise-role-tag" class="mb-1 inline-block rounded-md bg-accent-dim px-2 py-0.5 text-xs font-medium text-accent">
-                {ROLE_LABEL[exercise.data.role]}
-              </span>
-              {/* R1-G requirement 1: from this list, entering a specific
-                  exercise must be possible — the play route lives at
-                  `/forja/[level]/[exercise]`, `exercise.id` being the same
-                  slug getStaticPaths there is built from. */}
-              <a
-                href={`/forja/${levelId}/${exercise.id}`}
-                data-testid="exercise-list-link"
-                class="block text-base font-semibold text-txt-primary hover:text-accent"
+        <>
+          {firstExercise && (
+            <aside
+              data-testid="level-continue"
+              data-next-level-href={nextLevel ? `/forja/${nextLevel.id}` : '/forja/niveles'}
+              data-next-level-title={nextLevel ? `Nivel ${nextLevel.id} · ${nextLevel.name}` : 'Recorrido completo'}
+              class="mb-7 rounded-xl border border-accent/40 bg-bg-surface p-5"
+              aria-labelledby="level-continue-title"
+            >
+              <p data-testid="level-continue-eyebrow" class="font-mono text-xs font-semibold tracking-wider text-accent">
+                PRIMER EJERCICIO
+              </p>
+              <div class="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 id="level-continue-title" data-testid="level-continue-title" class="font-heading text-lg font-bold text-txt-primary">
+                    {firstExercise.data.title}
+                  </h2>
+                  <p data-testid="level-continue-description" class="mt-1 text-sm leading-relaxed text-txt-secondary">
+                    La secuencia empieza con una calibración y continúa con decisiones cada vez menos reversibles.
+                  </p>
+                </div>
+                <a
+                  href={`/forja/${levelId}/${firstExercise.id}`}
+                  data-testid="level-continue-link"
+                  class="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl bg-accent px-5 py-2.5 font-bold text-bg-deep transition-transform hover:-translate-y-0.5"
+                >
+                  Empezar el nivel
+                </a>
+              </div>
+            </aside>
+          )}
+
+          <ul class="flex flex-col gap-3" data-testid="exercise-list">
+            {exercises.map((exercise, index) => (
+              <li
+                data-testid="exercise-list-item"
+                data-exercise-id={exercise.id}
+                class="rounded-lg border border-border-subtle bg-bg-surface p-4"
               >
-                {exercise.data.title}
-              </a>
-              <p class="mt-1 text-sm text-txt-secondary">{exercise.data.domain}</p>
-            </li>
-          ))}
-        </ul>
+                <div class="flex items-baseline justify-between gap-3">
+                  <div class="flex items-baseline gap-2">
+                    {/* The position is the pedagogy: the order is deliberate, so
+                        it is worth showing. The role behind it is not. See the
+                        header comment. */}
+                    <span aria-hidden="true" class="font-mono text-xs text-txt-muted">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    {/* R1-G requirement 1: from this list, entering a specific
+                        exercise must be possible: the play route lives at
+                        `/forja/[level]/[exercise]`, `exercise.id` being the same
+                        slug getStaticPaths there is built from. */}
+                    <a
+                      href={`/forja/${levelId}/${exercise.id}`}
+                      data-testid="exercise-list-link"
+                      class="block text-base font-semibold text-txt-primary hover:text-accent"
+                    >
+                      {exercise.data.title}
+                    </a>
+                  </div>
+                  <span
+                    data-testid="exercise-solved"
+                    class="hidden shrink-0 rounded-md bg-accent-dim px-2 py-0.5 text-xs font-medium text-accent"
+                  />
+                </div>
+                <p class="mt-1 text-sm text-txt-secondary">{domainLabel(exercise.data.domain)}</p>
+              </li>
+            ))}
+          </ul>
+        </>
       )
     }
   </section>
+  <script
+    is:inline
+    type="application/json"
+    data-testid="forja-transfer-profiles"
+    set:html={JSON.stringify(transferProfiles)}
+  />
 </BaseLayout>
+
+<script>
+  // Fix C2. Static page, player data in localStorage, so the marks are
+  // client-side by necessity. Reads the SAME LocalRankingAdapter the canvas
+  // writes to; nothing is stored here.
+  import { localRankingAdapter } from '../../../lib/forja/ranking/local-adapter'
+  import { localTransferEvidenceAdapter } from '../../../lib/forja/progression/transfer-evidence-local-adapter'
+  import { exerciseProgress, progressLabel, progressStateLabel } from '../../../lib/forja/progression/progress'
+  import type { ExerciseLearningConcepts } from '../../../lib/forja/progression/learning-concepts'
+
+  function transferProfiles(): ExerciseLearningConcepts[] {
+    const source = document.querySelector<HTMLScriptElement>('[data-testid="forja-transfer-profiles"]')
+    if (!source?.textContent) return []
+    try {
+      return JSON.parse(source.textContent)
+    } catch {
+      return []
+    }
+  }
+
+  function render() {
+    const items = Array.from(document.querySelectorAll<HTMLLIElement>('[data-testid="exercise-list-item"]'))
+    if (items.length === 0) return
+
+    const transferEvidence = localTransferEvidenceAdapter.getAll()
+    const profiles = transferProfiles()
+    let solved = 0
+    for (const item of items) {
+      const exerciseId = item.dataset.exerciseId
+      const mark = item.querySelector<HTMLElement>('[data-testid="exercise-solved"]')
+      if (!exerciseId || !mark) continue
+
+      const progress = exerciseProgress(localRankingAdapter, exerciseId, transferEvidence, {
+        transferProfiles: profiles,
+      })
+      // Toggling the utility class, not the `hidden` attribute: a display
+      // utility on the same element would out-order Tailwind's own
+      // `[hidden]` reset rule and leave the mark visible but empty.
+      mark.classList.toggle('hidden', !progress.attempted)
+      mark.textContent = progressStateLabel(progress)
+      mark.classList.toggle('bg-accent-dim', progress.completed && !progress.reviewDue)
+      mark.classList.toggle('text-accent', progress.completed && !progress.reviewDue)
+      mark.classList.toggle('bg-bg-raised', !progress.completed || progress.reviewDue)
+      mark.classList.toggle('text-txt-secondary', !progress.completed || progress.reviewDue)
+      if (progress.completed) solved += 1
+    }
+
+    const header = document.querySelector<HTMLElement>('[data-testid="level-progress"]')
+    if (header) header.textContent = progressLabel(solved, items.length)
+
+    const card = document.querySelector<HTMLElement>('[data-testid="level-continue"]')
+    const eyebrow = card?.querySelector<HTMLElement>('[data-testid="level-continue-eyebrow"]')
+    const title = card?.querySelector<HTMLElement>('[data-testid="level-continue-title"]')
+    const description = card?.querySelector<HTMLElement>('[data-testid="level-continue-description"]')
+    const link = card?.querySelector<HTMLAnchorElement>('[data-testid="level-continue-link"]')
+    const nextItem = items.find((item) => {
+      const exerciseId = item.dataset.exerciseId
+      return exerciseId
+        ? !exerciseProgress(localRankingAdapter, exerciseId, transferEvidence, {
+            transferProfiles: profiles,
+          }).solved
+        : false
+    })
+    const nextExerciseLink = nextItem?.querySelector<HTMLAnchorElement>('[data-testid="exercise-list-link"]')
+
+    if (nextExerciseLink) {
+      if (eyebrow) eyebrow.textContent = solved === 0 ? 'PRIMER EJERCICIO' : 'CONTINUAR EN ESTE NIVEL'
+      if (title) title.textContent = nextExerciseLink.textContent?.trim() ?? ''
+      if (description) {
+        description.textContent = solved === 0
+          ? 'La secuencia empieza con una calibración y continúa con decisiones cada vez menos reversibles.'
+          : 'Es el primer ejercicio pendiente según el progreso guardado en este navegador.'
+      }
+      if (link) {
+        link.href = nextExerciseLink.href
+        link.textContent = solved === 0 ? 'Empezar el nivel' : 'Continuar'
+      }
+    } else if (card && link) {
+      if (eyebrow) eyebrow.textContent = card.dataset.nextLevelHref === '/forja/niveles' ? 'RECORRIDO COMPLETO' : 'SIGUIENTE NIVEL'
+      if (title) title.textContent = card.dataset.nextLevelTitle ?? ''
+      if (description) {
+        description.textContent = card.dataset.nextLevelHref === '/forja/niveles'
+          ? 'Resolviste todo lo publicado. Volvé al mapa para revisar el recorrido.'
+          : 'Completaste este nivel. El siguiente retoma estas decisiones sin bloquear tu acceso.'
+      }
+      link.href = card.dataset.nextLevelHref ?? '/forja/niveles'
+      link.textContent = card.dataset.nextLevelHref === '/forja/niveles' ? 'Volver al mapa' : 'Ir al siguiente nivel'
+    }
+  }
+
+  render()
+  // Coming back from an exercise with the browser's Back button restores this
+  // page from the bfcache without re-running the module, so the attempt the
+  // player just saved would not show up until a manual reload.
+  window.addEventListener('pageshow', render)
+</script>

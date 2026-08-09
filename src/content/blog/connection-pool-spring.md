@@ -21,7 +21,7 @@ Si esto te suena familiar, seguí leyendo.
 
 ## Qué es un connection pool (y por qué existe)
 
-Antes de hablar de código, necesitamos entender de qué estamos hablando. Porque este problema no es de Spring ni de Java — es de cualquier aplicación que hable con una base de datos.
+Antes de hablar de código, necesitamos entender de qué estamos hablando. Porque este problema no es de Spring ni de Java: es de cualquier aplicación que hable con una base de datos.
 
 Abrir una conexión a una base de datos es **caro**. Cada conexión implica:
 
@@ -56,7 +56,7 @@ connection-timeout: 30000 # 30 segundos esperando una conexión
 
 10 conexiones. Para una app con 100 usuarios concurrentes donde cada request tarda 200ms en la query, eso significa que podés procesar 50 requests por segundo (10 conexiones / 0.2 seg). Suena bien.
 
-Pero si un endpoint tiene una query que tarda 2 segundos — un reporte, una búsqueda compleja, una transacción larga — esas 10 conexiones sirven 5 requests por segundo. El resto espera. Y si más de 10 requests llegan al mismo tiempo, alguno va a esperar 30 segundos completos y explotar con timeout.
+Pero si un endpoint tiene una query que tarda 2 segundos, como un reporte, una búsqueda compleja o una transacción larga, esas 10 conexiones sirven 5 requests por segundo. El resto espera. Y si más de 10 requests llegan al mismo tiempo, alguno va a esperar 30 segundos completos y explotar con timeout.
 
 ## El segundo error (el grave): connection leaks
 
@@ -74,7 +74,7 @@ public List<Reporte> generar() {
 }
 ```
 
-Este patrón — en cualquier lenguaje — es una **bomba de tiempo**. Cada error deja una conexión huérfana. Después de 10 errores, tu pool está vacío. La app entera se cae, no solo este endpoint.
+Este patrón, en cualquier lenguaje, es una **bomba de tiempo**. Cada error deja una conexión huérfana. Después de 10 errores, tu pool está vacío. La app entera se cae, no solo este endpoint.
 
 El síntoma clásico:
 
@@ -160,7 +160,7 @@ conexiones = (4 * 2) + 1 = 9
 
 Sí. **9 conexiones.** En un pool bien configurado, 9 conexiones pueden manejar **miles de requests por segundo**.
 
-¿Por qué? Porque la base de datos solo puede hacer trabajo real en paralelo hasta cierto límite. Si tu servidor tiene 4 cores, más de 8-10 queries concurrentes empiezan a **pelearse por CPU**. Agregás más context switches, más locks, más contención. Más conexiones no te da más throughput — te da **menos**.
+¿Por qué? Porque la base de datos solo puede hacer trabajo real en paralelo hasta cierto límite. Si tu servidor tiene 4 cores, más de 8-10 queries concurrentes empiezan a **pelearse por CPU**. Agregás más context switches, más locks, más contención. Más conexiones no te da más throughput: te da **menos**.
 
 La clave no es tener muchas conexiones. Es **devolverlas rápido**.
 
@@ -207,17 +207,17 @@ Reglas simples para leer estas métricas:
 
 ## Cuándo NO tocar el pool size
 
-- **Para "mejorar performance" sin datos** — Subir de 10 a 100 conexiones no hace tu app más rápida. Probablemente la haga más lenta.
-- **Sin medir primero** — Si no sabés cuántas conexiones activas tenés en promedio, no sabés si necesitás más. Medí antes de tocar.
-- **Cuando el problema es un leak** — Más conexiones solo te dan más tiempo antes de que explote. **Arreglá el leak.**
-- **Sin coordinar con el DBA** — Si tu base soporta 100 conexiones y vos configurás 80 en cada instancia con 3 instancias, le estás pidiendo 240 conexiones a una base que soporta 100. Boom.
+- **Para "mejorar performance" sin datos.** Subir de 10 a 100 conexiones no hace tu app más rápida. Probablemente la haga más lenta.
+- **Sin medir primero.** Si no sabés cuántas conexiones activas tenés en promedio, no sabés si necesitás más. Medí antes de tocar.
+- **Cuando el problema es un leak.** Más conexiones solo te dan más tiempo antes de que explote. **Arreglá el leak.**
+- **Sin coordinar con el DBA.** Si tu base soporta 100 conexiones y vos configurás 80 en cada instancia con 3 instancias, le estás pidiendo 240 conexiones a una base que soporta 100. Boom.
 
 ## Esto es el Día 9
 
-Este artículo es parte de **#100ArchitectureDays** — una serie de problemas reales de arquitectura con soluciones reales. Si tu app dice "too many connections", el problema no es el límite. Es cuánto tardás en devolver cada una.
+Este artículo es parte de **#100ArchitectureDays**, una serie de problemas reales de arquitectura con soluciones reales. Si tu app dice "too many connections", el problema no es el límite. Es cuánto tardás en devolver cada una.
 
 La próxima vez que alguien te diga "hay que subir el pool size", preguntale dos cosas: ¿cuántas conexiones activas hay en promedio? ¿cuánto tardan las queries? Si no puede responder las dos, no hay que subir nada. Hay que medir.
 
 Seguí la saga completa en **#100ArchitectureDays**.
 
-Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days) — con un demo del leak funcionando para que lo veas romper en vivo. Si te está sirviendo, dejame una estrella — es gratis y ayuda a que más gente lo encuentre.
+Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days), con un demo del leak funcionando para que lo veas romper en vivo. Si te está sirviendo, dejame una estrella. Es gratis y ayuda a que más gente lo encuentre.

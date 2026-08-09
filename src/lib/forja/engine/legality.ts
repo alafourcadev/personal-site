@@ -1,7 +1,23 @@
-// La Forja evaluation engine — band/zone/port legality (doc 13 §13.3, §13.6).
+// La Forja evaluation engine: band, zone and port legality (doc 13 §13.3, §13.6).
 import type { ComponentType, Zone } from './types'
 
 export const ZONES: Zone[] = ['public', 'dmz', 'private', 'restricted']
+
+// The name of each trust zone in the player's language. Same criterion as
+// CATALOG[type].name: the engine already narrates in Spanish (every string in
+// rules.ts's WHY table), so a domain noun is engine vocabulary, not
+// presentation: it carries no colour, no icon and no class name, and keeps
+// `engine/` free of presentation imports. It exists so that trust-zone-jump,
+// the blocking rule that fires most while someone is still learning to connect
+// two boxes, never prints the raw `Zone` key at a player (§5).
+// The keys themselves are domain data: the 169 exercises author zones by key,
+// so only the display changes here.
+export const ZONE_NAMES: Record<Zone, string> = {
+  public: 'red pública',
+  dmz: 'borde expuesto',
+  private: 'red interna',
+  restricted: 'núcleo restringido',
+}
 
 export function zoneDistance(a: Zone, b: Zone): number {
   return Math.abs(ZONES.indexOf(a) - ZONES.indexOf(b))

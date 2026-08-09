@@ -1,5 +1,5 @@
 ---
-title: "Día 21: extends te encierra — composición te libera"
+title: "Día 21: extends te encierra, composición te libera"
 description: "Visa Infinite rompió una jerarquía de 4 niveles: Level-5, flag o copy-paste, todas trampas. La composición gana sobre la herencia. #100ArchitectureDays."
 tags: ["Java", "Architecture", "100ArchitectureDays"]
 date: 2026-06-12
@@ -28,11 +28,11 @@ Para hacer Visa Infinite sin comisión, las opciones eran tres. Ninguna era buen
 
 La jerarquía tenía cuatro años. Funcionaba. Los tests pasaban. Y en cuatro años nadie había necesitado una combinación que el árbol no modelaba. Hasta ahora.
 
-**Opción A — flag en el nodo base:** agregar `boolean waiveFee` a `CardPaymentProcessor` y meter un `if` adentro. La clase de nivel 2 se convierte en un objeto de configuración con comportamiento condicional. El problema es que cada flag que agregás es una bifurcación que todos los descendientes heredan, hayan pedido esa bifurcación o no. Dos meses después hay tres flags. El método `doProcess()` tiene cuatro `if` anidados. Nadie entiende qué combinación de flags activa qué comportamiento.
+**Opción A, flag en el nodo base:** agregar `boolean waiveFee` a `CardPaymentProcessor` y meter un `if` adentro. La clase de nivel 2 se convierte en un objeto de configuración con comportamiento condicional. El problema es que cada flag que agregás es una bifurcación que todos los descendientes heredan, hayan pedido esa bifurcación o no. Dos meses después hay tres flags. El método `doProcess()` tiene cuatro `if` anidados. Nadie entiende qué combinación de flags activa qué comportamiento.
 
-**Opción B — Level 5:** crear `VisaInfiniteInternationalProcessor extends VisaInternationalProcessor`. El árbol crece hacia abajo. El nodo nuevo hereda todo del nivel 4, que a su vez heredó todo del 3, del 2, del 1. La hoja concreta implementa una operación de tres líneas y arrastra seis campos que no pidió. Cuando AmEx también pida sin comisión, hay otro nodo en el nivel 5. Cuando Mastercard Infinite pida lo mismo, otro más. El árbol no modela el dominio: modela combinaciones que le corresponden a otra abstracción.
+**Opción B, Level 5:** crear `VisaInfiniteInternationalProcessor extends VisaInternationalProcessor`. El árbol crece hacia abajo. El nodo nuevo hereda todo del nivel 4, que a su vez heredó todo del 3, del 2, del 1. La hoja concreta implementa una operación de tres líneas y arrastra seis campos que no pidió. Cuando AmEx también pida sin comisión, hay otro nodo en el nivel 5. Cuando Mastercard Infinite pida lo mismo, otro más. El árbol no modela el dominio: modela combinaciones que le corresponden a otra abstracción.
 
-**Opción C — copy-paste:** sobreescribir `doProcess()` en `VisaInternationalProcessor` y copiar el fraud check a mano. El mismo código en dos lugares. En seis meses alguien actualiza el fraud check en el original y olvida el clon. Bug silencioso en producción.
+**Opción C, copy-paste:** sobreescribir `doProcess()` en `VisaInternationalProcessor` y copiar el fraud check a mano. El mismo código en dos lugares. En seis meses alguien actualiza el fraud check en el original y olvida el clon. Bug silencioso en producción.
 
 El costo real no era el viernes a las 5pm. Era lo que venía después: AmEx, Discover, procesadores sin fraud check para ciertos clientes enterprise, transferencias bancarias que necesitan conversión de divisas pero no comisión de tarjeta. Cada combinación nueva es un nodo nuevo en el árbol. El árbol no para de crecer.
 
@@ -52,10 +52,10 @@ El rediseño parte de una pregunta: ¿cuántos comportamientos distintos viven f
 
 Cuatro. Exactamente cuatro:
 
-1. **Comisión** — qué porcentaje se aplica al monto
-2. **Conversión de divisas** — si hay que convertir y cómo
-3. **Fraud check** — si hay que validar contra un umbral
-4. **Routing de red** — a qué gateway enviar el cargo
+1. **Comisión**: qué porcentaje se aplica al monto
+2. **Conversión de divisas**: si hay que convertir y cómo
+3. **Fraud check**: si hay que validar contra un umbral
+4. **Routing de red**: a qué gateway enviar el cargo
 
 Separar esos cuatro comportamientos en colaboradores independientes y componerlos en un único `PaymentProcessor`:
 
@@ -115,7 +115,7 @@ public class PaymentProcessorFactory {
                 logger);
     }
 
-    // AmEx: otra red, misma lógica — un method, no una subclase
+    // AmEx: otra red, misma lógica. Un method, no una subclase
     public static PaymentProcessor amexInternational(AuditLogger logger) {
         return new PaymentProcessor(
                 CardNetworkGateway.amex(),
@@ -125,7 +125,7 @@ public class PaymentProcessorFactory {
                 logger);
     }
 
-    // Domestic: sin conversión de divisas — null es explícito, no una bifurcación
+    // Domestic: sin conversión de divisas. null es explícito, no una bifurcación
     public static PaymentProcessor visaDomestic(AuditLogger logger) {
         return new PaymentProcessor(
                 CardNetworkGateway.visa(),
@@ -137,9 +137,9 @@ public class PaymentProcessorFactory {
 }
 ```
 
-**El porqué del trade-off:** la jerarquía daba una ilusión de orden visual. La carpeta "explicaba" el dominio. Perdés eso. La factory no te dice "todos los procesadores internacionales comparten X" de manera estructural — te lo dice en el código de cada factory method, que es más redundante pero también más explícito.
+**El porqué del trade-off:** la jerarquía daba una ilusión de orden visual. La carpeta "explicaba" el dominio. Perdés eso. La factory no te dice "todos los procesadores internacionales comparten X" de manera estructural: te lo dice en el código de cada factory method, que es más redundante pero también más explícito.
 
-Lo que ganás es la capacidad de agregar una combinación nueva sin tocar código existente. Visa Infinite sin comisión es un factory method nuevo. No toca `VisaInternationalProcessor` porque no existe. No toca `CardPaymentProcessor` porque no hay flags. No toca nada — solo ensambla colaboradores en un orden nuevo.
+Lo que ganás es la capacidad de agregar una combinación nueva sin tocar código existente. Visa Infinite sin comisión es un factory method nuevo. No toca `VisaInternationalProcessor` porque no existe. No toca `CardPaymentProcessor` porque no hay flags. No toca nada: solo ensambla colaboradores en un orden nuevo.
 
 **Lo que se sacrifica:** la jerarquía de herencia hace visible "qué es subtype de qué". Con composición eso desaparece de la estructura y se convierte en semántica de la factory. Para equipos que navegan código por la jerarquía de clases, la transición requiere aprender a leer la factory como la fuente de verdad de las combinaciones.
 
@@ -150,8 +150,8 @@ Lo que ganás es la capacidad de agregar una combinación nueva sin tocar códig
 | Métrica | Jerarquía | Composición |
 |---|---|---|
 | Clases para Visa + Mastercard internacionales | 5 (toda la jerarquía) | 1 `PaymentProcessor` + 1 factory |
-| Agregar AmEx | 1 subclase Level-4 nueva | 0 clases — 1 factory method |
-| Agregar Visa Infinite sin comisión | 1 subclase Level-5 o copy-paste | 0 clases — 1 factory method |
+| Agregar AmEx | 1 subclase Level-4 nueva | 0 clases, 1 factory method |
+| Agregar Visa Infinite sin comisión | 1 subclase Level-5 o copy-paste | 0 clases, 1 factory method |
 | Procesador sin fraud check | Romper jerarquía desde Level-2 | `null` en el parámetro `fraudGuard` |
 | Testear `CurrencyConverter` aislado | Imposible sin subclase de test | `new CurrencyConverter()` |
 
@@ -159,10 +159,10 @@ La señal de alerta en código es una jerarquía de 3+ niveles donde agregar "ca
 
 La diferencia entre los dos principios es precisa: herencia es para variación de tipo ("A ES UN B y puede usarse en todos los contextos donde B aparece"). Composición es para variación de comportamiento ("A TIENE UN B que puede ser distinto según el contexto"). Cuando confundís los dos, el árbol crece hasta que nadie se anima a tocarlo.
 
-El principio generalizable: antes de crear una subclase, preguntá si lo que necesitás es un nuevo tipo o una nueva combinación de comportamientos. Si es lo segundo, buscá el colaborador que falta y componelo. La factory es el lugar donde esa semántica vive explícita — no escondida en cuatro niveles de herencia que hay que leer de arriba a abajo para entender qué hace la hoja.
+El principio generalizable: antes de crear una subclase, preguntá si lo que necesitás es un nuevo tipo o una nueva combinación de comportamientos. Si es lo segundo, buscá el colaborador que falta y componelo. La factory es el lugar donde esa semántica vive explícita, y no escondida en cuatro niveles de herencia que hay que leer de arriba a abajo para entender qué hace la hoja.
 
 ---
 
-Día 21 de **#100ArchitectureDays**. El código completo — jerarquía de 4 niveles, diseño compuesto, y 19 tests — está en el repo.
+Día 21 de **#100ArchitectureDays**. El código completo, con la jerarquía de 4 niveles, el diseño compuesto y 19 tests, está en el repo.
 
 ⭐ Si el contenido te resulta útil, una estrella en [github.com/alafourcadev/100-architecture-days](https://github.com/alafourcadev/100-architecture-days) ayuda a que más gente lo encuentre.

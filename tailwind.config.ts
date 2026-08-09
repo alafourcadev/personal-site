@@ -9,7 +9,24 @@ export default {
         'bg-deep': 'rgb(var(--bg-deep) / <alpha-value>)',
         'bg-surface': 'rgb(var(--bg-surface) / <alpha-value>)',
         'bg-surface-hover': 'rgb(var(--bg-surface-hover) / <alpha-value>)',
+        // A surface that floats above the panel, as opposed to one being
+        // hovered. See BaseLayout.astro for why the two cannot be the token.
+        'bg-raised': 'rgb(var(--bg-raised) / <alpha-value>)',
         'border-subtle': 'rgb(var(--border-subtle) / <alpha-value>)',
+        // The outline of a card, which on the light theme is the only thing
+        // separating it from the panel underneath.
+        'border-card': 'rgb(var(--border-card) / <alpha-value>)',
+        // Ink that stays legible on an accent-coloured surface, and accent /
+        // red ink that stays legible ON a surface. The three of them exist
+        // because --bg-deep, --accent and --accent-red were being used for
+        // both jobs at once.
+        'on-accent': 'rgb(var(--on-accent) / <alpha-value>)',
+        'accent-ink': 'rgb(var(--accent-ink) / <alpha-value>)',
+        'danger-ink': 'rgb(var(--danger-ink) / <alpha-value>)',
+        // Whole CSS values rather than channels: these two are La Forja's own,
+        // and nothing ever needs them at partial opacity.
+        'forja-divider': 'var(--forja-band-divider)',
+        'forja-mark': 'var(--forja-mark)',
         'code-bg': 'rgb(var(--code-bg) / <alpha-value>)',
         accent: {
           DEFAULT: 'rgb(var(--accent) / <alpha-value>)',
@@ -26,6 +43,12 @@ export default {
         'txt-primary': 'rgb(var(--txt-primary) / <alpha-value>)',
         'txt-secondary': 'rgb(var(--txt-secondary) / <alpha-value>)',
         'txt-muted': 'rgb(var(--txt-muted) / <alpha-value>)',
+      },
+      boxShadow: {
+        // The only shadow the playground is allowed to spend. It is a real
+        // shadow on the light theme and `none` on the dark one, so a component
+        // never has to know which theme it is in.
+        'elevation-1': 'var(--elevation-1)',
       },
       fontFamily: {
         mono: ['"JetBrains Mono"', 'monospace'],

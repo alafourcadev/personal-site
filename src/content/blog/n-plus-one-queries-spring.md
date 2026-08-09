@@ -1,5 +1,5 @@
 ---
-title: "Día 5: N+1 Queries — el bug que tu DBA ya sabe que tenés"
+title: "Día 5: N+1 Queries, el bug que tu DBA ya sabe que tenés"
 description: "Para mostrar 50 usuarios hacés 250 queries a la base de datos. Tu DBA te odia y tiene razón. Día 5 de #100ArchitectureDays."
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-01
@@ -191,7 +191,7 @@ Si usás Prisma, es el `include: { orders: true }`.
 
 ## Esto es el Día 5
 
-Este artículo es parte de **#100ArchitectureDays** — una serie de problemas reales de arquitectura con soluciones reales. No teoría abstracta. Código que podés correr y medir.
+Este artículo es parte de **#100ArchitectureDays**, una serie de problemas reales de arquitectura con soluciones reales. No teoría abstracta. Código que podés correr y medir.
 
 La próxima vez que un endpoint ande lento, antes de escalar horizontalmente, antes de agregar un cache, antes de culpar a la base de datos... activá `show-sql` y contá las queries.
 
@@ -199,4 +199,4 @@ Te sorprendería la cantidad de problemas de performance que se resuelven con un
 
 Seguí la saga completa en **#100ArchitectureDays**.
 
-Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una estrella — es gratis y ayuda a que más gente lo encuentre.
+Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una estrella. Es gratis y ayuda a que más gente lo encuentre.

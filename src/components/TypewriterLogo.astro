@@ -2,10 +2,23 @@
 // Fixed typewriter logo in top-left corner with infinite loop
 ---
 
-<a href="/" class="fixed top-4 left-4 sm:left-6 z-50 flex items-center gap-1.5 group" aria-label="Inicio — Ingeniería sin filtros">
+<a href="/" class="fixed top-4 left-4 sm:left-6 z-50 flex items-center gap-1.5 group" aria-label="Inicio | Ingeniería sin filtros">
     <span class="font-mono text-xl font-bold text-accent"> &gt;_ </span>
+    {/*
+      The wordmark shows only where it does not collide with the navigation
+      pill, which is centred against the whole viewport (Navbar.astro).
+      Arithmetic, not taste: the pill is 605px wide and the full mark is
+      243px starting at x=24, so a centred pill clears it only from
+      2*(24+243+16) + 605 = 1171px up, and `xl` is the first breakpoint above
+      that. Between `md` and `xl` the pill's own box covered the wordmark by
+      153px down to 25px and a real click on the brand at 768px landed on
+      `<a href="/empieza-aqui">`. Below `md` the pill is only the hamburger
+      (78px) and the wordmark fits again, which is why `sm:inline` stays.
+      The `>_` mark never hides, and the anchor's aria-label carries the
+      full brand name at every width.
+    */}
     <span
-        class="logo-text font-mono text-base font-semibold text-txt-primary overflow-hidden whitespace-nowrap transition-colors duration-300 hidden sm:inline"
+        class="logo-text font-mono text-base font-semibold text-txt-primary overflow-hidden whitespace-nowrap transition-colors duration-300 hidden sm:inline md:hidden xl:inline"
     >
         Ingeniería sin filtros
     </span>

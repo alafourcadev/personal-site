@@ -51,8 +51,8 @@ const pageNumbers = Array.from({ length: page.lastPage }, (_, i) => i + 1);
 ---
 
 <BaseLayout
-  title={page.currentPage === 1 ? "Blog — Ingeniería sin filtros" : `Blog — Página ${page.currentPage} | Ingeniería sin filtros`}
-  description={page.currentPage === 1 ? "Artículos sobre ingeniería de software, arquitectura de sistemas y las decisiones técnicas que nadie te enseña." : `Artículos sobre ingeniería de software y arquitectura — página ${page.currentPage}.`}
+  title={page.currentPage === 1 ? "Blog | Ingeniería sin filtros" : `Blog · Página ${page.currentPage} | Ingeniería sin filtros`}
+  description={page.currentPage === 1 ? "Artículos sobre ingeniería de software, arquitectura de sistemas y las decisiones técnicas que nadie te enseña." : `Artículos sobre ingeniería de software y arquitectura, página ${page.currentPage}.`}
   navVariant="blog"
   footerVariant="full"
 >

@@ -1,5 +1,5 @@
 ---
-// Font imports — latin subset only (covers Spanish: áéíóúñ¿¡)
+// Font imports. Latin subset only (covers Spanish: áéíóúñ¿¡)
 import '@fontsource/inter/latin-400.css';
 import '@fontsource/inter/latin-500.css';
 import '@fontsource/inter/latin-600.css';
@@ -23,17 +23,33 @@ interface Props {
   navVariant?: 'home' | 'blog';
   footerVariant?: 'full' | 'simple';
   noindex?: boolean;
+  // Which shell the page gets.
+  //
+  // 'site' is every article, list and landing there is, and is the default
+  // precisely so nothing about them can change by accident: the navigation,
+  // the footer and the shared centred column.
+  //
+  // 'app' is La Forja's exercise screen, which is a tool and takes the whole
+  // window: no navigation, no footer, no centred column, and no page scroll
+  // above the playable width (each rail scrolls inside itself instead). It is
+  // a property of this layout rather than a second layout on purpose. The two
+  // theme token blocks and the script that decides the theme before the first
+  // paint live here, and a copy of them is a copy that drifts.
+  chrome?: 'site' | 'app';
 }
 
 const {
   title,
-  description = 'Ingeniería sin filtros — Alejandro Lafourcade',
+  description = 'Ingeniería sin filtros, por Alejandro Lafourcade',
   image,
   type = 'website',
   navVariant = 'home',
   footerVariant = 'full',
   noindex = false,
+  chrome = 'site',
 } = Astro.props;
+
+const app = chrome === 'app';
 
 const ogImage = image || 'https://alafourca.dev/og-image.png';
 ---
@@ -87,7 +103,13 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
     <script is:inline>
       // Load theme before page renders to prevent flash
       (function () {
-        const saved = localStorage.getItem('theme');
+        let saved = null;
+        try {
+          saved = localStorage.getItem('theme');
+        } catch {
+          // Some privacy modes expose localStorage but reject access. The
+          // default dark theme still renders correctly without persistence.
+        }
         if (saved === 'light') {
           document.documentElement.classList.remove('dark');
         } else {
@@ -149,28 +171,49 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
     </style>
   </head>
   <body
-    class="bg-bg-deep text-txt-primary font-sans antialiased overflow-x-hidden"
+    class:list={[
+      'bg-bg-deep text-txt-primary font-sans antialiased overflow-x-hidden',
+      // "Sin scroll de página": above the playable width the shell owns the
+      // window's height and every rail scrolls inside itself. Below it the
+      // page is a reading screen and has to scroll again, which is why the
+      // lock is behind `md` rather than unconditional.
+      app && 'md:h-screen md:overflow-hidden',
+    ]}
   >
-    <div id="scroll-progress"></div>
+    {!app && <div id="scroll-progress" />}
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-accent focus:text-bg-deep focus:rounded-lg focus:font-bold">
       Saltar al contenido
     </a>
-    <TypewriterLogo />
-    <Navbar variant={navVariant} />
-    <div class="max-w-[1440px] mx-auto">
-      <main id="main-content" class="pt-20">
-        <slot />
-      </main>
-      {footerVariant === 'full' ? <FooterFull /> : <FooterSimple />}
-    </div>
+    {
+      app ? (
+        <main id="main-content" class="md:flex md:h-full md:flex-col md:overflow-hidden">
+          <slot />
+        </main>
+      ) : (
+        <Fragment>
+          <TypewriterLogo />
+          <Navbar variant={navVariant} />
+          <div class="max-w-[1440px] mx-auto">
+            <main id="main-content" class="pt-20">
+              <slot />
+            </main>
+            {footerVariant === 'full' ? <FooterFull /> : <FooterSimple />}
+          </div>
+        </Fragment>
+      )
+    }
 
     <script is:inline>
-      // Reading Progress Bar
+      // Reading Progress Bar. Absent in app chrome, where there is no page to
+      // scroll, and the guard is what keeps this listener from throwing on every
+      // wheel event there and taking the rest of this script with it.
       window.addEventListener('scroll', () => {
+        const bar = document.getElementById('scroll-progress');
+        if (!bar) return;
         const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
         const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
         const scrolled = (winScroll / height) * 100;
-        document.getElementById('scroll-progress').style.width = scrolled + '%';
+        bar.style.width = scrolled + '%';
       });
 
       // Code Copy Button
@@ -241,6 +284,72 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
     --scrollbar-track: #f1f5f9;
     --scrollbar-thumb: #cbd5e1;
     --scrollbar-thumb-hover: #94a3b8;
+
+    /* The ink on an accent-coloured surface. The accent green is the same
+       rgb(16 185 129) in both themes, so the ink on it must not flip either:
+       --bg-deep did, and that is what turned every green button's label from
+       7.55:1 to 2.22:1 the moment the page went light. Declared here and
+       deliberately NOT redeclared in html.dark. */
+    --on-accent: 10 15 26;
+    /* Accent-coloured TEXT, which is a different job from an accent surface:
+       the green reads 2.26:1 on a tint of itself over a light panel. Same
+       value as --accent on dark, where nothing was wrong. */
+    --accent-ink: 4 120 87;
+    /* Red TEXT, same story: the site red is 4.27:1 on the failed-objective
+       card at 12px, and that card is where a player reads what a mistake
+       cost. */
+    --danger-ink: 185 28 28;
+    /* A surface that FLOATS above the panel: menus, tooltips. Not
+       --bg-surface-hover, which is a hover state and is therefore correctly
+       darker than the panel on a light theme. That is exactly why the
+       tooltips shipped darker than the thing they floated over. */
+    --bg-raised: 255 255 255;
+    /* The outline of a card. --border-subtle is 1.18:1 here, which is not a
+       boundary; on the light theme there is no lighter surface left to
+       separate a card with, so the line has to do it. */
+    --border-card: 125 139 160;
+    /* Elevation on a light theme is SHADOW. On a dark one it is surface and
+       line, so this is `none` there. Two mechanisms for one hierarchy, not an
+       inversion. Navbar.astro has shipped the same idea as
+       `shadow-lg shadow-black/5 dark:shadow-black/25` since long before this. */
+    --elevation-1: 0 1px 2px rgb(15 23 42 / 0.06), 0 4px 12px rgb(15 23 42 / 0.08);
+
+    /* -- La Forja's playground -------------------------------------------
+       Whole CSS values rather than channel triplets: React Flow consumes them
+       through its own --xy-* custom properties, which take a colour, and the
+       four that resolve to another token need no per-theme copy at all: the
+       substitution happens on the element, so they follow whichever --bg-deep
+       / --txt-muted / --txt-primary is in force. */
+    --forja-pane: rgb(var(--bg-deep));
+    --forja-edge-default: rgb(var(--txt-muted));
+    --forja-edge-selected: rgb(var(--txt-primary));
+    --forja-edge-error: rgb(var(--danger-ink));
+    /* An accent the pane can carry: the selection ring and the connection
+       handle are graphical objects, and --accent is 2.22:1 on the light
+       pane. */
+    --forja-mark: rgb(var(--accent-strong));
+    /* The dot grid. Decorative, so it is set to be felt rather than read:
+       1.56:1 off this pane, which is the distance the dark theme now matches.
+       Unchanged, because it was already the quiet one of the pair. */
+    --forja-pane-pattern: #b8c3d4;
+    /* React Flow's own default here is #eee, 1.1:1 against its own button. */
+    --forja-controls-border: #94a3b8;
+    /* The three band rules. They shipped as border-subtle at 50%, which is
+       1.04:1 on this theme and 1.15:1 on the dark one, invisible in both, so
+       both get a value. */
+    --forja-band-divider: #94a3b8;
+    /* The connection handle at rest. It is a dot, not a control, so it stays
+       quiet; 0.5 of --txt-muted is quieter on this theme than on the dark one
+       because the token itself is closer to the pane. */
+    --forja-grip-rest-opacity: 0.7;
+    /* The four data classes. Each is drawn three times: as the connection's
+       stroke, as its 11px name, and as the 12px dot in the menu that declares
+       it. The menu has always followed the site's theme, so these four were
+       already being drawn at 1.60-2.53:1 on a light page. */
+    --forja-class-public: #047857;
+    --forja-class-personal: #1d4ed8;
+    --forja-class-regulated: #a8500a;
+    --forja-class-secret: #7e22ce;
   }
 
   /* Dark mode (when dark class is present) */
@@ -264,6 +373,50 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
     --scrollbar-track: #0f172a;
     --scrollbar-thumb: #334155;
     --scrollbar-thumb-hover: #475569;
+
+    /* --on-accent is absent on purpose: it is the one token that must not
+       flip. See the light block. */
+    --accent-ink: 16 185 129;
+    --danger-ink: 248 113 113;
+    --bg-raised: 26 37 64;
+    /* A card's outline, and NOT the same value --border-subtle carries.
+       It was, and that made the dark contract spend nothing: elevation here is
+       declared as surface plus line, --elevation-1 is `none`, and the line was
+       1.25:1 against the panel a finding sits on and 1.11:1 against the raised
+       surface a menu is painted with. Invisible in the theme this product
+       actually opens in.
+       Measured for this value: 1.98:1 against --bg-surface, 1.76:1 against
+       --bg-raised, 2.21:1 against the pane those float over. Short of the
+       light theme's 3:1 on purpose, because there a white card on a white
+       panel has nothing but the line, while here the surface step already says
+       most of it and a 3:1 hairline around every card would be a cage. */
+    --border-card: 52 76 115;
+    --elevation-1: none;
+
+    /* -- La Forja's playground -------------------------------------------
+       Only the values that genuinely differ are repeated here. --forja-pane,
+       --forja-edge-default, --forja-edge-selected and --forja-edge-error
+       resolve through tokens this block already redeclares, so they flip on
+       their own. */
+    --forja-mark: rgb(var(--accent));
+    /* The dot grid. This was React Flow's own dark default (#555555) spelled
+       out, which is not the same thing as chosen: measured, it sat 2.57:1 off
+       this pane while the light theme's grid sat 1.56:1 off its own. One
+       product had two different working surfaces, and the louder of them was
+       on the theme it opens in. This value puts the dark grid at the light
+       one's measured distance (1.55:1 against 1.56:1), so the surface reads
+       the same whichever switch the player pressed. See canvas-background.ts
+       for the dot itself. */
+    --forja-pane-pattern: #253550;
+    --forja-controls-border: #5b5b5b;
+    /* Matched to the light divider's 2.24:1 against its own pane, so the band
+       rules read the same way in both themes. */
+    --forja-band-divider: #334c73;
+    --forja-grip-rest-opacity: 0.5;
+    --forja-class-public: #34d399;
+    --forja-class-personal: #60a5fa;
+    --forja-class-regulated: #fbbf24;
+    --forja-class-secret: #c084fc;
   }
 
   /* Apply CSS variables */
@@ -305,7 +458,7 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
   }
 
-  /* Editorial blocks — rendered from `:::name` directives in .md/.mdx posts.
+  /* Editorial blocks, rendered from `:::name` directives in .md/.mdx posts.
      See src/plugins/remark-editorial-blocks.mjs */
   .ed-block {
     margin: 2rem 0;

@@ -24,7 +24,7 @@ Ahí le dije lo que te voy a decir a vos: **¿quién te mandó a optimizar si ni
 
 Lo que mi amigo necesitaba no es una optimización. Es un **diagnóstico**. Y la técnica para hacerlo existe desde hace décadas: se llama **profiling**.
 
-Profiling es medir cuánto tiempo tarda cada parte de tu código. No adivinar, no intuir — medir con números reales. Es la diferencia entre un médico que te dice "tomá ibuprofeno, algo te debe doler" y uno que te hace estudios antes de recetarte algo.
+Profiling es medir cuánto tiempo tarda cada parte de tu código. No adivinar, no intuir: medir con números reales. Es la diferencia entre un médico que te dice "tomá ibuprofeno, algo te debe doler" y uno que te hace estudios antes de recetarte algo.
 
 Todos los lenguajes y frameworks tienen herramientas para esto:
 
@@ -43,7 +43,7 @@ Todos conocemos la frase de Knuth: "la optimización prematura es la raíz de to
 
 "Seguro es la base de datos." No mediste. "Debe ser la serialización JSON." No mediste. "El servicio externo tarda mucho." Tampoco mediste.
 
-Y así terminás optimizando cosas que tardan 2ms mientras el verdadero culpable — un servicio que tarda 3.2 segundos — sigue ahí, invisible, arruinándote la vida.
+Y así terminás optimizando cosas que tardan 2ms mientras el verdadero culpable, un servicio que tarda 3.2 segundos, sigue ahí, invisible, arruinándote la vida.
 
 ## El caso de mi amigo
 
@@ -211,10 +211,10 @@ Ahora que sabés que `descuento.calcular` es el problema, podés tomar decisione
 
 ## Cuándo NO hacer profiling
 
-- **En producción sin cuidado** — Las métricas consumen recursos. Micrometer es liviano, pero si instrumentás cada línea de cada método vas a generar overhead. Medí lo que importa.
-- **Con datos de desarrollo** — Tu máquina local con 3 registros no reproduce un problema de producción con 3 millones. Hacé profiling con datos representativos.
-- **Para micro-optimizaciones** — Si tu endpoint tarda 50ms en total y querés bajar a 45ms, probablemente no valga la pena el esfuerzo. Enfocate en los que tardan segundos.
-- **Sin un baseline** — Si no sabés cuánto tardaba antes, no podés saber si mejoraste. Medí antes de tocar nada.
+- **En producción sin cuidado.** Las métricas consumen recursos. Micrometer es liviano, pero si instrumentás cada línea de cada método vas a generar overhead. Medí lo que importa.
+- **Con datos de desarrollo.** Tu máquina local con 3 registros no reproduce un problema de producción con 3 millones. Hacé profiling con datos representativos.
+- **Para micro-optimizaciones.** Si tu endpoint tarda 50ms en total y querés bajar a 45ms, probablemente no valga la pena el esfuerzo. Enfocate en los que tardan segundos.
+- **Sin un baseline.** Si no sabés cuánto tardaba antes, no podés saber si mejoraste. Medí antes de tocar nada.
 
 ## La regla que me salvó cien veces
 
@@ -228,8 +228,8 @@ La optimización no es una actividad creativa. Es una actividad científica. Hip
 
 ## Esto es el Día 7
 
-Este artículo es parte de **#100ArchitectureDays** — una serie de problemas reales de arquitectura con soluciones reales. La próxima vez que alguien diga "seguro es la base de datos", pedile los números.
+Este artículo es parte de **#100ArchitectureDays**, una serie de problemas reales de arquitectura con soluciones reales. La próxima vez que alguien diga "seguro es la base de datos", pedile los números.
 
 Seguí la saga completa en **#100ArchitectureDays**.
 
-Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una estrella — es gratis y ayuda a que más gente lo encuentre.
+Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una estrella. Es gratis y ayuda a que más gente lo encuentre.

@@ -1,5 +1,5 @@
 // Presentation catalog: icon key + color category + Spanish label per
-// engine ComponentType. Pure data — no DOM, no React import — so the
+// engine ComponentType. Pure data, with no DOM and no React import, so the
 // mapping is completeness-checked in Vitest without a browser. Colors are
 // the four categorical brand tokens from src/layouts/BaseLayout.astro
 // (accent, accent-blue, accent-amber, txt-muted); accent-red is reserved
@@ -53,9 +53,9 @@ export const CATALOG_UI: Record<ComponentType, CatalogUiEntry> = {
   'external-provider': { label: 'Proveedor externo', icon: 'cloud', color: 'neutral' },
   // -- infrastructure: where data lives --
   database: { label: 'Base de datos', icon: 'cylinder', color: 'amber' },
-  cache: { label: 'Cache', icon: 'bolt', color: 'amber' },
+  cache: { label: 'Caché', icon: 'bolt', color: 'amber' },
   queue: { label: 'Cola de mensajes', icon: 'stack', color: 'amber' },
-  stream: { label: 'Stream de eventos', icon: 'wave', color: 'amber' },
+  stream: { label: 'Registro de eventos', icon: 'wave', color: 'amber' },
   'object-storage': { label: 'Almacenamiento de objetos', icon: 'cube', color: 'amber' },
   cdn: { label: 'CDN', icon: 'globe', color: 'blue' },
   'identity-provider': { label: 'Proveedor de identidad', icon: 'key', color: 'blue' },

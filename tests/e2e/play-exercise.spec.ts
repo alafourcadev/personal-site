@@ -96,12 +96,28 @@ async function loadAndSubmit(page: Page, exerciseId: string, design: Design) {
 }
 
 test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
-  test('the brief shows context, role, budget and constraints before building anything', async ({ page }) => {
-    await page.goto('/forja/4/core-el-pago-que-espera-al-email')
+  // Was "the brief shows context, ROLE, budget and constraints". The role
+  // was removed on purpose: it is authoring metadata, and naming a trap to
+  // the player destroys the exercise — the same spoiler the level list
+  // dropped, which survived one click into this page. So the assertion is
+  // inverted and made stricter than the original: the brief must state the
+  // business domain in the player's own language, and must NOT contain any
+  // of the role words. (tests/progression/no-role-spoiler.test.ts gates the
+  // rendered component; this gates the real page a player loads.)
+  test('the brief shows context, domain, budget and constraints — and never the exercise’s role', async ({ page }) => {
+    await page.goto('/forja/4/n4-el-pago-que-espera-al-email')
     await expect(page.getByTestId('exercise-brief')).toBeVisible()
     await expect(page.getByTestId('exercise-brief')).toContainText('El pago que espera al email')
-    await expect(page.getByTestId('exercise-role-tag')).toContainText('Núcleo')
-    await expect(page.getByTestId('exercise-budget')).toContainText('8 unidades operativas')
+    await expect(page.getByTestId('exercise-domain-tag')).toContainText('Pagos')
+    await expect(page.getByTestId('exercise-role-tag')).toHaveCount(0)
+    for (const spoiler of ['Núcleo', 'Trampa', 'Contra-trampa', 'Calibración', 'Síntesis']) {
+      await expect(page.getByTestId('exercise-brief'), `the brief names the role "${spoiler}"`).not.toContainText(spoiler)
+    }
+    // The number itself belongs to the author, not to this test. Budgets get
+    // retuned (level 4's dropped from 8 to 6 when its slack was tightened), and
+    // a literal here makes a rendering test fail for a content reason. What this
+    // test owns is that the budget reaches the page as a readable figure.
+    await expect(page.getByTestId('exercise-budget')).toContainText(/\d+ unidades operativas/)
     await expect(page.getByTestId('exercise-budget')).not.toContainText('opsUnits')
     const constraints = page.getByTestId('exercise-constraint')
     await expect(constraints.first()).toBeVisible()
@@ -110,8 +126,16 @@ test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
 
   test('from the level list, clicking an exercise opens its own play route', async ({ page }) => {
     await page.goto('/forja/4')
-    await page.getByTestId('exercise-list-link').first().click()
-    await expect(page).toHaveURL(/\/forja\/4\/[a-z-]+$/)
+    const link = page.getByTestId('exercise-list-link').first()
+    // The link's own href, not a shape guess. The old pattern was
+    // `[a-z-]+`, which stopped matching the moment the files were renamed to
+    // carry their level (`n4-…`) — and a pattern is a weaker claim anyway:
+    // what "clicking an exercise opens ITS OWN play route" means is that the
+    // page we land on is the one the entry pointed at.
+    const href = await link.getAttribute('href')
+    expect(href).toMatch(/^\/forja\/4\/[a-z0-9-]+$/)
+    await link.click()
+    await expect(page).toHaveURL(new RegExp(`${href!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`))
     await expect(page.getByTestId('exercise-brief')).toBeVisible()
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
   })
@@ -124,22 +148,46 @@ test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
   // system its brief describes, defect and all — is what a fresh visit
   // shows.
   test('a fresh visit starts with the exercise\'s own starting design, not an empty canvas [R1-H]', async ({ page }) => {
-    const exercise = loadExercise('core-el-pago-que-espera-al-email')
-    await page.goto('/forja/4/core-el-pago-que-espera-al-email')
+    const exercise = loadExercise('n4-el-pago-que-espera-al-email')
+    await page.goto('/forja/4/n4-el-pago-que-espera-al-email')
     await expect(page.locator('.react-flow__node')).toHaveCount(exercise.startingDesign.nodes.length)
     await expect(page.locator('.react-flow__edge')).toHaveCount(exercise.startingDesign.edges.length)
     await expect(nodeByLabel(page, /Servicio de pagos/)).toBeVisible()
     await expect(nodeByLabel(page, /Proveedor de email/)).toBeVisible()
   })
 
+  // Every guarantee is written with two sentences and the player only ever
+  // read one. `whyMissing` names what the design fails to do; `consequence`
+  // names who pays for it, and 612 of them sat in the corpus unreachable:
+  // required by the type, required by the content schema, dropped by the
+  // finding builder and absent from the panel. This asserts the second
+  // sentence against the exercise file itself, so a finding that quietly
+  // stops carrying it fails here rather than in a reading of the corpus.
+  test('a missed guarantee tells the player what it costs, not only what is missing', async ({ page }) => {
+    const exercise = loadExercise('n4-el-pago-que-espera-al-email')
+    await page.goto('/forja/4/n4-el-pago-que-espera-al-email')
+    await expect(page.locator('.react-flow__node')).toHaveCount(exercise.startingDesign.nodes.length)
+
+    // The starting design is the broken system the brief describes, so
+    // submitting it untouched is the shortest real path to a missed
+    // guarantee.
+    await page.getByTestId('submit-button').click()
+
+    const durable = exercise.guarantees.find((g) => g.id === 'g-no-volatile-cut')!
+    const finding = page.locator('[data-testid^="finding-"][data-rule="guarantee-missing:g-no-volatile-cut"]')
+    await expect(finding).toBeVisible()
+    await expect(finding).toContainText(durable.whyMissing)
+    await expect(finding).toContainText(durable.consequence)
+  })
+
   // The core deliverable: two structurally distinct reference solutions of
   // the SAME exercise both reach 100/100, through the interface.
-  test.describe('core-el-pago-que-espera-al-email — both reference solutions score 100 through the UI', () => {
-    const exercise = loadExercise('core-el-pago-que-espera-al-email')
+  test.describe('n4-el-pago-que-espera-al-email — both reference solutions score 100 through the UI', () => {
+    const exercise = loadExercise('n4-el-pago-que-espera-al-email')
 
     for (const [index, solution] of exercise.referenceSolutions.entries()) {
       test(`solution ${index + 1} — "${solution.label}"`, async ({ page }) => {
-        await loadAndSubmit(page, 'core-el-pago-que-espera-al-email', solution.design)
+        await loadAndSubmit(page, 'n4-el-pago-que-espera-al-email', solution.design)
         await expect(page.getByTestId('result-score-value')).toContainText('100')
         await expect(page.getByTestId('result-score-value')).toContainText('/ 100')
         await expect(page.getByTestId('result-axes')).toBeVisible()
@@ -155,14 +203,52 @@ test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
     }
   })
 
+  test('the mini-ADR rejects trivial answers without erasing what the player wrote', async ({ page }) => {
+    test.setTimeout(60_000)
+    const pageErrors: string[] = []
+    page.on('pageerror', (error) => pageErrors.push(error.message))
+    const exercise = loadExercise('n4-el-pago-que-espera-al-email')
+    await loadAndSubmit(page, 'n4-el-pago-que-espera-al-email', exercise.referenceSolutions[0].design)
+    await expect(page.getByTestId('result-score-value')).toContainText('100')
+
+    const form = page.getByTestId('mini-adr')
+    await expect(form.locator('textarea')).toHaveCount(4)
+    const fields = [
+      ['optimized', 'a'],
+      ['sacrificed', 'b'],
+      ['whoPays', 'c'],
+      ['inversionFact', 'd'],
+    ] as const
+    for (const [name, value] of fields) {
+      await form.locator(`textarea[name="${name}"]`).fill(value)
+      expect(pageErrors, `the form crashed after editing ${name}`).toEqual([])
+    }
+
+    await form.getByRole('button', { name: 'Guardar defensa' }).click()
+    await expect(form.getByRole('alert')).toHaveCount(4)
+    for (const [name, value] of fields) {
+      await expect(form.locator(`textarea[name="${name}"]`)).toHaveValue(value)
+    }
+    await expect(form.getByRole('alert').first()).toContainText(
+      'Escribí al menos dos palabras concretas',
+    )
+
+    await form.locator('textarea[name="optimized"]').fill('Menos espera')
+    await form.locator('textarea[name="sacrificed"]').fill('Más costo')
+    await form.locator('textarea[name="whoPays"]').fill('El equipo')
+    await form.locator('textarea[name="inversionFact"]').fill('Si falla')
+    await form.getByRole('button', { name: 'Guardar defensa' }).click()
+    await expect(form.getByRole('status')).toContainText('Defensa guardada')
+  })
+
   // A second, distinct exercise — required to be a member of the
   // contrasted tradeoff pair.
-  test.describe('tradeoff-el-stock-que-hay-que-saber-ya — both reference solutions score 100 through the UI', () => {
-    const exercise = loadExercise('tradeoff-el-stock-que-hay-que-saber-ya')
+  test.describe('n4-el-stock-que-hay-que-saber-ya — both reference solutions score 100 through the UI', () => {
+    const exercise = loadExercise('n4-el-stock-que-hay-que-saber-ya')
 
     for (const [index, solution] of exercise.referenceSolutions.entries()) {
       test(`solution ${index + 1} — "${solution.label}"`, async ({ page }) => {
-        await loadAndSubmit(page, 'tradeoff-el-stock-que-hay-que-saber-ya', solution.design)
+        await loadAndSubmit(page, 'n4-el-stock-que-hay-que-saber-ya', solution.design)
         await expect(page.getByTestId('result-score-value')).toContainText('100')
         await expect(page.getByTestId('result-score-value')).toContainText('/ 100')
       })
@@ -177,9 +263,9 @@ test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
   // role-anchored guarantee below was permanently stuck at "unsatisfied".
   // Two exercises, one of them the contrasted tradeoff pair's own member.
   test.describe('the human path to 100 — no seeding, only pointer gestures [R1-H]', () => {
-    test('core-el-pago-que-espera-al-email: fixing the direct connection to the email provider reaches 100', async ({ page }) => {
-      const exercise = loadExercise('core-el-pago-que-espera-al-email')
-      await page.goto('/forja/4/core-el-pago-que-espera-al-email')
+    test('n4-el-pago-que-espera-al-email: fixing the direct connection to the email provider reaches 100', async ({ page }) => {
+      const exercise = loadExercise('n4-el-pago-que-espera-al-email')
+      await page.goto('/forja/4/n4-el-pago-que-espera-al-email')
       await expect(page.locator('.react-flow__node')).toHaveCount(exercise.startingDesign.nodes.length)
 
       // The exact defect the brief describes: payment waits directly on the
@@ -204,11 +290,14 @@ test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
       // PC7's real fit-to-content: the new pieces spread further down the
       // canvas than the container's own visible height — the same "pan
       // without manual panning" gesture a real player uses (Controls'
-      // fit-view button), not a test-only shortcut. fitView animates its
-      // pan/zoom transition (canvas-polish.spec.ts's own precedent) — every
-      // node position used for a drag below is read only once the two
-      // endpoints of the FIRST connection are both settled in the viewport,
-      // never mid-animation.
+      // fit-view button), not a test-only shortcut.
+      //
+      // `toBeInViewport` is NOT enough to make the drags below safe: it
+      // passes the instant a node's box overlaps the window, while the
+      // camera and the page's own smooth auto-scroll are both still moving.
+      // Waiting for those to stop is connectByPointer's own job now (see
+      // waitForCanvasToSettle in helpers.ts), which is what makes every drag
+      // land on the handle it aimed at instead of where it used to be.
       await page.locator('.react-flow__controls-fitview').click()
       await expect(nodeByLabel(page, /Servicio de pagos/)).toBeInViewport({ timeout: 10000 })
       await expect(nodeByLabel(page, /Cola de mensajes/)).toBeInViewport({ timeout: 10000 })
@@ -231,9 +320,9 @@ test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
       }
     })
 
-    test('tradeoff-el-stock-que-hay-que-saber-ya: connecting checkout straight to inventory reaches 100', async ({ page }) => {
-      const exercise = loadExercise('tradeoff-el-stock-que-hay-que-saber-ya')
-      await page.goto('/forja/4/tradeoff-el-stock-que-hay-que-saber-ya')
+    test('n4-el-stock-que-hay-que-saber-ya: connecting checkout straight to inventory reaches 100', async ({ page }) => {
+      const exercise = loadExercise('n4-el-stock-que-hay-que-saber-ya')
+      await page.goto('/forja/4/n4-el-stock-que-hay-que-saber-ya')
       await expect(page.locator('.react-flow__node')).toHaveCount(exercise.startingDesign.nodes.length)
 
       // This exercise's own guarantee starts unsatisfied: checkout and
@@ -259,7 +348,7 @@ test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
   })
 
   test('an illegal design in a loaded exercise reports illegal, never a partial score', async ({ page }) => {
-    await page.goto('/forja/4/core-el-pago-que-espera-al-email')
+    await page.goto('/forja/4/n4-el-pago-que-espera-al-email')
     await createNode(page, 'queue') // a lone queue is a blocking orphan-queue finding by construction
     await page.getByTestId('submit-button').click()
     await expect(page.getByTestId('result-score')).toContainText('ilegal')
@@ -267,7 +356,7 @@ test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
   })
 
   test('a legal but incomplete design scores below 100 with at least one unsatisfied axis shown', async ({ page }) => {
-    await page.goto('/forja/4/core-el-pago-que-espera-al-email')
+    await page.goto('/forja/4/n4-el-pago-que-espera-al-email')
     await createNode(page, 'service') // legal alone, satisfies none of this exercise's guarantees
     await page.getByTestId('submit-button').click()
     await expect(page.getByTestId('result-axes')).toBeVisible()
@@ -278,16 +367,19 @@ test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
   })
 
   test('leaving and returning to the same exercise keeps the design [volver y seguir]', async ({ page }) => {
-    const exercise = loadExercise('core-el-pago-que-espera-al-email')
+    const exercise = loadExercise('n4-el-pago-que-espera-al-email')
     const startingCount = exercise.startingDesign.nodes.length
 
-    await page.goto('/forja/4/core-el-pago-que-espera-al-email')
+    await page.goto('/forja/4/n4-el-pago-que-espera-al-email')
     await createNode(page, 'service')
     await expect(page.locator('.react-flow__node')).toHaveCount(startingCount + 1)
 
     // A real navigation away and back — never reload() alone, which would
     // not exercise the "left the page" path at all.
-    await page.getByRole('link', { name: /Nivel 4/ }).click()
+    // The way back to the level lives in the shell's own menu now: La Forja
+    // opens full screen and does not inherit the blog's chrome.
+    await page.getByTestId('forja-menu-toggle').click()
+    await page.getByTestId('forja-menu-level').click()
     await expect(page).toHaveURL(/\/forja\/4$/)
     await page.goBack()
 
@@ -300,10 +392,10 @@ test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
   // edits on a real navigation, proving reset and continue are distinct
   // paths that don't interfere with each other.
   test('resetting an exercise restores the starting design and discards the player\'s edits', async ({ page }) => {
-    const exercise = loadExercise('core-el-pago-que-espera-al-email')
+    const exercise = loadExercise('n4-el-pago-que-espera-al-email')
     const startingCount = exercise.startingDesign.nodes.length
 
-    await page.goto('/forja/4/core-el-pago-que-espera-al-email')
+    await page.goto('/forja/4/n4-el-pago-que-espera-al-email')
     await createNode(page, 'service')
     await createNode(page, 'queue')
     await expect(page.locator('.react-flow__node')).toHaveCount(startingCount + 2)
@@ -318,13 +410,14 @@ test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
     // navigation away and back must show the RESET state (starting design),
     // never the pre-reset edits, proving reset persists like any other
     // "volver y seguir" state.
-    await page.getByRole('link', { name: /Nivel 4/ }).click()
+    await page.getByTestId('forja-menu-toggle').click()
+    await page.getByTestId('forja-menu-level').click()
     await page.goBack()
     await expect(page.locator('.react-flow__node')).toHaveCount(startingCount)
   })
 
   test('the loaded exercise never contaminates free play at /forja', async ({ page }) => {
-    await page.goto('/forja/4/core-el-pago-que-espera-al-email')
+    await page.goto('/forja/4/n4-el-pago-que-espera-al-email')
     await createNode(page, 'service')
     await page.getByTestId('submit-button').click()
     await expect(page.getByTestId('result-axes')).toBeVisible()

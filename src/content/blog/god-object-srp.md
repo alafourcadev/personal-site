@@ -1,6 +1,6 @@
 ---
 title: "Día 13: Tu clase tiene 50 métodos. Hace de todo. No hace nada bien."
-description: "Ese OrderService, UserManager o PedidoController que todos tocan y nadie entiende es un God Object — y te está costando plata real. Cómo identificarlo y desarmarlo con SRP. Día 13 de #100ArchitectureDays."
+description: "Ese OrderService, UserManager o PedidoController que todos tocan y nadie entiende es un God Object, y te está costando plata real. Cómo identificarlo y desarmarlo con SRP. Día 13 de #100ArchitectureDays."
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-21
 readTime: "7 min read"
@@ -186,7 +186,7 @@ Si quieres una heurística rápida que puedas aplicar mañana en tu proyecto:
 
 **Cuenta las dependencias del constructor de cada clase. Si tiene más de 4 o 5, es sospechoso.**
 
-No es un número mágico, pero es un olor fuerte. Piénsalo así: dos clases del mismo proyecto, una con 3 dependencias y otra con 11 — ¿cuál te da más miedo tocar?
+No es un número mágico, pero es un olor fuerte. Piénsalo así: dos clases del mismo proyecto, una con 3 dependencias y otra con 11. ¿Cuál te da más miedo tocar?
 
 Otra señal útil: si puedes agrupar los métodos de una clase en "bloques" que no se comunican entre sí, cada bloque probablemente debería ser su propia clase.
 

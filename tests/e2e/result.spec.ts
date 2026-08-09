@@ -146,3 +146,43 @@ test.describe('La Forja — result panel [RK1 refs, B3 blocker]', () => {
     await expect(finding).toBeVisible()
   })
 })
+
+// The verdict panel had zero `aria-live`, `role="status"`, `role="alert"`,
+// `role="region"` and `aria-label` across 455 lines, and `handleSubmit`
+// never wrote to the playground's own status bar. So the one gesture the
+// product is built around reached assistive technology as an unnamed div
+// appearing on the page, while focus stayed on a button whose neighbouring
+// canvas had just been set to `display: none`. WCAG 4.1.3, level AA.
+test.describe('La Forja: the verdict says it out loud [WCAG 4.1.3]', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/forja')
+    await expect(page.getByTestId('forja-canvas')).toBeVisible()
+  })
+
+  test('the always-mounted status region announces that the design was evaluated', async ({ page }) => {
+    await createNode(page, 'service')
+    await expect(page.getByTestId('canvas-status')).toContainText('creado')
+
+    await page.getByTestId('submit-button').click()
+
+    await expect(page.getByTestId('canvas-status')).toContainText('evaluado')
+  })
+
+  test('the panel is a named region, and its verdict is a live one', async ({ page }) => {
+    await createNode(page, 'service')
+    await page.getByTestId('submit-button').click()
+
+    const panel = page.getByTestId('result-panel')
+    await expect(panel).toHaveAttribute('role', 'region')
+    await expect(panel).toHaveAttribute('aria-label', /.+/)
+    await expect(page.getByTestId('result-score')).toHaveAttribute('role', 'status')
+    await expect(page.getByTestId('result-score')).toHaveAttribute('aria-live', 'polite')
+  })
+
+  test('focus follows the verdict instead of staying on the button next to a hidden canvas', async ({ page }) => {
+    await createNode(page, 'service')
+    await page.getByTestId('submit-button').click()
+
+    await expect(page.getByTestId('result-panel')).toBeFocused()
+  })
+})

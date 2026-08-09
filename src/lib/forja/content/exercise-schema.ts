@@ -5,20 +5,20 @@
 // content.config.ts wires it into the actual collection.
 //
 // Design D9: two gate classes.
-//   BUILD-FAILING (this file's superRefine — imports and RUNS the engine):
+//   BUILD-FAILING (this file's superRefine, which imports and RUNS the engine):
 //   per-axis ceiling, band membership, D9>=1, prerequisite gate, rubric
-//   signal linkage, and — the C.14 coupling point — every reference
+//   signal linkage, and, at the C.14 coupling point, every reference
 //   solution must be legal and within budget via the real engine, not a
 //   hand-rolled re-implementation of legality.
 //   TEST-FAILING (cross-entry, tests/content/*.test.ts): tradeoff pair
 //   symmetry/context inversion, role quotas per level, the "two reference
-//   solutions both score exactly 100" publication test (EE10/§13.10) — all
+//   solutions both score exactly 100" publication test (EE10/§13.10). All
 //   of these need the WHOLE collection loaded at once, which a single
 //   entry's superRefine never sees.
 import { z } from 'astro:content'
 // `z` re-exported from `astro:content` is a runtime binding only (its own
 // .d.ts imports zod's types locally to annotate itself, but never re-emits
-// them as an importable namespace) — importing the type names directly from
+// them as an importable namespace). Importing the type names directly from
 // `zod/v4` is what lets `z.ZodType<...>`/`z.ZodNumber` style annotations
 // resolve here.
 import type { ZodNumber, ZodType } from 'zod/v4'
@@ -26,6 +26,8 @@ import type { output as ZodOutput } from 'zod/v4/core'
 import { evaluate } from '../engine'
 import { CATALOG } from '../engine/catalog'
 import type { ComponentType, Design, ExerciseSpec, Predicate, RuleId } from '../engine/types'
+import { bestPlayerReachableReference } from '../playground/constructibility'
+import { GREENFIELD_MAX_LEVEL } from '../progression/composition'
 import { AXES, axisCeiling, difficultyIndex, type DifficultyAxes } from '../progression/difficulty'
 import { EXERCISE_ROLES, EXERCISE_STATUSES } from '../progression/types'
 
@@ -34,7 +36,7 @@ const componentTypeSchema = z.enum(componentTypes)
 const zoneSchema = z.enum(['public', 'dmz', 'private', 'restricted'])
 const dataClassSchema = z.enum(['public', 'personal', 'regulated', 'secret'])
 
-// The 13 §13.7 rule ids (per C1's binding resolution — port-mismatch
+// The 13 §13.7 rule ids (per C1's binding resolution, port-mismatch
 // included), mirrored from engine/types.ts's RuleId literally: `ruleSilent`
 // predicates may only reference one of these, never `empty-canvas` (that
 // guard is not an exercise-tunable rule).
@@ -60,7 +62,7 @@ const nodeQuerySchema = z.object({
   role: z.string().optional(),
 })
 
-// Recursive predicate DSL (design D2) — z.lazy() so `all`/`any`/`not` can
+// Recursive predicate DSL (design D2), with z.lazy() so `all`/`any`/`not` can
 // nest. Typed against the engine's own `Predicate` union so a drift between
 // this schema and engine/types.ts is a TypeScript error, not a silent gap.
 const predicateSchema: ZodType<Predicate> = z.lazy(() =>
@@ -111,8 +113,18 @@ const designSchema = z.object({
   edges: z.array(designEdgeSchema).default([]),
 })
 
+// The opening frame is the one design that may be empty, and only for the one
+// role whose whole point is that it is (`greenfield`). The floor moves from
+// the shape to the superRefine below so the message can name the role instead
+// of saying "array too small", which is what an author actually needs to read.
+// Reference solutions keep the min(1) shape: an empty answer is never one.
+const startingDesignSchema = z.object({
+  nodes: z.array(designNodeSchema),
+  edges: z.array(designEdgeSchema).default([]),
+})
+
 // EC7: a rubric dimension needs an observable signal computable from the
-// graph — either it reuses one of the exercise's own guarantee predicates
+// graph: either it reuses one of the exercise's own guarantee predicates
 // (linked by id, checked below), or it names an executable metric
 // (`{metric,operator,value,unit}`, never prose).
 const rubricSignalSchema = z.discriminatedUnion('kind', [
@@ -134,7 +146,7 @@ const rubricDimensionSchema = z.object({
 const referenceSolutionSchema = z.object({
   label: z.string().min(1),
   // EC5: the contextual conditions that make THIS solution the better
-  // choice — required non-empty on every solution, not just tradeoff-pair
+  // choice. Required non-empty on every solution, not just tradeoff-pair
   // ones, per design D9's own build-failing gate list.
   contextInversion: z.string().min(1),
   design: designSchema,
@@ -147,7 +159,7 @@ const budgetSchema = z.object({
 
 const hiddenFactSchema = z.object({
   fact: z.string().min(1),
-  // EC "cada hecho oculto con camino de descubrimiento" — a reasonable
+  // EC "cada hecho oculto con camino de descubrimiento". A reasonable
   // player must be able to reach this, or it punishes instead of teaching.
   discoveryPath: z.string().min(1),
 })
@@ -166,7 +178,7 @@ const axisFields = Object.fromEntries(AXES.map((axis) => [axis, z.number().int()
 
 // R1-H's new build-failing gate: "a guarantee MUST NOT anchor on a role
 // that no node in the starting design carries". Walks the predicate tree
-// collecting every `role` a NodeQuery references — the only way a role ever
+// collecting every `role` a NodeQuery references. That is the only way a role
 // enters a predicate, since `NodeQuery.role` is the sole role-bearing field
 // in the whole DSL (design D2). Never inlined at the call site: this is the
 // same mechanic that must stay in lockstep with every predicate op the DSL
@@ -202,7 +214,7 @@ export const exerciseSchema = z
     level: z.number().int().min(1).max(12),
     role: z.enum(EXERCISE_ROLES as [(typeof EXERCISE_ROLES)[number], ...(typeof EXERCISE_ROLES)[number][]]),
     domain: z.string().min(1),
-    // Required only for role: 'tradeoff' (checked below) — the id shared by
+    // Required only for role: 'tradeoff' (checked below). It is the id shared by
     // both halves of a contrasted pair, so the cross-entry Vitest gate can
     // find them and confirm the context really inverts the winner.
     tradeoffPairId: z.string().optional(),
@@ -210,7 +222,7 @@ export const exerciseSchema = z
     prerequisiteLevels: z.array(z.number().int().min(1).max(12)).default([]),
     hiddenFacts: z.array(hiddenFactSchema).default([]),
     budget: budgetSchema,
-    // EC "Marca: ... accesible y con aiBudget declarado" — a short, explicit
+    // EC "Marca: ... accesible y con aiBudget declarado". A short, explicit
     // policy the player reads before starting (e.g. "libre" or "sin
     // asistencia de IA"), never left implicit.
     aiBudget: z.string().min(1),
@@ -218,9 +230,9 @@ export const exerciseSchema = z
     constraints: z.array(constraintSchema).default([]),
     // R1-H (spec "An exercise ships the system it describes"): the nodes and
     // connections the brief's system already has, loaded onto the canvas the
-    // moment the exercise opens — never a blank canvas, which is what made a
+    // moment the exercise opens, never a blank canvas, which is what made a
     // role-anchored guarantee impossible to ever satisfy by playing.
-    startingDesign: designSchema,
+    startingDesign: startingDesignSchema,
     guarantees: z.array(guaranteeSchema).min(1),
     rubric: z.array(rubricDimensionSchema).min(1),
     // EC5 (schema-level floor): the build-failing legality/budget pass
@@ -231,6 +243,36 @@ export const exerciseSchema = z
   .superRefine((data, ctx) => {
     if (data.role === 'tradeoff' && !data.tradeoffPairId) {
       ctx.addIssue({ code: 'custom', path: ['tradeoffPairId'], message: 'un ejercicio de rol tradeoff necesita tradeoffPairId' })
+    }
+
+    // The empty canvas, both ways round. `greenfield` MUST open blank, because
+    // the role is the promise that the player chooses which pieces exist; and
+    // every other role MUST ship the system its brief describes, which is the
+    // R1-H rule that made role-anchored guarantees satisfiable by playing.
+    // Stated as one biconditional so an author can never end up with a role
+    // that says one thing and an opening frame that says the other.
+    const isGreenfield = data.role === 'greenfield'
+    const startsBlank = data.startingDesign.nodes.length === 0
+    if (isGreenfield && !startsBlank) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['startingDesign'],
+        message: `un ejercicio de rol greenfield abre en blanco, y este trae ${data.startingDesign.nodes.length} componente(s) puestos`,
+      })
+    }
+    if (!isGreenfield && startsBlank) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['startingDesign'],
+        message: `un ejercicio de rol ${data.role} tiene que traer el sistema que describe su consigna; el lienzo vacío es exclusivo del rol greenfield`,
+      })
+    }
+    if (isGreenfield && data.level > GREENFIELD_MAX_LEVEL) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['role'],
+        message: `el lienzo vacío vive solo en los niveles 1 a ${GREENFIELD_MAX_LEVEL}, y este declara el nivel ${data.level}. Construir desde cero con siete piezas y cuatro garantías castiga más de lo que enseña`,
+      })
     }
 
     // EC3: per-axis ceiling.
@@ -247,10 +289,10 @@ export const exerciseSchema = z
     }
 
     // "D9=0 es inadmisible": sin ambigüedad, dos soluciones distintas no
-    // pueden coexistir como igualmente válidas — el motor tendría una
+    // pueden coexistir como igualmente válidas: el motor tendría una
     // respuesta correcta escondida.
     if (data.D9 < 1) {
-      ctx.addIssue({ code: 'custom', path: ['D9'], message: 'D9 debe ser >= 1 — ver §13.10, dos soluciones exigen ambigüedad real' })
+      ctx.addIssue({ code: 'custom', path: ['D9'], message: 'D9 debe ser >= 1. Ver §13.10: dos soluciones exigen ambigüedad real' })
     }
 
     // EC2: índice dentro de banda.
@@ -293,7 +335,7 @@ export const exerciseSchema = z
     }
 
     // R1-H: every role a guarantee anchors on must exist on a node in the
-    // starting design — otherwise that guarantee can never be satisfied by
+    // starting design. Otherwise that guarantee can never be satisfied by
     // playing (the exact defect: no player gesture assigns a role, so a
     // role-anchored guarantee with no matching given node was permanently
     // stuck at 0). Fails naming the offending guarantee AND the missing role.
@@ -312,7 +354,7 @@ export const exerciseSchema = z
 
     // D9's build-failing engine gate (C.14's coupling point): every
     // reference solution must be legal AND within the declared budget,
-    // proven by RUNNING the real engine — never a re-implementation.
+    // proven by RUNNING the real engine, never a re-implementation.
     const exerciseSpec: ExerciseSpec = { guarantees: data.guarantees, budget: data.budget, lambda: data.lambda }
     for (const [i, solution] of data.referenceSolutions.entries()) {
       const result = evaluate(solution.design as Design, exerciseSpec)
@@ -330,6 +372,37 @@ export const exerciseSchema = z
           message: `la solución "${solution.label}" excede el presupuesto declarado (${result.cost.opsUnits} > ${data.budget.opsUnits} opsUnits)`,
         })
       }
+    }
+
+    // A serialized answer is not proof that a player can build it. New nodes
+    // receive catalog defaults and the UI exposes only a closed set of
+    // property choices. At least one published topology must still reach 100
+    // when rebuilt under those exact capabilities and evaluated by the real
+    // engine. This closes the gap that admitted greenfield exercises whose
+    // required backup or dead-letter setting had no player gesture.
+    const reachableReferences = data.referenceSolutions.map((solution) => ({
+      label: solution.label,
+      result: bestPlayerReachableReference(
+        data.startingDesign as Design,
+        solution.design as Design,
+        exerciseSpec,
+      ),
+    }))
+    if (!reachableReferences.some(({ result }) => result.evaluation.status === 'scored' && result.evaluation.score === 100)) {
+      const attempts = reachableReferences
+        .map(({ label, result }) => {
+          const score = result.evaluation.score ?? 'ilegal'
+          const inaccessible = result.inaccessibleProperties
+            .map((property) => `${property.type}.${property.key}=${property.value}`)
+            .join(', ')
+          return `${label}: ${score}${inaccessible ? `; sin control para ${inaccessible}` : ''}`
+        })
+        .join(' | ')
+      ctx.addIssue({
+        code: 'custom',
+        path: ['referenceSolutions'],
+        message: `ninguna solución de referencia puede reconstruirse con los controles del jugador y llegar a 100. ${attempts}`,
+      })
     }
   })
 

@@ -268,6 +268,61 @@ describe('ForjaStore — recolor [PC16]', () => {
   })
 })
 
+describe('ForjaStore property decisions', () => {
+  it('changes an engine-relevant property without dropping sibling facts', () => {
+    const store = new ForjaStore()
+    const database = store.createNode('database', 'Base de pedidos', { x: 0, y: 0 })
+
+    expect(store.setNodeProperty(database.id, 'backup', 'diario')).toBe(true)
+
+    expect(store.getDesign().nodes[0].props).toMatchObject({
+      backup: 'diario',
+      consistency: 'strong',
+      persistence: 'durable',
+    })
+  })
+
+  it('refuses a value that the component catalog does not expose', () => {
+    const store = new ForjaStore()
+    const database = store.createNode('database', 'Base de pedidos', { x: 0, y: 0 })
+    const before = store.getDesign()
+
+    expect(store.setNodeProperty(database.id, 'backup', 'cuando alguien se acuerda')).toBe(false)
+    expect(store.setNodeProperty(database.id, 'dlq', 'sí')).toBe(false)
+
+    expect(store.getDesign()).toBe(before)
+  })
+
+  it('is a no-op when the requested value is already selected', () => {
+    const store = new ForjaStore()
+    const database = store.createNode('database', 'Base de pedidos', { x: 0, y: 0 })
+
+    expect(store.setNodeProperty(database.id, 'backup', 'none')).toBe(false)
+    store.undo()
+
+    expect(store.getDesign().nodes).toHaveLength(0)
+  })
+
+  it('is undoable as one history entry', () => {
+    const store = new ForjaStore()
+    const queue = store.createNode('queue', 'Avisos', { x: 0, y: 0 })
+
+    store.setNodeProperty(queue.id, 'dlq', 'sí')
+    store.undo()
+
+    expect(store.getDesign().nodes[0].props.dlq).toBe('no')
+  })
+
+  it('does nothing for a node id that does not exist', () => {
+    const store = new ForjaStore()
+    const before = store.getDesign()
+
+    expect(store.setNodeProperty('missing-id', 'backup', 'diario')).toBe(false)
+
+    expect(store.getDesign()).toBe(before)
+  })
+})
+
 // R1-H item 4: "reiniciar el ejercicio" — a player must be able to go back
 // to the starting design without losing the page. Reset is a normal
 // mutation (goes through the same commit/undo history as everything else),
@@ -295,6 +350,96 @@ describe('ForjaStore — resetTo [R1-H]', () => {
   })
 })
 
+// The sibling of setNodeColor — same shape, same guard, same commit path — and
+// the opposite in kind: a colour is a personal annotation the engine promises
+// never to read (tests/engine/color-neutral.test.ts), while a data class is a
+// domain fact three of the engine's rules already gate on. That is why it goes
+// on the edge itself and not into some UI-side side table: the engine has read
+// `DesignEdge.dataClass` since R1-B, and until now nothing could write it.
+describe('ForjaStore — declare the data class of a connection', () => {
+  const wired = () => {
+    const store = new ForjaStore()
+    const client = store.createNode('web-client', 'Cliente web', { x: 0, y: 0 })
+    const gateway = store.createNode('api-gateway', 'Puerta de entrada', { x: 200, y: 0 })
+    const { edge } = store.connect(client.id, gateway.id)
+    return { store, edgeId: edge!.id }
+  }
+
+  it('writes the declared class onto the connection', () => {
+    const { store, edgeId } = wired()
+
+    store.setEdgeDataClass(edgeId, 'regulated')
+
+    expect(store.getDesign().edges[0].dataClass).toBe('regulated')
+  })
+
+  it('replaces a previous declaration rather than accumulating one', () => {
+    const { store, edgeId } = wired()
+    store.setEdgeDataClass(edgeId, 'regulated')
+
+    store.setEdgeDataClass(edgeId, 'public')
+
+    expect(store.getDesign().edges[0].dataClass).toBe('public')
+  })
+
+  // Taking the declaration back has to leave the edge in the state a freshly
+  // drawn one is in — undeclared — so the "Falta declarar qué dato viaja" note
+  // comes back. The note is a reminder, not a defect: what was broken was that
+  // it could never be closed, not that it existed.
+  it('clears the declaration when no class is given', () => {
+    const { store, edgeId } = wired()
+    store.setEdgeDataClass(edgeId, 'secret')
+
+    store.setEdgeDataClass(edgeId, undefined)
+
+    expect(store.getDesign().edges[0].dataClass).toBeUndefined()
+    expect(store.getDesign().edges[0]).not.toHaveProperty('dataClass')
+  })
+
+  it('is a no-op for a connection id that does not exist', () => {
+    const { store } = wired()
+    const before = store.getDesign()
+
+    store.setEdgeDataClass('missing-id', 'public')
+
+    expect(store.getDesign()).toBe(before)
+  })
+
+  it('never touches the other connections', () => {
+    const store = new ForjaStore()
+    const client = store.createNode('web-client', 'Cliente web', { x: 0, y: 0 })
+    const gateway = store.createNode('api-gateway', 'Puerta de entrada', { x: 200, y: 0 })
+    const service = store.createNode('service', 'Servicio', { x: 400, y: 0 })
+    const first = store.connect(client.id, gateway.id).edge!
+    const second = store.connect(gateway.id, service.id).edge!
+
+    store.setEdgeDataClass(first.id, 'personal')
+
+    const edges = store.getDesign().edges
+    expect(edges.find((e) => e.id === first.id)!.dataClass).toBe('personal')
+    expect(edges.find((e) => e.id === second.id)!.dataClass).toBeUndefined()
+  })
+
+  it('is undoable — a declaration is a commit like any other mutation', () => {
+    const { store, edgeId } = wired()
+    store.setEdgeDataClass(edgeId, 'regulated')
+
+    store.undo()
+
+    expect(store.getDesign().edges[0].dataClass).toBeUndefined()
+  })
+
+  it('never mutates the design object it replaces', () => {
+    const { store, edgeId } = wired()
+    const before = store.getDesign()
+
+    store.setEdgeDataClass(edgeId, 'regulated')
+
+    expect(before.edges[0].dataClass).toBeUndefined()
+    expect(store.getDesign()).not.toBe(before)
+  })
+})
+
 describe('ForjaStore — subscriptions', () => {
   it('notifies listeners on a successful mutation but not on a refused connection', () => {
     const store = new ForjaStore()
@@ -311,5 +456,94 @@ describe('ForjaStore — subscriptions', () => {
 
     store.connect('missing', database.id)
     expect(notifications).toBe(2)
+  })
+})
+
+describe('ForjaStore: arrange the whole diagram at once', () => {
+  it('moves every piece the layout has an answer for', () => {
+    const store = new ForjaStore()
+    const service = store.createNode('service', 'Cobros', { x: 400, y: 500 })
+    const database = store.createNode('database', 'Base', { x: 760, y: 900 })
+
+    store.applyPositions({ [service.id]: { x: 400, y: 80 }, [database.id]: { x: 760, y: 80 } })
+
+    expect(store.getDesign().nodes.map((node) => node.position)).toEqual([
+      { x: 400, y: 80 },
+      { x: 760, y: 80 },
+    ])
+  })
+
+  // One history entry for the whole arrangement, so Ctrl+Z is one press and
+  // not one press per piece.
+  it('is undone by a single undo', () => {
+    const store = new ForjaStore()
+    const service = store.createNode('service', 'Cobros', { x: 400, y: 500 })
+    const database = store.createNode('database', 'Base', { x: 760, y: 900 })
+
+    store.applyPositions({ [service.id]: { x: 400, y: 80 }, [database.id]: { x: 760, y: 80 } })
+    store.undo()
+
+    expect(store.getDesign().nodes.map((node) => node.position)).toEqual([
+      { x: 400, y: 500 },
+      { x: 760, y: 900 },
+    ])
+  })
+
+  // "A diagram that is already arranged does not move." Pressing the button
+  // twice must leave the second press with nothing to undo either, or the
+  // player's own last action disappears behind an empty history entry.
+  it('records nothing when every piece is already where it belongs', () => {
+    const store = new ForjaStore()
+    const service = store.createNode('service', 'Cobros', { x: 400, y: 80 })
+
+    expect(store.applyPositions({ [service.id]: { x: 400, y: 80 } })).toBe(false)
+    expect(store.canUndo()).toBe(true)
+    store.undo()
+    expect(store.getDesign().nodes).toHaveLength(0)
+  })
+
+  it('reports whether anything actually moved', () => {
+    const store = new ForjaStore()
+    const service = store.createNode('service', 'Cobros', { x: 400, y: 500 })
+
+    expect(store.applyPositions({ [service.id]: { x: 400, y: 80 } })).toBe(true)
+  })
+
+  // The same clamp every other movement goes through. A layout is not allowed
+  // to be the one path that can put a piece outside its own band.
+  it('clamps a position that would leave the piece outside its band', () => {
+    const store = new ForjaStore()
+    const service = store.createNode('service', 'Cobros', { x: 400, y: 80 })
+
+    store.applyPositions({ [service.id]: { x: -900, y: 80 } })
+
+    expect(store.getDesign().nodes[0].position!.x).toBe(bandXRange('application').min)
+  })
+
+  it('leaves a piece the layout said nothing about exactly where it was', () => {
+    const store = new ForjaStore()
+    const service = store.createNode('service', 'Cobros', { x: 400, y: 500 })
+    const database = store.createNode('database', 'Base', { x: 760, y: 900 })
+
+    store.applyPositions({ [service.id]: { x: 400, y: 80 } })
+
+    expect(store.getDesign().nodes[1].position).toEqual({ x: 760, y: 900 })
+    expect(store.getDesign().nodes[1].id).toBe(database.id)
+  })
+
+  it('never touches the structure the engine scores', () => {
+    const store = new ForjaStore()
+    const service = store.createNode('service', 'Cobros', { x: 400, y: 500 })
+    const database = store.createNode('database', 'Base', { x: 760, y: 900 })
+    store.connect(service.id, database.id)
+    const before = store.getDesign()
+
+    store.applyPositions({ [service.id]: { x: 400, y: 80 }, [database.id]: { x: 760, y: 80 } })
+    const after = store.getDesign()
+
+    expect(after.edges).toEqual(before.edges)
+    expect(after.nodes.map((node) => ({ ...node, position: undefined }))).toEqual(
+      before.nodes.map((node) => ({ ...node, position: undefined })),
+    )
   })
 })

@@ -20,13 +20,13 @@ Bienvenido al anti-pattern más común en bases de datos: **indexar todo por si 
 
 ## Qué es un índice (y por qué cuesta)
 
-Antes de hablar de código, el concepto. Porque esto no es exclusivo de MySQL ni de PostgreSQL — es de **cualquier base de datos que hayas usado o vayas a usar**.
+Antes de hablar de código, el concepto. Porque esto no es exclusivo de MySQL ni de PostgreSQL: es de **cualquier base de datos que hayas usado o vayas a usar**.
 
 Un índice es una **estructura de datos adicional** que la base mantiene en paralelo a tu tabla. Generalmente es un B-tree (o un B+tree) que ordena los valores de una columna para que buscar uno específico sea logarítmico en vez de lineal.
 
 Acelera las lecturas. Eso está claro.
 
-Lo que nadie te cuenta es el otro lado: **cada índice hay que mantenerlo actualizado en cada escritura**. Cuando haces un `INSERT`, la base no solo escribe la fila — actualiza **todos** los índices de esa tabla. Cada uno. Uno por uno.
+Lo que nadie te cuenta es el otro lado: **cada índice hay que mantenerlo actualizado en cada escritura**. Cuando haces un `INSERT`, la base no solo escribe la fila. Actualiza **todos** los índices de esa tabla. Cada uno. Uno por uno.
 
 Si tienes 12 índices, cada `INSERT` tiene que actualizar 12 estructuras de datos. Cada `UPDATE` que toque una columna indexada recalcula ese índice. Cada `DELETE` limpia la fila y limpia los índices asociados.
 
@@ -108,7 +108,7 @@ Nada más. El resto de las columnas no necesitan índice porque **nadie las filt
 
 Los SELECTs **apenas cambiaron** porque los 8 índices que sacamos casi nunca se usaban. Estaban ahí consumiendo disco y frenando escrituras sin que nadie los necesitara.
 
-El código de este benchmark está en el repo — puedes correrlo y ver los números reales en tu máquina. Cambia la cantidad de registros para ver cómo escala la diferencia.
+El código de este benchmark está en el repo. Puedes correrlo y ver los números reales en tu máquina. Cambia la cantidad de registros para ver cómo escala la diferencia.
 
 ## Las 4 reglas para decidir qué indexar
 
@@ -150,7 +150,7 @@ Un índice por separado en `clienteId` y otro en `fecha` **no** dan el mismo res
 
 Un campo `estado` con 4 valores posibles (`PENDIENTE`, `PROCESADO`, `ENVIADO`, `CANCELADO`) filtra el 25% de la tabla por valor. En tablas grandes, eso sigue siendo un montón de filas. El optimizador a veces decide ignorar el índice y hacer un full scan porque es más rápido.
 
-Lo mismo con booleanos. Un índice en una columna `activo` donde el 90% es `true` es inútil — la query va a tocar el 90% de las filas de todas formas.
+Lo mismo con booleanos. Un índice en una columna `activo` donde el 90% es `true` es inútil: la query va a tocar el 90% de las filas de todas formas.
 
 Si insistes en indexar una columna de baja cardinalidad, combínala con otra columna más selectiva en un índice compuesto.
 
@@ -176,14 +176,14 @@ No hay una respuesta universal. Hay **tradeoffs**. Tu trabajo es entenderlos, no
 
 El problema nunca fue "faltan índices". El problema fue no preguntarse **cuáles**.
 
-Poner un índice en cada columna es como poner un semáforo en cada esquina — en algún momento, el remedio es peor que la enfermedad.
+Poner un índice en cada columna es como poner un semáforo en cada esquina: en algún momento, el remedio es peor que la enfermedad.
 
 Un índice es un **contrato**: "acepto pagar más en cada escritura para ganar velocidad en esta lectura específica". Si no sabes cuál es la lectura que estás optimizando, no firmes el contrato.
 
 ## Esto es el Día 10
 
-Este artículo es parte de **#100ArchitectureDays** — una serie de problemas reales de arquitectura con soluciones reales. La próxima vez que alguien diga "ponle un índice", pregúntale dos cosas: **¿a cuál columna?** y **¿por qué?**. Si no puede responder las dos, no hay que indexar nada todavía.
+Este artículo es parte de **#100ArchitectureDays**, una serie de problemas reales de arquitectura con soluciones reales. La próxima vez que alguien diga "ponle un índice", pregúntale dos cosas: **¿a cuál columna?** y **¿por qué?**. Si no puede responder las dos, no hay que indexar nada todavía.
 
 Sigue la saga completa en **#100ArchitectureDays**.
 
-Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days) — con un benchmark que puedes correr para ver en vivo cómo los índices de más frenan los INSERTs. Si te está sirviendo, déjame una estrella — es gratis y ayuda a que más gente lo encuentre.
+Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days), con un benchmark que puedes correr para ver en vivo cómo los índices de más frenan los INSERTs. Si te está sirviendo, déjame una estrella. Es gratis y ayuda a que más gente lo encuentre.

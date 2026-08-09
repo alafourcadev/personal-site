@@ -1,6 +1,6 @@
 ---
 title: "Día 1: Tu app tarda 11 segundos en arrancar y vos pensás que es normal"
-description: "De 10.7s a 1.3s de startup. El problema no es Spring Boot — es cómo inicializás tus servicios. Día 1 de #100ArchitectureDays."
+description: "De 10.7s a 1.3s de startup. El problema no es Spring Boot: es cómo inicializás tus servicios. Día 1 de #100ArchitectureDays."
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-03-26
 readTime: "8 min read"
@@ -141,10 +141,10 @@ Y lo peor: la solución es trivial. Dos anotaciones. Cero librerías nuevas. Cer
 
 ## Esto es solo el Día 001
 
-Este artículo es parte de **#100ArchitectureDays** — una serie de 110 problemas reales de arquitectura con soluciones reales. No teoría. No diagramas bonitos que nadie implementa. Código que podés clonar, correr, y ver los resultados vos mismo.
+Este artículo es parte de **#100ArchitectureDays**, una serie de 110 problemas reales de arquitectura con soluciones reales. No teoría. No diagramas bonitos que nadie implementa. Código que podés clonar, correr, y ver los resultados vos mismo.
 
 Si tu app tarda más de 3 segundos en arrancar, tenés tarea para hoy.
 
 Seguí la saga completa en **#100ArchitectureDays**.
 
-💻 Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una ⭐ — es gratis y ayuda a que más gente lo encuentre.
+💻 Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days). Si te está sirviendo, dejame una ⭐. Es gratis y ayuda a que más gente lo encuentre.

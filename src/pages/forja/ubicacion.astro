@@ -1,0 +1,76 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { LEVELS } from '../../lib/forja/progression/levels';
+import { isPlayable } from '../../lib/forja/progression/types';
+import { orderLevelEntries } from '../../lib/forja/progression/level-listing';
+import { CURRICULUM_ARCS } from '../../lib/forja/progression/guided-route';
+
+const playableExercises = await getCollection('forjaExercises', ({ data }) => isPlayable(data.status));
+const checkpoints = CURRICULUM_ARCS.map((arc) => {
+  const levelId = arc.levelIds[0];
+  const level = LEVELS.find((candidate) => candidate.id === levelId);
+  const exercises = orderLevelEntries(playableExercises.filter((exercise) => exercise.data.level === levelId));
+  const exercise = exercises.find((candidate) => candidate.data.role === 'calibration') ?? exercises[0];
+  return { arc, level, exercise };
+}).filter((checkpoint) => checkpoint.level && checkpoint.exercise);
+---
+
+<BaseLayout
+  title="Prueba de ubicación | La Forja | Ingeniería sin filtros"
+  description="Elegí un punto de entrada a La Forja con una calibración breve."
+  navVariant="blog"
+  footerVariant="simple"
+  noindex={true}
+>
+  <section class="mx-auto max-w-4xl px-4 py-8 md:px-6">
+    <a href="/forja/niveles" class="text-sm text-txt-secondary hover:text-txt-primary">&larr; Niveles</a>
+    <header class="mt-4 max-w-3xl">
+      <p class="font-mono text-xs font-semibold tracking-wider text-accent">RUTA PARA PERSONAS CON EXPERIENCIA</p>
+      <h1 class="mt-1 font-heading text-2xl font-bold text-txt-primary">Prueba de ubicación</h1>
+      <p class="mt-3 text-base leading-relaxed text-txt-secondary">
+        Elegí el arco más avanzado cuyo contexto ya forme parte de tu trabajo y resolvé su calibración.
+        No certifica, no desbloquea contenido y no necesita una cuenta. Sólo te ayuda a evitar un inicio demasiado básico.
+      </p>
+    </header>
+
+    <ol class="mt-7 grid gap-3 rounded-xl border border-border-subtle bg-bg-elevated p-5 text-sm leading-relaxed text-txt-secondary sm:grid-cols-3">
+      <li><strong class="text-txt-primary">1. Elegí.</strong> Empezá por el checkpoint más alto que reconozcas.</li>
+      <li><strong class="text-txt-primary">2. Resolvé.</strong> Probá el diseño y leé por qué cumple o falla.</li>
+      <li><strong class="text-txt-primary">3. Decidí.</strong> Si podés defender el resultado, seguí en ese arco. Si fue prueba y error, bajá uno.</li>
+    </ol>
+
+    <div class="mt-8 flex flex-col gap-4" data-testid="placement-checkpoints">
+      {
+        checkpoints.map(({ arc, level, exercise }, index) => (
+          <article
+            data-testid="placement-checkpoint"
+            data-level-id={level!.id}
+            class="rounded-xl border border-border-subtle bg-bg-surface p-5 sm:flex sm:items-end sm:justify-between sm:gap-6"
+          >
+            <div class="max-w-2xl">
+              <p class="font-mono text-xs font-semibold tracking-wider text-txt-muted">CHECKPOINT {String(index + 1).padStart(2, '0')}</p>
+              <h2 class="mt-1 font-heading text-lg font-bold text-txt-primary">{arc.name}</h2>
+              <p class="mt-1 text-sm leading-relaxed text-txt-secondary">{arc.outcome}</p>
+              <p class="mt-3 text-sm text-txt-muted">
+                Nivel {level!.id} · {level!.name}. Calibración: <span class="text-txt-secondary">{exercise!.data.title}</span>
+              </p>
+            </div>
+            <a
+              href={`/forja/${level!.id}/${exercise!.id}`}
+              data-testid="placement-checkpoint-link"
+              class="mt-4 inline-flex min-h-[44px] shrink-0 items-center font-semibold text-accent hover:underline sm:mt-0"
+            >
+              Probar desde acá &rarr;
+            </a>
+          </article>
+        ))
+      }
+    </div>
+
+    <p class="mt-7 text-sm leading-relaxed text-txt-muted">
+      ¿Preferís recorrer los fundamentos? <a href="/forja/1" class="font-semibold text-accent hover:underline">Empezá por el nivel 1</a>.
+      Tu avance queda sólo en este navegador.
+    </p>
+  </section>
+</BaseLayout>

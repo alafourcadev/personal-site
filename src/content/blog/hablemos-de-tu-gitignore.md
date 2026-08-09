@@ -7,7 +7,7 @@ readTime: "8 min read"
 image: "/blog/hablemos-de-tu-gitignore.webp"
 ---
 
-Vamos directo al grano: tu `.gitignore` está mal. Y no es culpa tuya — es culpa de que nadie te enseñó a hacerlo bien.
+Vamos directo al grano: tu `.gitignore` está mal. Y no es culpa tuya. Es culpa de que nadie te enseñó a hacerlo bien.
 
 ## El problema
 

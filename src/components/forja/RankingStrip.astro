@@ -1,20 +1,56 @@
 ---
-// RK1: a non-empty ranking element MUST be present in every La Forja view
-// — the prototype had this in 1 of 6 views. Rendered in the page shell
+// RK1: a non-empty ranking element MUST be present in every La Forja view.
+// The prototype had this in 1 of 6 views. Rendered in the page shell
 // (design D5), entirely OUTSIDE the React island: this is what makes "every
-// view" trivially true for the island's own canvas/list/result tabs — this
-// element never unmounts when a tab switches, because it isn't part of
-// that tree at all. Static shell + a plain client `<script>` (no React):
+// view" trivially true for the island's own canvas/list/result tabs, because
+// this element never unmounts when a tab switches. It isn't part of that tree
+// at all. Static shell plus a plain client `<script>` (no React):
 // localStorage only exists in the browser, so the list itself hydrates
-// after load, but the box — and the honest label — are in the server-
+// after load, but the box, and the honest label with it, are in the server-
 // rendered HTML from the very first paint.
+//
+// C1: the script asked the port for a snapshot with no exercise id at all,
+// so it showed
+// EVERY stored attempt on every page. Opening an exercise you had never
+// touched greeted you with "#1 · Vos · 100", a score earned somewhere else
+// and presented as yours on this one. `exerciseId` is optional and unset means
+// exactly what it meant before (the whole local history, for free play at
+// `/forja`), so the pages that render this without a prop are unaffected.
+import { getCollection } from 'astro:content';
+import { isPlayable } from '../../lib/forja/progression/types';
+import { rankingEmptyLabel } from '../../lib/forja/progression/ranking-rows';
+
+interface Props {
+  // Optional by contract: the free-play strip has no exercise to scope to.
+  exerciseId?: string;
+}
+
+const { exerciseId } = Astro.props;
+
+// Only the unscoped strip needs the id → title map: its rows span the whole
+// game, so a row without an exercise name is a number with no subject. A
+// scoped strip is already under the exercise's own heading, so it pays
+// nothing for this.
+const titles = exerciseId
+  ? null
+  : Object.fromEntries(
+      (await getCollection('forjaExercises', ({ data }) => isPlayable(data.status))).map((entry) => [
+        entry.id,
+        entry.data.title,
+      ]),
+    );
 ---
 
-<aside data-testid="ranking-strip" aria-label="Ranking de La Forja" class="mb-6 rounded-lg border border-border-subtle bg-bg-surface p-4">
+<aside
+  data-testid="ranking-strip"
+  data-exercise-id={exerciseId}
+  aria-label="Ranking de La Forja"
+  class="mb-6 rounded-lg border border-border-subtle bg-bg-surface p-4"
+>
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-sm font-semibold text-txt-primary">Ranking</h2>
     <!--
-      RK5: honest label, every render, no exception — this is not a UI
+      RK5: honest label, every render, no exception. This is not a UI
       nicety, it is the spec's own MUST. There is no server-side
       re-scoring yet, so every score on this strip is client-computed and
       falsifiable by construction.
@@ -24,37 +60,61 @@
     </span>
   </div>
   <ol data-testid="ranking-list" class="mt-3 flex flex-col gap-1 text-sm text-txt-secondary">
-    <li data-testid="ranking-empty" class="text-txt-muted">Todavía no hay intentos guardados.</li>
+    <li data-testid="ranking-empty" class="text-txt-muted">{rankingEmptyLabel(Boolean(exerciseId))}</li>
   </ol>
-  <p class="mt-2 text-xs text-txt-muted">Ranking global: no disponible en esta versión — todavía no hay cuentas.</p>
+  <p class="mt-2 text-xs text-txt-muted">Ranking global: no disponible en esta versión. Todavía no hay cuentas.</p>
+  {
+    titles && (
+      <script
+        is:inline
+        type="application/json"
+        data-testid="ranking-exercise-titles"
+        set:html={JSON.stringify(titles)}
+      />
+    )
+  }
 </aside>
 
 <script>
   import { localRankingAdapter } from '../../lib/forja/ranking/local-adapter'
+  import { rankingEmptyLabel, rankingRowLabel } from '../../lib/forja/progression/ranking-rows'
+
+  function exerciseTitles(strip: HTMLElement): Record<string, string> {
+    const source = strip.querySelector<HTMLScriptElement>('[data-testid="ranking-exercise-titles"]')
+    if (!source?.textContent) return {}
+    try {
+      return JSON.parse(source.textContent)
+    } catch {
+      return {}
+    }
+  }
 
   function render() {
-    const list = document.querySelector<HTMLOListElement>('[data-testid="ranking-list"]')
-    if (!list) return
-    const { entries } = localRankingAdapter.getSnapshot()
+    const strip = document.querySelector<HTMLElement>('[data-testid="ranking-strip"]')
+    const list = strip?.querySelector<HTMLOListElement>('[data-testid="ranking-list"]')
+    if (!strip || !list) return
+
+    // Unset (free play) keeps the pre-C1 behaviour: the whole local history.
+    const exerciseId = strip.dataset.exerciseId || undefined
+    const { entries } = localRankingAdapter.getSnapshot(exerciseId)
+    const titles = exerciseId ? null : exerciseTitles(strip)
     list.innerHTML = ''
 
     if (entries.length === 0) {
       const empty = document.createElement('li')
       empty.dataset.testid = 'ranking-empty'
       empty.className = 'text-txt-muted'
-      empty.textContent = 'Todavía no hay intentos guardados.'
+      empty.textContent = rankingEmptyLabel(Boolean(exerciseId))
       list.appendChild(empty)
       return
     }
 
-    // R1 has no accounts (R3 scope) — every stored attempt is this
-    // player's own, so "Vos" is accurate, not a placeholder guess.
     entries.slice(0, 10).forEach((entry, index) => {
       const row = document.createElement('li')
       row.dataset.testid = `ranking-row-${index}`
       row.className = 'flex items-center justify-between gap-2 rounded-md px-2 py-1'
       const rank = document.createElement('span')
-      rank.textContent = `#${index + 1} · Vos`
+      rank.textContent = rankingRowLabel({ position: index + 1, exerciseId: entry.exerciseId, titles })
       const score = document.createElement('span')
       score.className = 'font-semibold text-txt-primary'
       score.textContent = String(entry.score)
@@ -64,7 +124,7 @@
   }
 
   render()
-  // Fired by ForjaCanvas.tsx after every submit — the strip lives outside
-  // the island, so this CustomEvent is the only channel back to it.
+  // Fired by ForjaCanvas.tsx after every submit. The strip lives outside the
+  // island, so this CustomEvent is the only channel back to it.
   window.addEventListener('forja:ranking-updated', render)
 </script>

@@ -1,0 +1,392 @@
+---
+// La Forja's own bar. The one row of chrome the workbench spends.
+//
+// It exists because La Forja stopped opening inside the blog's page shell:
+// the product is a tool, it takes the whole window, and it therefore has to
+// carry its own identity, its own way out, and its own theme switch. What
+// goes in it was named by the owner: the Forja mark, the level and the
+// exercise with its progress, the game's actions, a menu, and the way back
+// to the blog.
+//
+// THE MENU is the part that closes a measured dead end. Finishing a level
+// leaves the player on a line that says "Era el último ejercicio de este
+// nivel" with no link, no next level and no way back to the map. Eleven times
+// per playthrough, against one time for the ending that does have a link. So
+// the menu carries what the player could not reach: the level map, this
+// level's fourteen exercises with what they have already solved, and the two
+// steps beside this one.
+//
+// `Reiniciar ejercicio` deliberately stays in the actions row rather than
+// moving in here. The menu's job is what the player cannot reach today, and
+// reset is already one click away; burying a control that works is a cost
+// with no matching gain.
+import Icon from '../Icon.astro';
+import {
+  FORJA_ACTIONS_SLOT_ID,
+  FORJA_TOP_BAR_HEIGHT_PX,
+  exercisePositionLabel,
+} from '../../lib/forja/canvas/forja-shell';
+import type { LevelMenu } from '../../lib/forja/progression/level-menu';
+import type { ExerciseLearningConcepts } from '../../lib/forja/progression/learning-concepts';
+
+interface Props {
+  level: number;
+  title: string;
+  menu: LevelMenu;
+  transferProfiles?: ExerciseLearningConcepts[];
+}
+
+const { level, title, menu, transferProfiles = [] } = Astro.props;
+
+// `position` is null only when the open exercise is not in this level's set,
+// which is a bug upstream. The bar still says which level it is rather than
+// printing a broken counter.
+const position = menu.position === null ? `Nivel ${level}` : exercisePositionLabel(level, menu.position, menu.total);
+---
+
+{/* The height comes from the shell's geometry module through a custom property,
+    so the rendered bar and every canvas calculation share one number. */}
+{/* One row from the playable width up, which is where the promise applies:
+    there the shell owns the window height and every pixel of chrome is a pixel
+    the canvas does not get. Below it there is no canvas and the page scrolls,
+    so the level and the exercise get a line of their own instead of 59px of a
+    366px row, which rendered "Nivel 1…" and said nothing. */}
+<header
+  data-testid="forja-topbar"
+  style={`--forja-topbar-height: ${FORJA_TOP_BAR_HEIGHT_PX}px`}
+  class="forja-topbar relative z-40 flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-b border-border-subtle bg-bg-surface px-3 py-3 md:flex-nowrap md:px-5 md:py-0 lg:px-6"
+>
+  {/* The mark goes to the level map, which is La Forja's own home. The blog
+      is a separate destination on the far right, so the two are never the
+      same click.
+
+      The brand under the product name is PRODUCT.md's own words: "La Forja
+      opens full screen with its own name, UNDER the Ingeniería sin Filtros
+      brand". It shipped with the brand living only in the <title>, which is a
+      string the player never reads. It is a second line and a quiet one: the
+      product is what this window is, the brand is whose it is.
+
+      `font-medium` and not `font-bold`, because of what this row is. It is a
+      breadcrumb, and the segment that carries the weight is the last one, the
+      exercise the player is standing in. The mark never changes; making it the
+      loudest thing in the bar was the hierarchy upside down. */}
+  <a
+    href="/forja/niveles"
+    data-testid="forja-mark"
+    class="group flex shrink-0 flex-col justify-center gap-0.5"
+  >
+    <span
+      data-testid="forja-mark-name"
+      class="text-[22px] font-semibold leading-6 text-txt-primary group-hover:text-accent-ink"
+    >
+      La Forja
+    </span>
+    <span class="text-[11px] leading-3 text-txt-muted">Ingeniería sin filtros</span>
+  </a>
+
+  {/* Not hidden on a phone any more. Hiding these two lines left the viewport
+      most first visits arrive at as the one that was told the least about
+      where it is.
+
+      `order-last basis-full` below `md`: squeezed into what the row has left
+      after the mark, the menu, the theme switch and the way out, this had 59px
+      and rendered "Nivel 1…", which is present and useless. A line of its own
+      costs nothing on a phone, where the page scrolls and there is no canvas
+      under the bar. From `md` up it goes back inline and the row is one row
+      again. The title still truncates there, which is what a narrow row owes a
+      45-character exercise name. */}
+  <div class="order-last min-w-0 basis-full md:order-none md:basis-auto md:flex-1">
+    <p data-testid="forja-position" class="truncate text-xs font-medium leading-4 text-txt-muted">{position}</p>
+    <p data-testid="forja-exercise-name" class="truncate text-sm font-medium leading-5 text-txt-primary md:text-[15px]">{title}</p>
+  </div>
+
+  {/* Filled by the island. Empty until React mounts, which is the same frame
+      budget the canvas itself has, since the whole workspace is client:only. */}
+  <div
+    id={FORJA_ACTIONS_SLOT_ID}
+    data-testid="forja-actions"
+    class="ml-auto hidden shrink-0 items-center gap-2 md:flex"
+  >
+  </div>
+
+  {/* No `aria-haspopup` on the control below. It shipped as
+      `aria-haspopup="true"`, whose default value is "menu", over a <nav> of
+      ordinary links: that promises a screen reader an ARIA menu, with roving
+      arrow-key focus and menuitem roles, none of which exists here. This is a
+      disclosure, and `aria-expanded` plus `aria-controls` already say
+      everything true about it. */}
+  <div class="relative ml-auto shrink-0 md:ml-0">
+    <button
+      id="forja-menu-toggle"
+      type="button"
+      data-testid="forja-menu-toggle"
+      aria-expanded="false"
+      aria-controls="forja-menu"
+      class="flex h-10 items-center gap-2 rounded-md border border-border-subtle px-2 text-sm font-medium text-txt-secondary transition-colors duration-150 hover:bg-bg-surface-hover hover:text-txt-primary lg:px-3"
+    >
+      <Icon name="menu" size={14} />
+      Menú
+    </button>
+
+    {/* Its own scroll: fourteen exercises plus the navigation is taller than
+        a short window, and the shell has no page scroll to fall back on. */}
+    <div
+      id="forja-menu"
+      data-testid="forja-menu"
+      class="absolute right-0 top-full z-50 mt-2 hidden max-h-[min(70vh,32rem)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto rounded-md border border-border-card bg-bg-raised p-2 shadow-elevation-1"
+    >
+      <nav aria-label="Ir a otro ejercicio">
+        <div class="flex flex-col gap-1 border-b border-border-subtle pb-2">
+          <a
+            href="/forja/niveles"
+            data-testid="forja-menu-levels"
+            class="rounded-md px-2 py-1.5 text-sm text-txt-secondary hover:bg-bg-surface-hover hover:text-txt-primary"
+          >
+            Mapa de niveles
+          </a>
+          <a
+            href={`/forja/${level}`}
+            data-testid="forja-menu-level"
+            class="rounded-md px-2 py-1.5 text-sm text-txt-secondary hover:bg-bg-surface-hover hover:text-txt-primary"
+          >
+            Lista del nivel {level}
+          </a>
+          <div class="mt-1 flex gap-1">
+            {
+              menu.previous ? (
+                <a
+                  href={menu.previous.href}
+                  data-testid="forja-menu-previous"
+                  class="min-w-0 flex-1 rounded-md border border-border-subtle px-2 py-1.5 text-sm text-txt-secondary hover:text-txt-primary"
+                >
+                  <span class="block text-[10px] uppercase tracking-wide text-txt-muted">Anterior</span>
+                  <span class="block truncate">{menu.previous.title}</span>
+                </a>
+              ) : (
+                <span
+                  data-testid="forja-menu-previous-none"
+                  class="min-w-0 flex-1 rounded-md border border-border-subtle px-2 py-1.5 text-sm text-txt-muted"
+                >
+                  <span class="block text-[10px] uppercase tracking-wide">Anterior</span>
+                  <span class="block truncate">Es el primero del nivel</span>
+                </span>
+              )
+            }
+            {
+              menu.next ? (
+                <a
+                  href={menu.next.href}
+                  data-testid="forja-menu-next"
+                  class="min-w-0 flex-1 rounded-md border border-border-subtle px-2 py-1.5 text-sm text-txt-secondary hover:text-txt-primary"
+                >
+                  <span class="block text-[10px] uppercase tracking-wide text-txt-muted">Siguiente</span>
+                  <span class="block truncate">{menu.next.title}</span>
+                </a>
+              ) : (
+                <span
+                  data-testid="forja-menu-next-none"
+                  class="min-w-0 flex-1 rounded-md border border-border-subtle px-2 py-1.5 text-xs text-txt-muted"
+                >
+                  <span class="block text-[10px] uppercase tracking-wide">Siguiente</span>
+                  <span class="block truncate">Era el último del nivel</span>
+                </span>
+              )
+            }
+          </div>
+        </div>
+
+        <ol class="mt-2 flex flex-col gap-0.5" data-testid="forja-menu-exercises">
+          {
+            menu.entries.map((entry) => (
+              <li data-menu-exercise-id={entry.id}>
+                <a
+                  href={entry.href}
+                  aria-current={entry.current ? 'page' : undefined}
+                  class:list={[
+                    'flex items-baseline gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-bg-surface-hover',
+                    entry.current ? 'bg-accent-dim text-accent-ink' : 'text-txt-secondary hover:text-txt-primary',
+                  ]}
+                >
+                  <span aria-hidden="true" class="font-mono text-[11px] text-txt-muted">
+                    {String(entry.position).padStart(2, '0')}
+                  </span>
+                  <span class="min-w-0 flex-1 truncate">{entry.title}</span>
+                  {/* Filled by the script below. Empty on the server, because
+                      the progress lives in localStorage and a hollow
+                      "pendiente" is indistinguishable from a page that has not
+                      finished loading.
+
+                      No mono and no uppercase here. This slot holds two
+                      different things: a score, which IS an identifier and
+                      gets the mono face from the script, and the word
+                      "pendiente", which is a word. Setting the word in mono
+                      next to fourteen exercise titles in the body face was a
+                      costume, not a distinction. */}
+                  <span data-menu-exercise-state class="shrink-0 text-[10px] text-txt-muted" />
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  {/* The site's switch lives in Navbar.astro, which this shell deliberately
+      does not load. Same key, same class on <html>, so a player who switches
+      here finds the blog in the theme they chose. The token blocks and the
+      before-first-paint script in BaseLayout.astro are still the only copy of
+      either. */}
+  <button
+    id="forja-theme-toggle"
+    type="button"
+    data-testid="forja-theme-toggle"
+    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-txt-muted transition-colors duration-150 hover:bg-bg-surface-hover hover:text-txt-primary"
+    aria-label="Cambiar tema"
+  >
+    <Icon name="moon" size={16} class="forja-moon-icon" />
+    <Icon name="sun" size={16} class="forja-sun-icon hidden" />
+  </button>
+
+  <a
+    href="/blog"
+    data-testid="forja-back-to-blog"
+    aria-label="Volver al blog"
+    class="flex h-10 shrink-0 items-center gap-2 rounded-md px-2 text-xs font-medium text-txt-secondary hover:bg-bg-surface-hover hover:text-txt-primary lg:px-3 lg:text-sm"
+  >
+    <span aria-hidden="true">&larr;</span>
+    <span aria-hidden="true" class="hidden whitespace-nowrap lg:inline">Volver al blog</span>
+    <span aria-hidden="true" class="whitespace-nowrap lg:hidden">Blog</span>
+  </a>
+</header>
+
+<style>
+  @media (min-width: 768px) {
+    .forja-topbar {
+      height: var(--forja-topbar-height);
+    }
+  }
+</style>
+
+<script
+  is:inline
+  type="application/json"
+  data-testid="forja-transfer-profiles"
+  set:html={JSON.stringify(transferProfiles)}
+/>
+
+<script>
+  // The menu's own behaviour. Plain DOM rather than an island: it is a list of
+  // links whose only state is open/closed, and the shell already pays for one
+  // React bundle.
+  const toggle = document.getElementById('forja-menu-toggle')
+  const menu = document.getElementById('forja-menu')
+
+  function closeMenu() {
+    menu?.classList.add('hidden')
+    toggle?.setAttribute('aria-expanded', 'false')
+  }
+
+  toggle?.addEventListener('click', (event) => {
+    event.stopPropagation()
+    const open = toggle.getAttribute('aria-expanded') === 'true'
+    menu?.classList.toggle('hidden', open)
+    toggle.setAttribute('aria-expanded', String(!open))
+    // Opening a disclosure moves focus into what it disclosed. Without this a
+    // keyboard player pressed Enter, the panel appeared, and their next Tab
+    // went to the theme switch past it: the fourteen links they had just asked
+    // for were reached by tabbing backwards or not at all. Escape already
+    // brings focus back here, which is the other half of the same contract.
+    if (!open) menu?.querySelector('a')?.focus()
+  })
+
+  // "Every panel that opens can be closed", the same promise the result panel
+  // and the context menu already keep. Escape returns focus to the control
+  // that opened it, so a keyboard player is never left adrift in the page.
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return
+    if (menu?.classList.contains('hidden')) return
+    closeMenu()
+    toggle?.focus()
+  })
+
+  document.addEventListener('click', (event) => {
+    if (menu?.classList.contains('hidden')) return
+    if (menu?.contains(event.target as Node)) return
+    closeMenu()
+  })
+</script>
+
+<script>
+  // Which of the level's exercises this player has already solved. Reads the
+  // same LocalRankingAdapter the canvas writes to; nothing is stored here.
+  import { localRankingAdapter } from '../../lib/forja/ranking/local-adapter'
+  import { localTransferEvidenceAdapter } from '../../lib/forja/progression/transfer-evidence-local-adapter'
+  import { exerciseProgress, progressStateLabel } from '../../lib/forja/progression/progress'
+  import type { ExerciseLearningConcepts } from '../../lib/forja/progression/learning-concepts'
+
+  function transferProfiles(): ExerciseLearningConcepts[] {
+    const source = document.querySelector<HTMLScriptElement>('[data-testid="forja-transfer-profiles"]')
+    if (!source?.textContent) return []
+    try {
+      return JSON.parse(source.textContent)
+    } catch {
+      return []
+    }
+  }
+
+  function renderProgress() {
+    const transferEvidence = localTransferEvidenceAdapter.getAll()
+    const profiles = transferProfiles()
+    for (const item of document.querySelectorAll<HTMLElement>('[data-menu-exercise-id]')) {
+      const id = item.dataset.menuExerciseId
+      const mark = item.querySelector<HTMLElement>('[data-menu-exercise-state]')
+      if (!id || !mark) continue
+      const progress = exerciseProgress(localRankingAdapter, id, transferEvidence, {
+        transferProfiles: profiles,
+      })
+      mark.textContent = progressStateLabel(progress, 'compact')
+      mark.classList.toggle('text-accent-ink', progress.completed && !progress.reviewDue)
+      mark.classList.toggle('text-txt-muted', !progress.completed && !progress.reviewDue)
+      mark.classList.toggle('text-danger-ink', progress.reviewDue)
+      // The mono face belongs to the score and to nothing else here. A number
+      // in a column of fourteen is an identifier and reads better aligned; the
+      // word "pendiente" is prose and was wearing the face as a costume.
+      mark.classList.toggle('font-mono', progress.attempted && !progress.completed && progress.bestScore !== null)
+      mark.classList.toggle('tabular-nums', progress.attempted && !progress.completed && progress.bestScore !== null)
+    }
+  }
+
+  renderProgress()
+  // Back-navigation restores this page from the bfcache without re-running the
+  // module, so an exercise just solved would not show up until a reload.
+  window.addEventListener('pageshow', renderProgress)
+</script>
+
+<script>
+  // The theme switch. Navbar.astro owns the site's copy and this shell does
+  // not load Navbar, so the behaviour is repeated here. The class on <html>
+  // and the storage key are not repeated: they are the same ones
+  // BaseLayout.astro reads before the first paint.
+  const themeToggle = document.getElementById('forja-theme-toggle')
+  const moon = themeToggle?.querySelector<HTMLElement>('.forja-moon-icon')
+  const sun = themeToggle?.querySelector<HTMLElement>('.forja-sun-icon')
+
+  function paintThemeIcons() {
+    const isDark = document.documentElement.classList.contains('dark')
+    moon?.classList.toggle('hidden', isDark)
+    sun?.classList.toggle('hidden', !isDark)
+  }
+
+  paintThemeIcons()
+
+  themeToggle?.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.toggle('dark')
+    try {
+      localStorage.setItem('theme', isDark ? 'dark' : 'light')
+    } catch {
+      // The visual switch still works when a privacy mode rejects storage.
+    }
+    paintThemeIcons()
+  })
+</script>

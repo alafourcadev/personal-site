@@ -1,15 +1,21 @@
-// La Forja evaluation engine — the 13 §13.7 rules, ported verbatim (logic
+// La Forja evaluation engine, the 13 §13.7 rules, ported verbatim (logic
 // from forja-canvas.html:337-480, "why" copy from doc 13 §13.7 word for word;
 // port-mismatch's copy has no §13.7 entry so it is ported from the prototype).
 // Two prototype defects are fixed here, not carried over: the dead
 // `n.type === "stream"` branch (missing catalog entry, not a bad rule) and
 // the catalog gaps closed in catalog.ts.
 import { CATALOG } from './catalog'
-import { isPortCompatible, isTrustZoneJump } from './legality'
+import { isPortCompatible, isTrustZoneJump, ZONE_NAMES } from './legality'
 import type { Design, DesignNode, Finding, RuleId, Severity } from './types'
 
+// Exported for the same reason WHY is: index.ts's checkConnection() shows this
+// exact sentence live, and two hand-written copies of it would drift.
+// Qualifies each box with the *name* of its zone, never the internal key.
+export const zoneJumpEvidence = (a: DesignNode, b: DesignNode) =>
+  `${a.label} (${ZONE_NAMES[a.zone]}) → ${b.label} (${ZONE_NAMES[b.zone]})`
+
 // Exported so index.ts's checkConnection() can reuse the exact same copy for
-// the live connection-refusal gesture — "the same module the scorer gates
+// the live connection-refusal gesture: "the same module the scorer gates
 // on" (design's connection-gesture diagram).
 export const WHY = {
   trustZoneJump:
@@ -36,10 +42,16 @@ export const WHY = {
     'El diseño es correcto y el equipo no lo puede sostener. Un sistema que nadie puede operar es un sistema que se degrada solo.',
   undeclaredDataClass:
     'Sin saber qué viaja no se puede evaluar exposición ni retención. No es un error: es información que falta.',
+  // Both take the human name of a *kind* of piece (CATALOG[type].name), never
+  // the internal `ComponentType` key: this is the message a player reads more
+  // often than any other, and §5 forbids engine vocabulary in it. The
+  // indefinite article the prototype carried ("un ${target}") is gone because
+  // the names are gendered noun phrases. "un Base de datos" would trade one
+  // defect for a worse one. Nothing else about the sentences changed.
   portMismatchHuman: (target: string) =>
-    `Una persona no usa un ${target} directamente: usa un cliente. Falta la pieza por la que entra — móvil, web o un tercero con contrato.`,
+    `Una persona no usa ${target} directamente: usa un cliente. Falta la pieza por la que entra: móvil, web o un tercero con contrato.`,
   portMismatchStructural: (source: string, target: string) =>
-    `Un ${target} no expone un puerto que acepte a un ${source}. No es una decisión discutible: es un error de forma.`,
+    `${target} no expone un puerto que acepte a ${source}. No es una decisión discutible: es un error de forma.`,
 }
 
 const byId = (nodes: DesignNode[], id: string) => nodes.find((n) => n.id === id)
@@ -66,13 +78,17 @@ export function evaluateRules(design: Design, opsCapacity = 4): Finding[] {
 
     if (isTrustZoneJump(a.zone, b.zone))
       add('trust-zone-jump', 'blocking', 'Salto de zona de confianza',
-        `${a.label} (${a.zone}) → ${b.label} (${b.zone})`, WHY.trustZoneJump, [a.id, b.id], [e.id])
+        zoneJumpEvidence(a, b), WHY.trustZoneJump, [a.id, b.id], [e.id])
 
     if (!isPortCompatible(a.type, b.type)) {
       const humanSource = a.type === 'actor' || a.type === 'approver'
       add('port-mismatch', 'blocking', 'Conexión imposible por contrato',
-        `${a.type} → ${b.type}`,
-        humanSource ? WHY.portMismatchHuman(b.type) : WHY.portMismatchStructural(a.type, b.type),
+        // Evidence points at the two boxes on the canvas, like the seven
+        // rules around it. The *why* below is the one that talks about kinds.
+        `${a.label} → ${b.label}`,
+        humanSource
+          ? WHY.portMismatchHuman(CATALOG[b.type].name)
+          : WHY.portMismatchStructural(CATALOG[a.type].name, CATALOG[b.type].name),
         [a.id, b.id], [e.id])
     }
 
@@ -99,11 +115,16 @@ export function evaluateRules(design: Design, opsCapacity = 4): Finding[] {
 
     if (n.type === 'database' && n.props.backup === 'none' && inbound.some((e) => e.dataClass === 'regulated'))
       add('regulated-without-backup', 'blocking', 'Dato regulado sin respaldo',
-        `${n.label} · backup: none`, WHY.regulatedWithoutBackup, [n.id])
+        // Translated like `single-point-of-failure` right below, which
+        // already reads `réplicas: 1 · criticidad: alta`. These were the
+        // last two evidence lines in the file printing a raw property key
+        // and an English value at the player (§5: zero engine vocabulary in
+        // what the player reads).
+        `${n.label} · sin respaldo`, WHY.regulatedWithoutBackup, [n.id])
 
     if (n.type === 'queue' && n.props.delivery === 'at-least-once' && n.props.dlq === 'no')
       add('queue-without-dlq', 'warning', 'Cola sin destino para mensajes fallidos',
-        `${n.label} · at-least-once · sin cola de mensajes muertos`, WHY.queueWithoutDlq, [n.id])
+        `${n.label} · entrega al menos una vez · sin cola de mensajes muertos`, WHY.queueWithoutDlq, [n.id])
 
     // Revived vs. the prototype: `stream` is now a real catalog type (D4),
     // so this branch fires instead of being unreachable dead code.

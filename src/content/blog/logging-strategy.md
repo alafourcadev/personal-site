@@ -1,5 +1,5 @@
 ---
-title: "Día 11: System.out.println en producción — la confesión que nadie hace"
+title: "Día 11: System.out.println en producción, la confesión que nadie hace"
 description: "Tus logs son ruido puro. Sin timestamp, sin nivel, sin contexto. A las 3AM con producción caído, ese println no te va a salvar. Día 11 de #100ArchitectureDays."
 tags: ["Java", "Spring Boot", "Architecture", "100ArchitectureDays"]
 date: 2026-04-13
@@ -12,7 +12,7 @@ Son las 3 de la mañana. Producción está caído. Abres los logs. 50.000 línea
 
 Bienvenido a tu propia pesadilla. La diseñaste tú mismo.
 
-Y antes de que digas "yo no hago eso" — haz un `grep` rápido de `System.out.println` en tu proyecto. O de `console.log` si estás en Node. O de `print()` sin `logging` si estás en Python. El resultado te va a sorprender.
+Y antes de que digas "yo no hago eso", haz un `grep` rápido de `System.out.println` en tu proyecto. O de `console.log` si estás en Node. O de `print()` sin `logging` si estás en Python. El resultado te va a sorprender.
 
 ## Esto no es solo de Java
 
@@ -31,10 +31,10 @@ El problema es el mismo en todos los casos: estás imprimiendo texto plano a std
 
 No es solo que no tenga metadata. Es que **afecta el rendimiento**:
 
-1. **Es sincrónico** — cada println bloquea el thread hasta que el output se flushea. Con 200 threads concurrentes, todos escribiendo a stdout, creas contención en un recurso compartido.
-2. **No tiene niveles** — no puedes filtrar. ¿Quieres ver solo errores? Imposible. Es todo o nada.
-3. **No tiene contexto** — cuando 100 requests concurrentes imprimen "Procesando pago...", no sabes cuál es cuál.
-4. **No rota** — stdout no tiene rotación de archivos. Si redireccionas a un archivo, crece hasta llenar el disco.
+1. **Es sincrónico**: cada println bloquea el thread hasta que el output se flushea. Con 200 threads concurrentes, todos escribiendo a stdout, creas contención en un recurso compartido.
+2. **No tiene niveles**: no puedes filtrar. ¿Quieres ver solo errores? Imposible. Es todo o nada.
+3. **No tiene contexto**: cuando 100 requests concurrentes imprimen "Procesando pago...", no sabes cuál es cuál.
+4. **No rota**: stdout no tiene rotación de archivos. Si redireccionas a un archivo, crece hasta llenar el disco.
 
 ## El ANTES: el caos
 
@@ -175,8 +175,8 @@ Haz un `grep` de `System.out.println` en tu proyecto. Si aparece más de cero ve
 
 ## Esto es el Día 11
 
-Este artículo es parte de **#100ArchitectureDays** — una serie de problemas reales de arquitectura con soluciones reales.
+Este artículo es parte de **#100ArchitectureDays**, una serie de problemas reales de arquitectura con soluciones reales.
 
 Sigue la saga completa en **#100ArchitectureDays**.
 
-Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days) — con el BEFORE/AFTER para que veas la diferencia en la consola en tiempo real. Si te está sirviendo, déjame una estrella — es gratis y ayuda a que más gente lo encuentre.
+Todo el código está en [GitHub](https://github.com/alafourcadev/100-architecture-days), con el BEFORE/AFTER para que veas la diferencia en la consola en tiempo real. Si te está sirviendo, déjame una estrella. Es gratis y ayuda a que más gente lo encuentre.

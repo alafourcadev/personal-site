@@ -1,34 +1,132 @@
 ---
-// R1-G: the last piece of R1 — a route that actually LOADS a real
-// exercise's guarantees, budget and lambda into the canvas, replacing the
-// `/forja/[level]/index.astro` list-only view once a specific exercise is
-// picked. Static output (like every other content route in astro.config.mjs
-// — no server adapter), so getStaticPaths owns which paths exist: only
-// PILOT/PUBLISHED exercises (EC6, same filter every other Forja route
-// already applies), never a DRAFT one.
+// La Forja's exercise screen.
+//
+// TESIS. La pantalla del ejercicio es un banco de trabajo donde el diagrama es
+// protagonista y el problema nunca sale de vista. Desde 1280px la consigna y
+// las herramientas son columnas reales con scroll propio, sin cubrir el
+// diseño. En una laptop compacta la consigna conserva el modo superpuesto que
+// protege la legibilidad del diagrama.
+//
+// MUNDO PROPIO. Heredado, no inventado. El sistema de dos temas ya construido:
+// en oscuro la elevación se hace con superficie y línea, en claro con sombra.
+// Inter para cuerpo, Outfit para títulos, JetBrains Mono para identificadores.
+// Acento verde de marca con tinta `--on-accent`.
+//
+// HISTORIA. El jugador llega, lee el objetivo junto al diagrama, construye con
+// la biblioteca al otro lado, pliega cualquiera de los dos apoyos cuando
+// necesita concentración y evalúa sin perder el diseño.
+//
+// DEUDA, NO ENTREGADA: "el veredicto llega donde estaba el objetivo". El
+// veredicto sigue abriendo como riel derecho, no en el lugar que ocupaba la
+// tarjeta de objetivo. Lo que sí está hecho es la mitigación: al llegar el
+// veredicto la consigna se pliega a su tira, porque abierta se paraba encima
+// del 57 % del panel a 1440 (verdictFoldsStatement en forja-shell.ts). Eso
+// evita el daño; no cumple la promesa. Cumplirla es mover el veredicto al
+// ancla de la tarjeta, y eso todavía no se hizo.
+//
+// PRIMER VIEWPORT. Lienzo a sangre, sin scroll de página. Barra superior con
+// la identidad de La Forja, el progreso, las acciones y la salida al blog.
+// Consigna a la izquierda, biblioteca a la derecha y pleca en ambos bordes.
+//
+// FORMA. Candidato 3 de 7 estructuras fundadas, asignado por el dado
+// `5b10d0a1`, alcance superficie, modo operar. Ningún retador adoptado.
+//
+// ---
+//
+// The evidence, measured in the browser against a production build rather than
+// estimated (canvas width and the on-screen size of a node title at 1440px):
+//
+//   consigna como columna     lienzo  606px   título  7,69px
+//   consigna fuera del flujo  lienzo 1090px   título 13,21px
+//
+// And the finding underneath it: there is no laptop width where a 460px column
+// and a legible canvas both fit. Raising the split breakpoint to 1344 was
+// measured too and gives 6,19px titles, under the 7px the code itself declares
+// unacceptable.
+//
+// Static output (like every other content route in astro.config.mjs, with no
+// server adapter), so getStaticPaths owns which paths exist: only
+// PILOT/PUBLISHED exercises (EC6, the same filter every other Forja route
+// applies), never a DRAFT one.
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import ExerciseBrief from '../../../components/forja/ExerciseBrief.astro';
+import ForjaTopBar from '../../../components/forja/ForjaTopBar.astro';
 import { ForjaCanvas } from '../../../components/forja/canvas/ForjaCanvas';
-import RankingStrip from '../../../components/forja/RankingStrip.astro';
 import { isPlayable } from '../../../lib/forja/progression/types';
+import { difficultyIndex } from '../../../lib/forja/progression/difficulty';
+import { designFingerprint } from '../../../components/forja/canvas/reference-solutions';
+import { nextStepFor } from '../../../components/forja/canvas/next-step';
+import { levelMenuFor } from '../../../lib/forja/progression/level-menu';
+import { learningConceptProfiles } from '../../../lib/forja/progression/learning-concepts';
 import type { LoadedExercise } from '../../../lib/forja/playground/loaded-exercise';
+import '../../../components/forja/exercise-brief.css';
+// The pleca is drawn once for both rails. The island imports this too, but the
+// statement's rail is server-rendered and on screen before any bundle exists,
+// so the page has to carry it as well or the control is unstyled for the frame
+// that matters most.
+import '../../../components/forja/canvas/rail-pleca.css';
 
 export async function getStaticPaths() {
   const exercises = await getCollection('forjaExercises', ({ data }) => isPlayable(data.status));
+  // The level's playable set, reduced to what the play order needs. Built
+  // once here (getCollection already ran) and handed to each path as props,
+  // so "what comes next" is resolved at build time from the same
+  // progression/order.ts the level list renders, never a second ordering.
+  const orderable = exercises.map((entry) => ({
+    id: entry.id,
+    level: entry.data.level,
+    title: entry.data.title,
+    role: entry.data.role,
+    difficultyIndex: difficultyIndex(entry.data),
+    tradeoffPairId: entry.data.tradeoffPairId,
+  }));
+  // One milestone per level. Requiring all drills would turn deliberate
+  // practice into checklist completion; synthesis exercises are where the
+  // player has to integrate the level's decisions.
+  const requiredMasteryExerciseIds = orderable
+    .filter((exercise) => exercise.role === 'synthesis')
+    .map((exercise) => exercise.id);
+  const transferProfiles = learningConceptProfiles(exercises.map((exercise) => ({
+    id: exercise.id,
+    level: exercise.data.level,
+  })));
   return exercises.map((entry) => ({
     params: { level: String(entry.data.level), exercise: entry.id },
-    props: { entry },
+    props: {
+      entry,
+      siblings: orderable.filter((o) => o.level === entry.data.level),
+      requiredMasteryExerciseIds,
+      transferProfiles,
+    },
   }));
 }
 
-const { entry } = Astro.props;
+const { entry, siblings, requiredMasteryExerciseIds, transferProfiles } = Astro.props;
 const { Content } = await render(entry);
 
-// R1-G requirement 3: "el lienzo carga ESE ejercicio — sus garantías, sus
-// pesos, su presupuesto, su capacidad de equipo" — the minimal serializable
-// slice `ForjaCanvas` (client:only="react") needs, never the full
-// ExerciseFrontmatter (title/domain/prose stay server-rendered above, in
+// The 192 explanations that were written and never shown. Each reference
+// solution's `contextInversion` says in which context THAT solution is the
+// better decision and the other is not. That is the product's own thesis, and
+// until now a field that existed nowhere outside the validation schema. Only the
+// prose and the component types travel to the island: the full reference
+// graph would be an answer key, and the engine deliberately does not
+// autocorrect (see reference-solutions.ts for when it surfaces at all).
+const referenceSolutions = entry.data.referenceSolutions.map((solution) => ({
+  label: solution.label,
+  contextInversion: solution.contextInversion,
+  fingerprint: designFingerprint(solution.design),
+}));
+
+const nextStep = nextStepFor(siblings, entry.id, entry.data.level);
+// The same ordering, once more, for the bar's menu: where the player is inside
+// the level, the whole level in play order, and the two steps beside this one.
+const menu = levelMenuFor(siblings, entry.id, entry.data.level);
+
+// R1-G requirement 3: "el lienzo carga ESE ejercicio, sus garantías, sus
+// pesos, su presupuesto, su capacidad de equipo". This is the minimal
+// serializable slice `ForjaCanvas` (client:only="react") needs, never the full
+// ExerciseFrontmatter (title/domain/prose stay server-rendered, in
 // ExerciseBrief, never re-sent to the island).
 const loadedExercise: LoadedExercise = {
   id: entry.id,
@@ -43,25 +141,147 @@ const loadedExercise: LoadedExercise = {
 ---
 
 <BaseLayout
-  title={`${entry.data.title} — Nivel ${entry.data.level} | La Forja | Ingeniería sin filtros`}
+  title={`${entry.data.title} | Nivel ${entry.data.level} | La Forja | Ingeniería sin filtros`}
   description={entry.data.title}
-  navVariant="blog"
-  footerVariant="simple"
   noindex={true}
+  chrome="app"
 >
-  <!-- Same full-bleed breakout as /forja/index.astro (D5's own layout note)
-       — the playground is a tool, not an article, so it must not inherit
-       BaseLayout's shared centered max-w shell. -->
-  <section class="relative ml-[calc(50%_-_50vw)] mr-[calc(50%_-_50vw)] w-screen px-4 py-8 md:px-6">
-    <a href={`/forja/${entry.data.level}`} class="text-sm text-txt-secondary hover:text-txt-primary">
-      &larr; Nivel {entry.data.level}
-    </a>
-    <div class="mx-auto mt-4 max-w-3xl">
+  <ForjaTopBar level={entry.data.level} title={entry.data.title} menu={menu} transferProfiles={transferProfiles} />
+
+  {/* One semantic workbench, read from the problem to the design and then to
+      its tools. At wide desktop widths these are three real columns. On a
+      compact laptop the statement keeps its measured overlay behaviour, and
+      below 768px this wrapper becomes the reading screen. */}
+  <div data-forja-workbench class="relative min-h-0 flex-1">
+    {/* One statement, two jobs, one copy in the document. It is server-rendered
+        because the exercise prose is markdown. A second copy would duplicate
+        its ids and leave the disclosure control naming two regions. */}
+    <div data-forja-statement class="px-4 py-6 md:p-0">
       <ExerciseBrief exercise={entry.data}>
         <Content />
       </ExerciseBrief>
+
+      {/* Below 768px the product is readable, not playable. PRODUCT.md calls
+          this a decided constraint, not a gap: the canvas needs pointer
+          precision, and what shipped instead was a silently broken game with
+          3.2px connection handles. So the small screen gets a screen that
+          works: the whole statement, the way to the level map, and one honest
+          line about where to finish it. */}
+      <div data-forja-reading class="md:hidden">
+        <p class="mt-6 text-sm text-txt-secondary">
+          Este ejercicio se resuelve arrastrando piezas en un lienzo, y eso pide una pantalla ancha y un puntero preciso.
+          Acá podés leerlo entero. Abrilo desde una computadora para jugarlo.
+        </p>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <a
+            href="/forja/niveles"
+            class="rounded-md border border-border-subtle px-3 py-2 text-sm text-txt-secondary hover:text-txt-primary"
+          >
+            Ver el mapa de niveles
+          </a>
+          <a
+            href={`/forja/${entry.data.level}`}
+            class="rounded-md border border-border-subtle px-3 py-2 text-sm text-txt-secondary hover:text-txt-primary"
+          >
+            Ver el nivel {entry.data.level}
+          </a>
+        </div>
+      </div>
     </div>
-    <ForjaCanvas client:only="react" exercise={loadedExercise} />
-    <RankingStrip />
-  </section>
+
+    {/* `min-h-0` lets the island shrink to the row it was given instead of
+        growing to its content and restoring page scroll. */}
+    <div data-forja-workspace class="hidden min-h-0 md:block">
+      <ForjaCanvas
+        client:only="react"
+        shell
+        exercise={loadedExercise}
+        referenceSolutions={referenceSolutions}
+        nextStep={nextStep}
+        requiredMasteryExerciseIds={requiredMasteryExerciseIds}
+        transferProfiles={transferProfiles}
+      />
+    </div>
+  </div>
+
+  {/* `is:inline`, and placed here rather than at the end of the page, for two
+      reasons that are both about the frame before hydration: it runs the
+      moment the card has been parsed, so a player who folded it never sees it
+      unfold first; and it runs before the playground island exists, so the
+      canvas frames its diagram once, against the padding the fold state
+      actually implies, instead of twice.
+
+      The state lives on <html> rather than on a wrapper: the card, the
+      stylesheet and the island all have to read it, and the island is a
+      sibling that would otherwise need a DOM path into somebody else's box.
+      It is the same mechanism the theme already uses, for the same reason.
+
+      Inline means unbundled, which means it cannot import the module that owns
+      this key. tests/canvas/layout-literals.test.ts ties the two copies
+      together, the same gate the library rail's own width has. */}
+  <script is:inline>
+    ;(() => {
+      const KEY = 'forja:statement-collapsed:v1'
+      const ATTRIBUTE = 'data-statement-collapsed'
+      const root = document.documentElement
+      const collapsed = () => root.getAttribute(ATTRIBUTE) === 'true'
+
+      // The attribute is the ONLY copy of the state, and this script does not
+      // keep a second one. It used to: a `let collapsed` here, flipped on
+      // every click. That went stale the moment anybody else wrote the
+      // attribute, and somebody else does. When a verdict arrives the
+      // playground folds the objective out of its way by writing it directly
+      // (ForjaCanvas.tsx), and a stale variable here would have cost the
+      // player a press: the first click after a verdict would have folded an
+      // already folded card and looked like nothing happened.
+      // The two halves of the control that a stylesheet cannot own: whether it
+      // reports itself expanded, and which way its chevron points. The label is
+      // picked by CSS off the same attribute, so all three always agree.
+      //
+      // 'left' and 'right' here are plecaDirection('left', collapsed) written
+      // out, because this script is unbundled and cannot import it. The
+      // statement is the LEFT rail: open, its pleca points left, at the edge the
+      // rail is about to leave through; folded, it points back into the canvas.
+      // tests/canvas/layout-literals.test.ts ties this copy to the rule.
+      const syncToggles = () => {
+        const isCollapsed = collapsed()
+        for (const toggle of document.querySelectorAll('[data-statement-toggle]')) {
+          toggle.setAttribute('aria-expanded', String(!isCollapsed))
+          toggle.setAttribute('data-pleca-direction', isCollapsed ? 'right' : 'left')
+        }
+      }
+
+      let stored = false
+      try {
+        stored = localStorage.getItem(KEY) === '1'
+      } catch {
+        // Private mode throws on access rather than answering. The statement
+        // is what the exercise is about: when the preference cannot be read,
+        // it stays open.
+      }
+      root.setAttribute(ATTRIBUTE, String(stored))
+      syncToggles()
+
+      // So the control and the screen agree no matter who wrote the state.
+      // The stylesheet already picks the label off the same attribute; this is
+      // the half a screen reader reads.
+      new MutationObserver(syncToggles).observe(root, { attributes: true, attributeFilter: [ATTRIBUTE] })
+
+      // Delegated, because a control that folds the statement has to keep
+      // working whichever of the two screens the width is showing.
+      document.addEventListener('click', (event) => {
+        const toggle = event.target.closest('[data-statement-toggle]')
+        if (!toggle) return
+        const next = !collapsed()
+        // Only a press writes the preference. The fold a verdict performs is
+        // the arrangement that verdict needs, never a choice the player made.
+        try {
+          localStorage.setItem(KEY, next ? '1' : '0')
+        } catch {
+          // A full quota costs the preference, never the fold itself.
+        }
+        root.setAttribute(ATTRIBUTE, String(next))
+      })
+    })()
+  </script>
 </BaseLayout>

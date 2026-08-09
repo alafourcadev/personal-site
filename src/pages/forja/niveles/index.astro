@@ -1,56 +1,309 @@
 ---
-// The level map [PR5]. Static, informational — no player account exists
+// The level map [PR5]. Static and informational, because no player account exists
 // yet (R3), so "locked" here means "no playable content yet", not a
-// per-player progress gate. Level 4 is the first (and, in R1, only) level
-// with playable exercises — proven by content alone, not by a hardcoded
-// flag, so it stays correct once R2 adds more levels.
+// per-player progress gate. Which levels are playable is proven by content
+// alone, not by a hardcoded flag.
+//
+// C2: this page used to say "Jugable" on every playable card and nothing
+// else, so a player with 168 exercises in front of them had no way to tell
+// what they had already done, although every attempt has been persisted
+// since R1. The count is per level and overall, and it is computed in the
+// browser: the page is static HTML and the attempts live in localStorage.
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { LEVELS } from '../../../lib/forja/progression/levels';
 import { isPlayable } from '../../../lib/forja/progression/types';
+import { publishedLabel } from '../../../lib/forja/progression/progress';
+import { orderLevelEntries } from '../../../lib/forja/progression/level-listing';
+import {
+  CURRICULUM_ARCS,
+  recommendContinue,
+  type GuidedExercise,
+} from '../../../lib/forja/progression/guided-route';
 
 const playableExercises = await getCollection('forjaExercises', ({ data }) => isPlayable(data.status));
-const playableLevelIds = new Set(playableExercises.map((e) => e.data.level));
+
+// The client needs to know which exercise ids belong to which level. An
+// attempt in localStorage stores its exerciseId and nothing else, and the
+// slug cannot be parsed for a level (level 4's first exercises carry no `n4-`
+// prefix). Published here as data rather than guessed there.
+const exerciseIdsByLevel: Record<string, string[]> = {};
+const guidedExercises: GuidedExercise[] = [];
+for (const level of LEVELS) {
+  const ordered = orderLevelEntries(playableExercises.filter((exercise) => exercise.data.level === level.id));
+  exerciseIdsByLevel[String(level.id)] = ordered.map((exercise) => exercise.id);
+  guidedExercises.push(
+    ...ordered.map((exercise) => ({
+      id: exercise.id,
+      level: level.id,
+      title: exercise.data.title,
+      href: `/forja/${level.id}/${exercise.id}`,
+    })),
+  );
+}
+
+const firstRecommendation = recommendContinue(guidedExercises, new Set());
 ---
 
 <BaseLayout
-  title="Niveles — La Forja | Ingeniería sin filtros"
+  title="Niveles | La Forja | Ingeniería sin filtros"
   description="El mapa de 12 niveles de La Forja."
   navVariant="blog"
   footerVariant="simple"
   noindex={true}
 >
-  <section class="mx-auto max-w-3xl px-4 py-8 md:px-6">
-    <header class="mb-6">
+  <section class="mx-auto max-w-4xl px-4 py-8 md:px-6">
+    <header class="mb-7 max-w-3xl">
+      <a href="/forja" class="text-sm text-txt-secondary hover:text-txt-primary">&larr; La Forja</a>
       <h1 class="text-2xl font-heading font-bold text-txt-primary">Niveles</h1>
+      <!-- Honest first paint: the size of the game is true for every player,
+           a solved count is not, so the script below fills that in. -->
+      <p data-testid="forja-overall-progress" class="mt-1 text-sm text-txt-secondary">
+        {publishedLabel(playableExercises.length)}
+      </p>
     </header>
-    <ul class="flex flex-col gap-3">
-      {
-        LEVELS.map((level) => {
-          const playable = playableLevelIds.has(level.id);
-          return (
-            <li
-              data-testid="level-card"
-              data-level-id={level.id}
-              data-playable={playable}
-              class="rounded-lg border border-border-subtle bg-bg-surface p-4"
-            >
-              {playable ? (
-                <a href={`/forja/${level.id}`} class="text-base font-semibold text-txt-primary hover:text-accent">
-                  Nivel {level.id} — {level.name}
-                </a>
-              ) : (
-                <span class="text-base font-semibold text-txt-muted">
-                  Nivel {level.id} — {level.name}
-                </span>
-              )}
-              <p class="mt-1 text-sm text-txt-secondary">
-                {playable ? 'Jugable' : 'Próximamente — todavía sin ejercicios publicados'}
+
+    {
+      firstRecommendation && (
+        <section
+          id="siguiente-paso"
+          data-testid="forja-continue-card"
+          class="mb-8 rounded-xl border border-accent/40 bg-bg-surface p-5 md:p-6"
+          aria-labelledby="continue-title"
+        >
+          <div data-testid="forja-first-run" class="mb-5 border-b border-border-subtle pb-5">
+            <div class="flex flex-col items-start gap-2 sm:flex-row sm:justify-between sm:gap-4">
+              <div>
+                <p class="font-mono text-xs font-semibold tracking-wider text-accent">PRIMERA VEZ</p>
+                <h2 class="mt-1 font-heading text-lg font-bold text-txt-primary">
+                  Llegá al primer ejercicio con una estrategia
+                </h2>
+              </div>
+              <button
+                type="button"
+                data-testid="forja-onboarding-dismiss"
+                class="min-h-[44px] shrink-0 text-sm font-medium text-txt-secondary underline decoration-border-strong underline-offset-4 hover:text-txt-primary"
+              >
+                Ya conozco la dinámica
+              </button>
+            </div>
+            <ol class="mt-4 grid gap-3 text-sm leading-relaxed text-txt-secondary sm:grid-cols-3">
+              <li><strong class="text-txt-primary">1. Leé la garantía.</strong> Es lo que tu diseño debe proteger.</li>
+              <li><strong class="text-txt-primary">2. Diseñá lo mínimo.</strong> Cada pieza y conexión suma costo.</li>
+              <li><strong class="text-txt-primary">3. Probá y corregí.</strong> El resultado explica qué se rompe y por qué.</li>
+            </ol>
+          </div>
+
+          <p data-testid="continue-eyebrow" class="font-mono text-xs font-semibold tracking-wider text-accent">
+            {firstRecommendation.eyebrow}
+          </p>
+          <div class="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div class="max-w-2xl">
+              <h2 id="continue-title" data-testid="continue-title" class="font-heading text-xl font-bold text-txt-primary">
+                {firstRecommendation.title}
+              </h2>
+              <p data-testid="continue-description" class="mt-1.5 text-sm leading-relaxed text-txt-secondary">
+                {firstRecommendation.description}
               </p>
-            </li>
+              <p class="mt-2 text-xs text-txt-muted">La recomendación usa sólo el progreso guardado en este navegador.</p>
+            </div>
+            <a
+              href={firstRecommendation.href}
+              data-testid="continue-link"
+              data-onboarding-start
+              class="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl bg-accent px-5 py-2.5 font-bold text-bg-deep transition-transform hover:-translate-y-0.5"
+            >
+              {firstRecommendation.label}
+            </a>
+          </div>
+        </section>
+      )
+    }
+
+    <aside class="mb-9 flex flex-col gap-3 rounded-lg border border-border-subtle bg-bg-elevated p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 class="font-heading text-base font-bold text-txt-primary">¿Ya trabajás con sistemas en producción?</h2>
+        <p class="mt-1 text-sm text-txt-secondary">Usá una prueba corta para elegir dónde entrar. No desbloquea ni certifica nada.</p>
+      </div>
+      <a
+        href="/forja/ubicacion"
+        data-testid="placement-test-link"
+        class="inline-flex min-h-[44px] shrink-0 items-center font-semibold text-accent hover:underline"
+      >
+        Hacer la prueba de ubicación &rarr;
+      </a>
+    </aside>
+
+    <div class="flex flex-col gap-9" data-testid="curriculum-arcs">
+      {
+        CURRICULUM_ARCS.map((arc, arcIndex) => {
+          const arcLevels = arc.levelIds.map((levelId) => LEVELS.find((level) => level.id === levelId)).filter(Boolean);
+          return (
+            <section data-testid="curriculum-arc" data-arc-id={arc.id} aria-labelledby={`arc-${arc.id}`}>
+              <header class="mb-3 sm:flex sm:items-end sm:justify-between sm:gap-5">
+                <div>
+                  <p class="font-mono text-xs font-semibold tracking-wider text-txt-muted">ARCO {String(arcIndex + 1).padStart(2, '0')}</p>
+                  <h2 id={`arc-${arc.id}`} class="mt-1 font-heading text-xl font-bold text-txt-primary">{arc.name}</h2>
+                </div>
+                <p class="mt-1 max-w-xl text-sm leading-relaxed text-txt-secondary sm:text-right">{arc.outcome}</p>
+              </header>
+              <ol class="flex flex-col gap-3">
+                {arcLevels.map((level) => {
+                  if (!level) return null;
+                  const exerciseIds = exerciseIdsByLevel[String(level.id)] ?? [];
+                  const playable = exerciseIds.length > 0;
+                  return (
+                    <li
+                      data-testid="level-card"
+                      data-level-id={level.id}
+                      data-playable={playable}
+                      class="rounded-lg border border-border-subtle bg-bg-surface p-4"
+                    >
+                      {playable ? (
+                        <a href={`/forja/${level.id}`} class="text-base font-semibold text-txt-primary hover:text-accent">
+                          Nivel {level.id} · {level.name}
+                        </a>
+                      ) : (
+                        <span class="text-base font-semibold text-txt-muted">
+                          Nivel {level.id} · {level.name}
+                        </span>
+                      )}
+                      <p data-testid="level-card-progress" class="mt-1 text-sm text-txt-secondary">
+                        {playable ? publishedLabel(exerciseIds.length) : 'Próximamente. Todavía sin ejercicios publicados'}
+                      </p>
+                      <p data-testid="level-prerequisite" class="mt-2 text-xs leading-relaxed text-txt-muted">
+                        {level.prerequisiteLevel === null
+                          ? 'Punto de partida. No exige otro nivel.'
+                          : `Conviene llegar con ${level.enabledBy}. Podés entrar igual.`}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
           );
         })
       }
-    </ul>
+    </div>
   </section>
+  <script
+    is:inline
+    type="application/json"
+    data-testid="forja-level-exercise-ids"
+    set:html={JSON.stringify(exerciseIdsByLevel)}
+  />
+  <script
+    is:inline
+    type="application/json"
+    data-testid="forja-guided-exercises"
+    set:html={JSON.stringify(guidedExercises)}
+  />
 </BaseLayout>
+
+<script>
+  // C2. Static page, player data in localStorage. Reads the SAME
+  // LocalRankingAdapter the canvas writes to, with no second storage layer.
+  import { localRankingAdapter } from '../../../lib/forja/ranking/local-adapter'
+  import { exerciseProgress, overallProgressLabel, progressLabel, solvedCount } from '../../../lib/forja/progression/progress'
+  import { recommendContinue, type GuidedExercise } from '../../../lib/forja/progression/guided-route'
+
+  const ONBOARDING_KEY = 'forja:onboarding-seen:v1'
+
+  function exerciseIdsByLevel(): Record<string, string[]> {
+    const source = document.querySelector<HTMLScriptElement>('[data-testid="forja-level-exercise-ids"]')
+    if (!source?.textContent) return {}
+    try {
+      return JSON.parse(source.textContent)
+    } catch {
+      // A corrupt payload leaves the honest server-rendered counts in place
+      // rather than replacing them with a wrong number.
+      return {}
+    }
+  }
+
+  function guidedExercises(): GuidedExercise[] {
+    const source = document.querySelector<HTMLScriptElement>('[data-testid="forja-guided-exercises"]')
+    if (!source?.textContent) return []
+    try {
+      return JSON.parse(source.textContent)
+    } catch {
+      return []
+    }
+  }
+
+  function onboardingWasSeen(): boolean {
+    try {
+      return localStorage.getItem(ONBOARDING_KEY) === 'true'
+    } catch {
+      return false
+    }
+  }
+
+  function markOnboardingSeen() {
+    try {
+      localStorage.setItem(ONBOARDING_KEY, 'true')
+    } catch {
+      // The guide stays optional even when storage is unavailable.
+    }
+  }
+
+  function hideOnboarding() {
+    document.querySelector<HTMLElement>('[data-testid="forja-first-run"]')?.setAttribute('hidden', '')
+  }
+
+  function renderRecommendation() {
+    const exercises = guidedExercises()
+    const solvedIds = new Set(
+      exercises.filter((exercise) => exerciseProgress(localRankingAdapter, exercise.id).solved).map((exercise) => exercise.id),
+    )
+    const recommendation = recommendContinue(exercises, solvedIds)
+    if (!recommendation) return
+
+    const eyebrow = document.querySelector<HTMLElement>('[data-testid="continue-eyebrow"]')
+    const title = document.querySelector<HTMLElement>('[data-testid="continue-title"]')
+    const description = document.querySelector<HTMLElement>('[data-testid="continue-description"]')
+    const link = document.querySelector<HTMLAnchorElement>('[data-testid="continue-link"]')
+    if (eyebrow) eyebrow.textContent = recommendation.eyebrow
+    if (title) title.textContent = recommendation.title
+    if (description) description.textContent = recommendation.description
+    if (link) {
+      link.href = recommendation.href
+      link.textContent = recommendation.label
+    }
+
+    if (solvedIds.size > 0 || onboardingWasSeen()) hideOnboarding()
+  }
+
+  function render() {
+    const byLevel = exerciseIdsByLevel()
+    let solvedOverall = 0
+    let totalOverall = 0
+
+    for (const card of document.querySelectorAll<HTMLLIElement>('[data-testid="level-card"]')) {
+      const exerciseIds = byLevel[card.dataset.levelId ?? ''] ?? []
+      totalOverall += exerciseIds.length
+      if (exerciseIds.length === 0) continue
+
+      const solved = solvedCount(localRankingAdapter, exerciseIds)
+      solvedOverall += solved
+
+      const line = card.querySelector<HTMLElement>('[data-testid="level-card-progress"]')
+      if (line) line.textContent = progressLabel(solved, exerciseIds.length)
+    }
+
+    if (totalOverall === 0) return
+    const overall = document.querySelector<HTMLElement>('[data-testid="forja-overall-progress"]')
+    if (overall) overall.textContent = overallProgressLabel(solvedOverall, totalOverall)
+    renderRecommendation()
+  }
+
+  document.querySelector<HTMLElement>('[data-testid="forja-onboarding-dismiss"]')?.addEventListener('click', () => {
+    markOnboardingSeen()
+    hideOnboarding()
+  })
+  document.querySelector<HTMLElement>('[data-onboarding-start]')?.addEventListener('click', markOnboardingSeen)
+  render()
+  // The player leaves this page to play and comes back with the Back button;
+  // a bfcache restore does not re-run the module.
+  window.addEventListener('pageshow', render)
+</script>

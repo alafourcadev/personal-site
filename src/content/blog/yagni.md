@@ -1,5 +1,5 @@
 ---
-title: "Día 20: YAGNI — la feature que programaste por las dudas"
+title: "Día 20: YAGNI, la feature que programaste por las dudas"
 description: "7 clases para un solo método de pago. PayPal y Crypto: TODO. Borró 300 líneas, todo siguió funcionando. Día 20 de #100ArchitectureDays."
 tags: ["Java", "Architecture", "100ArchitectureDays"]
 date: 2026-06-03
@@ -13,8 +13,8 @@ El dev nuevo llevaba una semana en el proyecto. Le asignaron un ticket: agregar 
 ```
 ├── PaymentStrategy.java           (interface)
 ├── CreditCardPaymentStrategy.java (implementación)
-├── PayPalPaymentStrategy.java     (implementación — TODO)
-├── CryptoPaymentStrategy.java     (implementación — TODO)
+├── PayPalPaymentStrategy.java     (implementación: TODO)
+├── CryptoPaymentStrategy.java     (implementación: TODO)
 ├── PaymentStrategyFactory.java    (factory)
 ├── PaymentStrategyConfig.java     (configuración)
 └── PaymentStrategyResolver.java   (resolver)

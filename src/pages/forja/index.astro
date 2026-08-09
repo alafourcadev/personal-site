@@ -1,52 +1,126 @@
 ---
-// La Forja — playground canvas (R1-D1). Free-play only: no level/exercise
-// content exists yet (R1-F), so this route hosts the canvas alone so the
-// gestures are directly playable. `client:only="react"` per design D5 — the
-// island measures the DOM (React Flow), so SSR output would be wasted work.
-// This is the ONLY React island on the site: no other route pays for it.
+// La Forja, the product's shortest and most shareable URL. It hosts two
+// things, in this order: an introduction that says what La Forja is and opens
+// the way to the level map, and the free canvas (R1-D1) below it.
+//
+// The route does NOT move. Sending the playground to `/forja/playground` was
+// proposed and rejected: it changes an existing route, which needs the owner's
+// explicit approval, and it would break every link already shared. The intro
+// is added ABOVE the canvas, never instead of it.
+//
+// `client:only="react"` per design D5, because the island measures the DOM (React
+// Flow), so SSR output would be wasted work. This is the ONLY React island on
+// the site: no other route pays for it, and the intro above is plain HTML.
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { ForjaCanvas } from '../../components/forja/canvas/ForjaCanvas';
 import RankingStrip from '../../components/forja/RankingStrip.astro';
+import { LEVELS } from '../../lib/forja/progression/levels';
+import { isPlayable } from '../../lib/forja/progression/types';
+
+// Every figure in the copy is counted from the content itself, never typed by
+// hand: a hardcoded number goes stale the day somebody authors an exercise,
+// and a landing page that overstates its own catalogue is the cheapest way to
+// lose a reader who can count. Same filter the level map uses (EC6: only
+// PILOT and PUBLISHED are ever served to a player).
+const playableExercises = await getCollection('forjaExercises', ({ data }) => isPlayable(data.status));
+const levelCount = LEVELS.length;
+const exerciseCount = playableExercises.length;
 ---
 
 <BaseLayout
-  title="La Forja — Playground | Ingeniería sin filtros"
-  description="Construí un diseño de sistema en el lienzo y recibí feedback del motor de evaluación de La Forja."
+  title="La Forja: juego de arquitectura de software | Ingeniería sin filtros"
+  description={`Diseñás un sistema en un lienzo y un motor te dice qué se rompe y por qué. ${levelCount} niveles, ${exerciseCount} ejercicios jugables.`}
   navVariant="blog"
   footerVariant="simple"
   noindex={true}
 >
   <!--
-    The playground is a tool, not an article — it must not inherit the
+    The playground is a tool, not an article, so it must not inherit the
     site's own centered `max-w-[1440px] mx-auto` shell (BaseLayout.astro,
-    shared by every route — out of scope to edit here). `w-screen` +
+    shared by every route and out of scope to edit here). `w-screen` plus
     `ml/mr-[calc(50%-50vw)]` is the standard "full-bleed breakout": it
     spans the true viewport width and re-centers itself under any
     ancestor, regardless of that ancestor's own max-width. BaseLayout's
     `overflow-x-hidden` on <body> (already present, unrelated to this
     page) absorbs any sub-pixel rounding, so this never causes a
     horizontal scrollbar. Full width minus a small gutter; the intro copy
-    alone keeps a readable measure via its own `max-w-2xl`.
+    alone keeps a readable measure via its own `max-w-3xl`.
   -->
   <section class="relative ml-[calc(50%_-_50vw)] mr-[calc(50%_-_50vw)] w-screen px-4 py-8 md:px-6">
-    <header class="mb-6">
-      <h1 class="text-2xl font-heading font-bold text-txt-primary">La Forja — Playground</h1>
-      <p class="mt-2 max-w-2xl text-sm text-txt-secondary">
-        Agregá componentes desde la biblioteca, conectalos y el motor te va a decir qué anda mal y por qué. Todo
-        gesto tiene equivalente por teclado: Tab para moverte, Enter para crear/conectar, flechas para mover un
-        componente seleccionado, Delete para borrar, Ctrl+Z para deshacer.
-      </p>
+    <!--
+      Two columns from `md` up, and deliberately so. The intro is what this
+      route was missing, since it said nothing and linked nowhere, but it is
+      paid for in vertical space, which is the playground's scarcest resource.
+      Stacked, it pushed the canvas pane to 734px on a 1280-wide viewport
+      (measured); side by side, with the copy at a wider measure, the pane
+      starts at 593px. The call to action itself stays fully above the fold at
+      1280x720 and at 390x844 (measured). That is the part that must never
+      scroll out of reach.
+
+      Default `justify-start`, never `justify-between`: the section is
+      full-bleed, so space-between threw the button a thousand pixels away
+      from the sentence that earns it.
+    -->
+    <header class="mb-7 flex flex-col gap-6 md:flex-row md:items-end md:gap-8">
+      <div class="max-w-3xl">
+        <h1 class="font-heading text-3xl font-bold tracking-tight text-txt-primary">La Forja</h1>
+        <p class="mt-3 text-base leading-relaxed text-txt-secondary">
+          Diseñás el sistema en un lienzo, con componentes tipados, conexiones con contrato y zonas de
+          confianza, y un motor te dice qué se rompe: qué regla violaste, qué parte del diagrama la
+          dispara y qué consecuencia tiene en producción.
+        </p>
+        <p class="mt-3 text-base leading-relaxed text-txt-secondary">
+          No hay una respuesta escondida: cualquier diseño que cumpla las garantías dentro del
+          presupuesto llega a 100, tenga la forma que tenga, porque en producción tampoco existe una
+          sola arquitectura correcta. Son <strong class="font-semibold text-txt-primary">{levelCount}
+          niveles</strong> y <strong class="font-semibold text-txt-primary">{exerciseCount}
+          ejercicios jugables</strong>, ordenados por dependencia: el nivel 4 puede discutir
+          idempotencia porque el 3 ya definió qué es «la misma operación».
+        </p>
+      </div>
+
+      <a
+        href="/forja/niveles"
+        class="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl bg-accent px-6 py-3 font-bold text-bg-deep transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)]"
+      >
+        Ver los {levelCount} niveles
+      </a>
     </header>
-    <ForjaCanvas client:only="react" />
+
+    <div class="mb-4 max-w-3xl border-t border-border-subtle pt-4">
+      <h2 class="font-heading text-base font-bold text-txt-primary">
+        Lienzo libre, sin ejercicio y sin puntaje
+      </h2>
+      <p class="mt-1.5 text-sm leading-relaxed text-txt-muted">
+        Para probar una idea. El motor sólo puntúa dentro de un nivel, porque el puntaje se mide
+        contra las garantías y el presupuesto que declara cada ejercicio.
+        <span class="md:hidden">
+          El editor necesita una pantalla de al menos 768 px y un puntero preciso. Desde este teléfono podés recorrer
+          los niveles y leer las consignas completas.
+        </span>
+        <span class="hidden md:inline">
+          Todo gesto tiene equivalente por teclado: <kbd>Tab</kbd> para moverte, <kbd>Enter</kbd> sobre una pieza de la
+          biblioteca para crearla, <kbd>c</kbd> para empezar una conexión desde el componente enfocado y <kbd>Enter</kbd>
+          sobre el destino para cerrarla, <kbd>Escape</kbd> para cancelarla, <kbd>Shift+F10</kbd> para abrir el menú de un
+          componente o de una conexión, flechas para mover un componente seleccionado, <kbd>Delete</kbd> para borrar,
+          <kbd>Ctrl+Z</kbd> para deshacer.
+        </span>
+      </p>
+    </div>
+
+    <div class="hidden md:block">
+      <ForjaCanvas client:only="react" requirePlayableWidth />
+    </div>
     <!--
       RK1: a non-empty ranking element MUST be present in every La Forja
-      view — the spec requires presence and non-zero size, not a specific
+      view. The spec requires presence and non-zero size, not a specific
       position. Rendered here, outside the React island, so it is on the
       page regardless of which internal ForjaCanvas tab (Lienzo/Vista de
-      lista/Resultado) is active — it never unmounts with them. Placed
+      lista/Resultado) is active. It never unmounts with them. Placed
       AFTER the canvas, not before: an earlier revision placed it above
       and pushed the canvas below a real 1280x720 viewport (measured, not
-      guessed — it broke an existing pointer-position test), which is
+      guessed, since it broke an existing pointer-position test), which is
       exactly the kind of below-the-fold defect this whole change exists
       to fix, not reintroduce elsewhere.
     -->
