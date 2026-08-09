@@ -4,7 +4,7 @@ description: "10 principios de clean code no son 10 reglas sueltas. Son un mapa.
 tags: ["Java", "Architecture", "100ArchitectureDays"]
 date: 2026-06-23
 readTime: "9 min read"
-image: "/blog/day-023-checkpoint-clean-code.webp"
+image: "/blog/day-023-checkpoint-clean-code-v2.webp"
 day: 23
 ---
 
