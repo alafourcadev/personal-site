@@ -953,6 +953,7 @@ const firstExerciseHref = firstExercise
     .final-pitch .actions { justify-content: center; }
 
     .final-pitch__signal {
+      --signal-baseline: clamp(2.75rem, 8vh, 4.5rem);
       position: absolute;
       inset: 0;
       pointer-events: none;
@@ -961,7 +962,7 @@ const firstExerciseHref = firstExercise
     .final-pitch__signal::before {
       content: '';
       position: absolute;
-      top: 50%;
+      bottom: var(--signal-baseline);
       left: 12%;
       right: 12%;
       border-top: 1px solid #2b3732;
@@ -969,7 +970,7 @@ const firstExerciseHref = firstExercise
 
     .final-pitch__signal span {
       position: absolute;
-      top: calc(50% - 5px);
+      bottom: calc(var(--signal-baseline) - 5px);
       width: 10px;
       height: 10px;
       border-radius: 50%;
