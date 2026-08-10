@@ -183,15 +183,15 @@ test.describe('Site chrome — the brand mark owns its own click', () => {
     // The menu's own entries, reached with a real pointer — the panel sits
     // under the same fixed chrome the pill lives in, so "visible" is not
     // enough to know a finger would land on it.
-    const forja = menu.getByRole('link', { name: 'La Forja' })
+    const forja = menu.getByRole('link', { name: 'Entrar a La Forja', exact: true })
     const linkBox = (await forja.boundingBox())!
     expect(
       await controlAt(page, linkBox.x + linkBox.width / 2, linkBox.y + linkBox.height / 2),
       'the pointer over a mobile menu link reaches that link',
-    ).toBe('a[href=/forja/niveles]')
+    ).toBe('a[href=/forja]')
 
     await page.mouse.click(linkBox.x + linkBox.width / 2, linkBox.y + linkBox.height / 2)
-    await page.waitForURL('**/forja/niveles')
-    expect(new URL(page.url()).pathname).toBe('/forja/niveles')
+    await page.waitForURL('**/forja')
+    expect(new URL(page.url()).pathname).toBe('/forja')
   })
 })

@@ -8,7 +8,7 @@ import { createNode, nodeByLabel, waitForCanvasToSettle } from './helpers'
 
 test.describe('La Forja canvas — context menu [PC15]', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
   })
 

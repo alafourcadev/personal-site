@@ -422,7 +422,7 @@ test.describe('La Forja — playing a real loaded exercise [R1-G]', () => {
     await page.getByTestId('submit-button').click()
     await expect(page.getByTestId('result-axes')).toBeVisible()
 
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await createNode(page, 'cache')
     await createNode(page, 'database')
     await page.getByTestId('submit-button').click()

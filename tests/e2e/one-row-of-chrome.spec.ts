@@ -56,7 +56,7 @@ test.describe('La Forja: the shell spends one row of chrome, not two', () => {
   })
 
   test('free play keeps its own toolbar, because there it is the whole chrome', async ({ page }) => {
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
 
     const views = await paintOf(page, 'playground-view-bar')
@@ -173,7 +173,7 @@ test.describe('La Forja: the shell spends one row of chrome, not two', () => {
   })
 
   test('free play keeps the Resultado tab, where the verdict is still a view of its own row', async ({ page }) => {
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
     await createNode(page, 'service')
     await page.getByTestId('submit-button').click()

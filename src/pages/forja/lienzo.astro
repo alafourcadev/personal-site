@@ -1,0 +1,147 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ForjaCanvas } from '../../components/forja/canvas/ForjaCanvas';
+import RankingStrip from '../../components/forja/RankingStrip.astro';
+import { LEVELS } from '../../lib/forja/progression/levels';
+
+const levelCount = LEVELS.length;
+---
+
+<BaseLayout
+  title="Lienzo libre | La Forja"
+  description="Explorá una decisión de arquitectura sin puntaje ni ejercicio previo."
+  chrome="app-landing"
+  noindex={true}
+>
+  <section class="free-canvas" aria-labelledby="free-canvas-title">
+    <header class="free-canvas__header">
+      <a class="product-mark" href="/forja" aria-label="Volver a la presentación de La Forja">
+        <span aria-hidden="true">F</span>
+        <strong>La Forja</strong>
+      </a>
+      <nav aria-label="Navegación principal">
+        <a href="/forja">Presentación</a>
+        <a href="/forja/niveles">Ver los {levelCount} niveles</a>
+        <a href="/" aria-label="Blog: volver a la publicación">Volver al blog</a>
+      </nav>
+    </header>
+
+    <div class="free-canvas__intro">
+      <div>
+        <p class="eyebrow">Exploración sin puntaje</p>
+        <h1 id="free-canvas-title">Lienzo libre</h1>
+        <p>
+          Probá una idea sin ejercicio. El motor puntúa dentro de cada desafío porque necesita
+          garantías y un presupuesto para explicar por qué una decisión cumple o falla.
+        </p>
+        <p class="keyboard-legend">
+          <kbd>c</kbd> para iniciar una conexión. <kbd>Enter</kbd> la completa cuando ya elegiste el origen.
+          <kbd>Shift+F10</kbd> abre el menú del componente o de la conexión enfocada.
+        </p>
+      </div>
+    </div>
+
+    <p class="mobile-handoff">
+      El editor necesita una pantalla de al menos 768 px y un puntero preciso. En este teléfono podés
+      recorrer La Forja, pero el lienzo se juega en escritorio.
+    </p>
+
+    <div class="canvas-frame hidden md:block">
+      <ForjaCanvas client:only="react" requirePlayableWidth />
+    </div>
+
+    <RankingStrip />
+  </section>
+
+  <style>
+    .free-canvas {
+      min-height: 100vh;
+      padding: 0 clamp(16px, 3vw, 48px) 40px;
+      color: rgb(var(--txt-primary));
+      background: rgb(var(--bg-deep));
+    }
+
+    .free-canvas__header {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      border-bottom: 1px solid rgb(var(--border-card));
+    }
+
+    .product-mark,
+    .free-canvas__header nav {
+      display: flex;
+      align-items: center;
+    }
+
+    .product-mark {
+      gap: 10px;
+      color: rgb(var(--txt-primary));
+      text-decoration: none;
+    }
+
+    .product-mark span {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      color: rgb(var(--on-accent));
+      background: rgb(var(--accent));
+    }
+
+    .free-canvas__header nav { gap: 24px; }
+    .free-canvas__header nav a {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      color: rgb(var(--txt-primary));
+      text-decoration: none;
+      border-bottom: 1px solid rgb(var(--accent));
+    }
+
+    .free-canvas__intro {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: clamp(48px, 6vw, 84px) 0 28px;
+    }
+
+    .free-canvas__intro > div { max-width: 760px; }
+    .eyebrow {
+      margin: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.66rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: rgb(var(--accent));
+    }
+    h1 {
+      margin: 8px 0 0;
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 5.6rem);
+      line-height: 0.96;
+      letter-spacing: -0.035em;
+    }
+    .free-canvas__intro p:not(.eyebrow),
+    .mobile-handoff {
+      max-width: 68ch;
+      margin: 16px 0 0;
+      line-height: 1.65;
+      color: rgb(var(--txt-secondary));
+    }
+    .keyboard-legend { font-size: 0.82rem; }
+    kbd { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: rgb(var(--txt-primary)); }
+    .canvas-frame { width: 100%; }
+    .mobile-handoff { display: none; }
+
+    @media (max-width: 767px) {
+      .free-canvas__header { align-items: flex-start; flex-direction: column; padding: 16px 0; }
+      .free-canvas__header nav { width: 100%; justify-content: space-between; }
+      .mobile-handoff { display: block; margin: 32px 0; }
+    }
+  </style>
+</BaseLayout>

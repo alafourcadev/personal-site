@@ -6,7 +6,7 @@ import { createNode, nodeByLabel } from './helpers'
 
 test.describe('La Forja — components explain themselves', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
   })
 

@@ -10,7 +10,7 @@ import { connectByPointer, createNode, createNodeByKeyboard, edgeMidpoint, nodeB
 
 test.describe('La Forja canvas — R1-D1 gestures', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
   })
 

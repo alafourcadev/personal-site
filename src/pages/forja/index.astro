@@ -1,129 +1,1070 @@
 ---
-// La Forja, the product's shortest and most shareable URL. It hosts two
-// things, in this order: an introduction that says what La Forja is and opens
-// the way to the level map, and the free canvas (R1-D1) below it.
-//
-// The route does NOT move. Sending the playground to `/forja/playground` was
-// proposed and rejected: it changes an existing route, which needs the owner's
-// explicit approval, and it would break every link already shared. The intro
-// is added ABOVE the canvas, never instead of it.
-//
-// `client:only="react"` per design D5, because the island measures the DOM (React
-// Flow), so SSR output would be wasted work. This is the ONLY React island on
-// the site: no other route pays for it, and the intro above is plain HTML.
+/*
+  THESIS: La Forja turns engineering judgment into visible, playable decisions.
+  OWN-WORLD: a full-screen product room, related to the publication by type and
+  restraint but denser, more operational and more tactile.
+  STORY: promise, real context, product proof, evaluation sequence, then real
+  product captures that show the canvas and its verdict without loading the app.
+  FIRST VIEWPORT: one decision-led headline on the left and one semantic product
+  demonstration over a human business context on the right.
+  FORM: dark graphite field, forge green as punctuation, documentary imagery,
+  firm rules, asymmetric columns and a single non-looping reveal.
+*/
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { ForjaCanvas } from '../../components/forja/canvas/ForjaCanvas';
-import RankingStrip from '../../components/forja/RankingStrip.astro';
 import { LEVELS } from '../../lib/forja/progression/levels';
+import { orderLevelEntries } from '../../lib/forja/progression/level-listing';
 import { isPlayable } from '../../lib/forja/progression/types';
 
-// Every figure in the copy is counted from the content itself, never typed by
-// hand: a hardcoded number goes stale the day somebody authors an exercise,
-// and a landing page that overstates its own catalogue is the cheapest way to
-// lose a reader who can count. Same filter the level map uses (EC6: only
-// PILOT and PUBLISHED are ever served to a player).
 const playableExercises = await getCollection('forjaExercises', ({ data }) => isPlayable(data.status));
 const levelCount = LEVELS.length;
 const exerciseCount = playableExercises.length;
+const firstLevel = LEVELS[0];
+const firstExercise = orderLevelEntries(
+  playableExercises.filter((exercise) => exercise.data.level === firstLevel.id),
+)[0];
+const firstExerciseHref = firstExercise
+  ? `/forja/${firstLevel.id}/${firstExercise.id}`
+  : '/forja/niveles';
 ---
 
 <BaseLayout
-  title="La Forja: juego de arquitectura de software | Ingeniería sin filtros"
-  description={`Diseñás un sistema en un lienzo y un motor te dice qué se rompe y por qué. ${levelCount} niveles, ${exerciseCount} ejercicios jugables.`}
-  navVariant="blog"
-  footerVariant="simple"
+  title="La Forja: decisiones de arquitectura de software | Ingeniería sin filtros"
+  description={`Resolvé problemas reales de negocio y descubrí qué se rompe y quién paga cada decisión. ${levelCount} niveles, ${exerciseCount} ejercicios jugables.`}
+  image="/forja/problem-pharmacy-documentary.webp"
+  chrome="app-landing"
   noindex={true}
 >
-  <!--
-    The playground is a tool, not an article, so it must not inherit the
-    site's own centered `max-w-[1440px] mx-auto` shell (BaseLayout.astro,
-    shared by every route and out of scope to edit here). `w-screen` plus
-    `ml/mr-[calc(50%-50vw)]` is the standard "full-bleed breakout": it
-    spans the true viewport width and re-centers itself under any
-    ancestor, regardless of that ancestor's own max-width. BaseLayout's
-    `overflow-x-hidden` on <body> (already present, unrelated to this
-    page) absorbs any sub-pixel rounding, so this never causes a
-    horizontal scrollbar. Full width minus a small gutter; the intro copy
-    alone keeps a readable measure via its own `max-w-3xl`.
-  -->
-  <section class="relative ml-[calc(50%_-_50vw)] mr-[calc(50%_-_50vw)] w-screen px-4 py-8 md:px-6">
-    <!--
-      Two columns from `md` up, and deliberately so. The intro is what this
-      route was missing, since it said nothing and linked nowhere, but it is
-      paid for in vertical space, which is the playground's scarcest resource.
-      Stacked, it pushed the canvas pane to 734px on a 1280-wide viewport
-      (measured); side by side, with the copy at a wider measure, the pane
-      starts at 593px. The call to action itself stays fully above the fold at
-      1280x720 and at 390x844 (measured). That is the part that must never
-      scroll out of reach.
+  <div class="forja-landing">
+    <section class="launch" aria-labelledby="forja-title">
+      <header class="product-header">
+        <a class="product-mark" href="/forja" aria-label="La Forja, inicio">
+          <span class="product-mark__symbol" aria-hidden="true">F</span>
+          <span>
+            <strong>La Forja</strong>
+            <small>Ingeniería sin filtros</small>
+          </span>
+        </a>
 
-      Default `justify-start`, never `justify-between`: the section is
-      full-bleed, so space-between threw the button a thousand pixels away
-      from the sentence that earns it.
-    -->
-    <header class="mb-7 flex flex-col gap-6 md:flex-row md:items-end md:gap-8">
-      <div class="max-w-3xl">
-        <h1 class="font-heading text-3xl font-bold tracking-tight text-txt-primary">La Forja</h1>
-        <p class="mt-3 text-base leading-relaxed text-txt-secondary">
-          Diseñás el sistema en un lienzo, con componentes tipados, conexiones con contrato y zonas de
-          confianza, y un motor te dice qué se rompe: qué regla violaste, qué parte del diagrama la
-          dispara y qué consecuencia tiene en producción.
-        </p>
-        <p class="mt-3 text-base leading-relaxed text-txt-secondary">
-          No hay una respuesta escondida: cualquier diseño que cumpla las garantías dentro del
-          presupuesto llega a 100, tenga la forma que tenga, porque en producción tampoco existe una
-          sola arquitectura correcta. Son <strong class="font-semibold text-txt-primary">{levelCount}
-          niveles</strong> y <strong class="font-semibold text-txt-primary">{exerciseCount}
-          ejercicios jugables</strong>, ordenados por dependencia: el nivel 4 puede discutir
-          idempotencia porque el 3 ya definió qué es «la misma operación».
-        </p>
+        <nav aria-label="Navegación principal" class="product-nav">
+          <a href="/" aria-label="Blog: volver a la publicación">Volver a la publicación</a>
+          <span class="authorship">Creada por Alejandro Lafourcade</span>
+          <button class="theme-control" id="forja-theme-toggle" type="button" aria-label="Cambiar tema">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42" />
+              <circle cx="12" cy="12" r="4" />
+            </svg>
+          </button>
+        </nav>
+      </header>
+
+      <div class="launch-grid">
+        <div class="thesis">
+          <p class="mobile-authorship">Creada por Alejandro Lafourcade</p>
+          <p class="eyebrow">Entrenamiento de criterio técnico</p>
+          <h1 id="forja-title">
+            <span>No estudies</span>
+            <span class="architecture-line">arquitectura.</span>
+            <span class="accent-line">Tomá decisiones.</span>
+          </h1>
+          <p class="promise">
+            Recibís un problema real de negocio, construís o reparás el sistema y un motor determinista
+            te dice qué se rompe y quién paga el costo. No evalúa una opinión. Evalúa las garantías y
+            restricciones que el problema declara.
+          </p>
+          <div class="actions">
+            <a class="primary-action" href={firstExerciseHref}>Empezar el primer desafío</a>
+            <a class="secondary-action" href="#como-funciona">Ver cómo funciona</a>
+          </div>
+          <p class="access-note">Gratis. Sin cuenta. El lienzo se juega en escritorio.</p>
+        </div>
+
+        <figure class="product-proof">
+          <img
+            src="/forja/forja-systems-table-v2.webp"
+            alt="Instalación física de un sistema distribuido construida con planos, conexiones y nodos"
+            width="1672"
+            height="941"
+            loading="eager"
+            fetchpriority="high"
+          />
+          <div class="photo-wash" aria-hidden="true"></div>
+
+          <div class="signal-field" aria-hidden="true">
+            <svg viewBox="0 0 800 640" preserveAspectRatio="none">
+              <path class="signal-path signal-path--one" d="M104 160 C250 105 302 260 430 228 S602 102 720 174" />
+              <path class="signal-path signal-path--two" d="M152 474 C280 370 352 520 492 420 S650 348 740 470" />
+              <path class="signal-path signal-path--risk" d="M430 228 C476 290 468 352 492 420" />
+            </svg>
+            <span class="signal-node signal-node--one"></span>
+            <span class="signal-node signal-node--two"></span>
+            <span class="signal-node signal-node--three"></span>
+            <span class="signal-node signal-node--four"></span>
+            <span class="signal-node signal-node--risk"></span>
+          </div>
+
+          <div class="verdict-card" aria-label="Vista previa de una decisión dentro de La Forja">
+            <div class="verdict-card__topline">
+              <span>Motor determinista</span>
+              <span>Mismo diseño, mismo veredicto</span>
+            </div>
+            <div class="verdict-card__score"><strong>50</strong><span>/100</span></div>
+            <p>El dato regulado sale del límite declarado.</p>
+            <dl>
+              <div><dt>Qué se rompe</dt><dd>Trazabilidad</dd></div>
+              <div><dt>Quién paga</dt><dd>La farmacia</dd></div>
+            </dl>
+          </div>
+
+          <figcaption>La arquitectura deja de ser una opinión cuando el costo se vuelve visible.</figcaption>
+        </figure>
       </div>
 
-      <a
-        href="/forja/niveles"
-        class="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl bg-accent px-6 py-3 font-bold text-bg-deep transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(52,211,153,0.3)]"
-      >
-        Ver los {levelCount} niveles
-      </a>
-    </header>
+      <ol class="proof-sequence" id="como-funciona" aria-label="Cómo funciona La Forja">
+        <li>
+          <span>01</span>
+          <div><strong>Decidís</strong><p>Movés piezas, declarás conexiones y elegís qué costo aceptar.</p></div>
+        </li>
+        <li>
+          <span>02</span>
+          <div><strong>El sistema evalúa</strong><p>El mismo diseño obtiene siempre el mismo resultado.</p></div>
+        </li>
+        <li>
+          <span>03</span>
+          <div><strong>Entendés el costo</strong><p>Cada punto perdido nombra qué se rompe y quién lo paga.</p></div>
+        </li>
+      </ol>
+    </section>
 
-    <div class="mb-4 max-w-3xl border-t border-border-subtle pt-4">
-      <h2 class="font-heading text-base font-bold text-txt-primary">
-        Lienzo libre, sin ejercicio y sin puntaje
-      </h2>
-      <p class="mt-1.5 text-sm leading-relaxed text-txt-muted">
-        Para probar una idea. El motor sólo puntúa dentro de un nivel, porque el puntaje se mide
-        contra las garantías y el presupuesto que declara cada ejercicio.
-        <span class="md:hidden">
-          El editor necesita una pantalla de al menos 768 px y un puntero preciso. Desde este teléfono podés recorrer
-          los niveles y leer las consignas completas.
-        </span>
-        <span class="hidden md:inline">
-          Todo gesto tiene equivalente por teclado: <kbd>Tab</kbd> para moverte, <kbd>Enter</kbd> sobre una pieza de la
-          biblioteca para crearla, <kbd>c</kbd> para empezar una conexión desde el componente enfocado y <kbd>Enter</kbd>
-          sobre el destino para cerrarla, <kbd>Escape</kbd> para cancelarla, <kbd>Shift+F10</kbd> para abrir el menú de un
-          componente o de una conexión, flechas para mover un componente seleccionado, <kbd>Delete</kbd> para borrar,
-          <kbd>Ctrl+Z</kbd> para deshacer.
-        </span>
-      </p>
-    </div>
+    <section class="difference" aria-labelledby="difference-title">
+      <div class="difference__statement">
+        <p class="eyebrow">No es un quiz de arquitectura</p>
+        <h2 id="difference-title">Tu diagrama deja rastro.</h2>
+        <p>
+          No buscás la respuesta escondida. Construís una solución, declarás qué cruza cada límite y
+          defendés lo que aceptaste perder. El motor evalúa las garantías del problema, no tu capacidad
+          para adivinar una palabra.
+        </p>
+      </div>
+      <div class="difference__evidence" aria-label="Evidencia del producto">
+        <div><strong>{exerciseCount}</strong><span>ejercicios jugables</span><p>Problemas con restricciones, antagonistas y costos reales.</p></div>
+        <div><strong>{levelCount}</strong><span>niveles</span><p>Un recorrido que aumenta la presión sobre tu criterio.</p></div>
+        <div><strong>=</strong><span>resultado reproducible</span><p>El mismo diseño recibe siempre el mismo veredicto.</p></div>
+      </div>
+    </section>
 
-    <div class="hidden md:block">
-      <ForjaCanvas client:only="react" requirePlayableWidth />
-    </div>
-    <!--
-      RK1: a non-empty ranking element MUST be present in every La Forja
-      view. The spec requires presence and non-zero size, not a specific
-      position. Rendered here, outside the React island, so it is on the
-      page regardless of which internal ForjaCanvas tab (Lienzo/Vista de
-      lista/Resultado) is active. It never unmounts with them. Placed
-      AFTER the canvas, not before: an earlier revision placed it above
-      and pushed the canvas below a real 1280x720 viewport (measured, not
-      guessed, since it broke an existing pointer-position test), which is
-      exactly the kind of below-the-fold defect this whole change exists
-      to fix, not reintroduce elsewhere.
-    -->
-    <RankingStrip />
-  </section>
+    <section class="product-tour" aria-labelledby="product-tour-title">
+      <div class="product-tour__intro">
+        <div>
+          <p class="eyebrow">El producto, sin maquillaje</p>
+          <h2 id="product-tour-title">Así se trabaja en La Forja.</h2>
+          <p>
+            Leés una situación real, intervenís el sistema y recibís un veredicto que conecta cada
+            punto perdido con una consecuencia. Estas son capturas reales del producto, no una demo
+            inventada para la landing.
+          </p>
+        </div>
+        <a class="level-link" href="/forja/niveles">Ver los {levelCount} niveles</a>
+      </div>
+
+      <div class="product-gallery">
+        <figure class="product-shot product-shot--canvas">
+          <div class="product-shot__frame">
+            <img
+              src="/forja/product-canvas.webp"
+              alt="Lienzo real de La Forja con la consigna, el diagrama por zonas y la biblioteca de componentes"
+              width="1280"
+              height="660"
+              loading="lazy"
+            />
+          </div>
+          <figcaption>
+            <span>Construís</span>
+            <strong>El diagrama es tu respuesta.</strong>
+            <p>No elegís una opción. Movés límites, conectás piezas y sostenés el costo.</p>
+          </figcaption>
+        </figure>
+
+        <figure class="product-shot product-shot--score">
+          <div class="product-shot__frame">
+            <img
+              src="/forja/product-score.webp"
+              alt="Resultado real de La Forja con un puntaje de 50 sobre 100, ejes evaluados y un hallazgo explicado"
+              width="1280"
+              height="660"
+              loading="lazy"
+            />
+          </div>
+          <figcaption>
+            <span>Evaluás</span>
+            <strong>50 no es un número vacío.</strong>
+            <p>El puntaje nombra qué garantía falta, cuánto cuesta y qué consecuencia produce.</p>
+          </figcaption>
+        </figure>
+
+        <figure class="product-shot product-shot--list">
+          <div class="product-shot__frame">
+            <img
+              src="/forja/product-list.webp"
+              alt="Vista de lista real de La Forja con componentes, conexiones y decisiones configurables"
+              width="1280"
+              height="660"
+              loading="lazy"
+            />
+          </div>
+          <figcaption>
+            <span>Entendés</span>
+            <strong>Cada pieza tiene una consecuencia.</strong>
+            <p>La lista vuelve explícitos los componentes, las conexiones y sus decisiones.</p>
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="product-tour__closing">
+        <p>El lienzo real se abre cuando entrás a un desafío. En mobile podés recorrer la propuesta, pero se juega en escritorio.</p>
+        <div class="product-tour__actions">
+          <a class="secondary-action" href="/forja/lienzo">Abrir el lienzo libre</a>
+          <a class="primary-action" href={firstExerciseHref}>Entrar al primer desafío</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="real-context" aria-labelledby="real-context-title">
+      <figure>
+        <img
+          src="/forja/problem-pharmacy-documentary.webp"
+          alt="Una trabajadora revisa medicación en una farmacia, contexto del primer problema de negocio"
+          width="3504"
+          height="2336"
+          loading="lazy"
+        />
+        <figcaption>El primer desafío empieza en una farmacia, no en una definición.</figcaption>
+      </figure>
+      <div>
+        <p class="eyebrow">Primero el negocio</p>
+        <h2 id="real-context-title">La arquitectura aparece cuando algo importa.</h2>
+        <p>
+          Una venta que no puede esperar. Un comprobante que debe sobrevivir cinco años. Un dato que
+          no puede salir de su frontera. La Forja te obliga a diseñar desde esa consecuencia.
+        </p>
+        <a class="secondary-action" href="/forja/niveles">Recorrer el mapa de niveles</a>
+      </div>
+    </section>
+
+    <section class="final-pitch" aria-labelledby="final-pitch-title">
+      <div class="final-pitch__signal" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <p class="eyebrow">Pensar mejor requiere práctica</p>
+      <h2 id="final-pitch-title">El código se acelera.<br />Tu criterio se entrena.</h2>
+      <p>Entrá sin cuenta, resolvé el primer problema y dejá que el costo de tu decisión te enseñe.</p>
+      <div class="actions">
+        <a class="primary-action" href={firstExerciseHref}>Entrar a La Forja</a>
+        <a class="secondary-action" href="/forja/lienzo">Explorar el lienzo libre</a>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const themeToggle = document.getElementById('forja-theme-toggle');
+    themeToggle?.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      try {
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      } catch {
+        // The control remains useful when private browsing rejects persistence.
+      }
+    });
+  </script>
+
+  <style>
+    .forja-landing {
+      --forge-field: rgb(var(--bg-deep));
+      --forge-surface: rgb(var(--bg-surface));
+      --forge-surface-raised: rgb(var(--bg-raised));
+      --forge-rule: rgb(var(--border-card));
+      --forge-text: rgb(var(--txt-primary));
+      --forge-muted: rgb(var(--txt-secondary));
+      --forge-green: rgb(var(--accent));
+      --forge-green-ink: rgb(var(--on-accent));
+      --forge-danger: rgb(var(--danger-ink));
+      min-height: 100vh;
+      color: var(--forge-text);
+      background: var(--forge-field);
+    }
+
+    .launch {
+      min-height: 100svh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      color: #f1f4f2;
+      background: #080d11;
+      border-bottom: 1px solid #26302d;
+    }
+
+    .product-header {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 12px clamp(20px, 3vw, 52px);
+      border-bottom: 1px solid #26302d;
+    }
+
+    .product-mark,
+    .product-nav,
+    .actions,
+    .proof-sequence li,
+    .product-tour__intro,
+    .product-tour__closing {
+      display: flex;
+      align-items: center;
+    }
+
+    .product-mark {
+      gap: 12px;
+      color: #f1f4f2;
+      text-decoration: none;
+    }
+
+    .product-mark__symbol {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--forge-green-ink);
+      background: var(--forge-green);
+    }
+
+    .product-mark strong,
+    .product-mark small {
+      display: block;
+    }
+
+    .product-mark strong {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+    }
+
+    .product-mark small,
+    .authorship,
+    .eyebrow,
+    .proof-sequence > li > span {
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+
+    .product-mark small {
+      margin-top: 2px;
+      font-size: 0.68rem;
+      color: #9ca8a3;
+    }
+
+    .product-nav {
+      justify-content: flex-end;
+      gap: clamp(12px, 2vw, 30px);
+      font-size: 0.78rem;
+      color: #9ca8a3;
+    }
+
+    .product-nav a {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      color: #f1f4f2;
+      text-decoration: none;
+      border-bottom: 1px solid var(--forge-green);
+    }
+
+    .authorship {
+      font-size: 0.66rem;
+      text-transform: uppercase;
+    }
+
+    .theme-control {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #36423d;
+      color: #f1f4f2;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .theme-control svg {
+      width: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.6;
+    }
+
+    .launch-grid {
+      min-height: 0;
+      min-width: 0;
+      display: grid;
+      grid-template-columns: minmax(330px, 0.82fr) minmax(560px, 1.35fr);
+    }
+
+    .thesis {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(48px, 7vh, 90px) clamp(24px, 5vw, 80px);
+      border-right: 1px solid #26302d;
+      min-width: 0;
+    }
+
+    .eyebrow,
+    .panel-label {
+      margin: 0;
+      font-size: 0.66rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--forge-green);
+    }
+
+    .thesis h1 {
+      max-width: 760px;
+      margin: 22px 0 0;
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(3.25rem, 5.8vw, 6rem);
+      font-weight: 800;
+      line-height: 0.88;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+    }
+
+    .thesis h1 span {
+      display: block;
+    }
+
+    .accent-line {
+      color: var(--forge-green);
+    }
+
+    @media (min-width: 768px) {
+      .architecture-line {
+        max-width: 100%;
+        font-size: 0.82em;
+      }
+    }
+
+    .promise {
+      max-width: 620px;
+      margin: clamp(28px, 4vh, 46px) 0 0;
+      font-size: clamp(0.98rem, 1.15vw, 1.16rem);
+      line-height: 1.7;
+      color: #a8b2ad;
+    }
+
+    .actions {
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .primary-action,
+    .secondary-action,
+    .level-link {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 20px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .primary-action {
+      color: var(--forge-green-ink);
+      background: var(--forge-green);
+    }
+
+    .secondary-action,
+    .level-link {
+      color: var(--forge-text);
+      border: 1px solid var(--forge-rule);
+    }
+
+    .primary-action,
+    .secondary-action,
+    .level-link,
+    .product-nav a,
+    .theme-control {
+      transition: transform 160ms ease, color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+    }
+
+    .primary-action:hover,
+    .secondary-action:hover,
+    .level-link:hover {
+      transform: translateY(-2px);
+    }
+
+    .secondary-action:hover,
+    .level-link:hover,
+    .theme-control:hover {
+      border-color: var(--forge-green);
+    }
+
+    .access-note {
+      margin: 16px 0 0;
+      font-size: 0.78rem;
+      color: #9ca8a3;
+    }
+
+    .mobile-authorship {
+      display: none;
+      margin: 0 0 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #9ca8a3;
+    }
+
+    .product-proof {
+      position: relative;
+      min-height: 580px;
+      margin: 0;
+      overflow: hidden;
+      background: #18201d;
+    }
+
+    .product-proof > img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 62% center;
+      filter: saturate(0.82) contrast(1.08);
+    }
+
+    .photo-wash {
+      position: absolute;
+      inset: 0;
+      background: rgb(4 8 10 / 0.22);
+    }
+
+    .signal-field {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .signal-field svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 6px 16px rgb(0 0 0 / 0.35));
+    }
+
+    .signal-path {
+      fill: none;
+      stroke: rgb(214 224 219 / 0.5);
+      stroke-width: 1.1;
+      stroke-dasharray: 8 10;
+      animation: signal-travel 18s linear infinite;
+    }
+
+    .signal-path--two { animation-delay: -7s; }
+    .signal-path--risk { stroke: #ff8c68; animation-duration: 11s; }
+
+    .signal-node {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #dce4df;
+      box-shadow: 0 8px 20px rgb(0 0 0 / 0.5);
+      animation: node-breathe 5s cubic-bezier(0.16, 1, 0.3, 1) infinite alternate;
+    }
+
+    .signal-node--one { left: 12%; top: 23%; }
+    .signal-node--two { left: 48%; top: 33%; animation-delay: -1.8s; }
+    .signal-node--three { right: 9%; top: 24%; animation-delay: -3.2s; }
+    .signal-node--four { right: 28%; bottom: 24%; background: #48d994; animation-delay: -4s; }
+    .signal-node--risk { left: 51%; bottom: 27%; background: #ff8c68; animation-delay: -2.6s; }
+
+    .verdict-card {
+      position: absolute;
+      right: clamp(22px, 4vw, 64px);
+      bottom: clamp(64px, 9vh, 104px);
+      z-index: 2;
+      width: min(330px, calc(100% - 44px));
+      padding: 22px;
+      color: #edf2ef;
+      background: rgb(7 11 13 / 0.92);
+      border: 1px solid rgb(126 148 138 / 0.7);
+      box-shadow: 18px 26px 70px rgb(0 0 0 / 0.48);
+      animation: verdict-arrival 800ms 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .verdict-card__topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.52rem;
+      line-height: 1.4;
+      text-transform: uppercase;
+      color: #93a19a;
+    }
+
+    .verdict-card__topline span:first-child { color: #48d994; }
+
+    .verdict-card__score {
+      display: flex;
+      align-items: baseline;
+      margin: 24px 0 6px;
+    }
+
+    .verdict-card__score strong {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(3.8rem, 6vw, 5.6rem);
+      line-height: 0.8;
+      letter-spacing: -0.04em;
+      color: #ff8c68;
+    }
+
+    .verdict-card__score span { color: #93a19a; }
+    .verdict-card > p { margin: 18px 0; font-size: 0.88rem; line-height: 1.5; }
+    .verdict-card dl { margin: 0; }
+    .verdict-card dl div {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-top: 1px solid #34403b;
+      font-size: 0.7rem;
+    }
+    .verdict-card dt { color: #93a19a; }
+    .verdict-card dd { margin: 0; font-weight: 700; }
+
+    .product-proof figcaption {
+      position: absolute;
+      right: clamp(22px, 4vw, 66px);
+      bottom: 22px;
+      z-index: 2;
+      max-width: 420px;
+      font-size: 0.7rem;
+      text-align: right;
+      color: #eef2ef;
+      text-shadow: 0 1px 12px #000;
+    }
+
+    .proof-sequence {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      margin: 0;
+      padding: 0 clamp(20px, 3vw, 52px);
+      list-style: none;
+      border-top: 1px solid #26302d;
+    }
+
+    .proof-sequence li {
+      min-height: 122px;
+      gap: 18px;
+      padding: 22px clamp(14px, 2vw, 30px);
+      border-right: 1px solid #26302d;
+    }
+
+    .proof-sequence li:first-child { padding-left: 0; }
+    .proof-sequence li:last-child { border-right: 0; }
+    .proof-sequence > li > span { color: var(--forge-green); font-size: 0.62rem; }
+    .proof-sequence strong { display: block; font-family: 'Outfit', sans-serif; font-size: 1rem; }
+    .proof-sequence p { margin: 4px 0 0; font-size: 0.75rem; line-height: 1.45; color: #9ca8a3; }
+
+    .launch .secondary-action,
+    .final-pitch .secondary-action {
+      color: #f1f4f2;
+      border-color: #46514d;
+    }
+
+    .difference {
+      display: grid;
+      grid-template-columns: minmax(300px, 0.85fr) minmax(520px, 1.15fr);
+      gap: clamp(56px, 8vw, 130px);
+      padding: clamp(96px, 12vw, 180px) clamp(20px, 6vw, 96px);
+      background: var(--forge-field);
+      border-bottom: 1px solid var(--forge-rule);
+    }
+
+    .difference__statement h2,
+    .real-context h2,
+    .final-pitch h2 {
+      margin: 14px 0 0;
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.8rem, 5vw, 5.5rem);
+      line-height: 0.94;
+      letter-spacing: -0.035em;
+    }
+
+    .difference__statement > p:last-child,
+    .real-context > div > p:not(.eyebrow),
+    .final-pitch > p:not(.eyebrow) {
+      max-width: 65ch;
+      margin: 28px 0 0;
+      font-size: clamp(1rem, 1.2vw, 1.15rem);
+      line-height: 1.7;
+      color: var(--forge-muted);
+    }
+
+    .difference__evidence {
+      display: grid;
+      align-content: start;
+    }
+
+    .difference__evidence > div {
+      display: grid;
+      grid-template-columns: minmax(90px, 0.25fr) minmax(150px, 0.35fr) minmax(220px, 1fr);
+      align-items: baseline;
+      gap: 22px;
+      padding: 24px 0;
+      border-top: 1px solid var(--forge-rule);
+    }
+
+    .difference__evidence strong {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.6rem, 4vw, 4.6rem);
+      line-height: 0.8;
+      letter-spacing: -0.04em;
+      color: var(--forge-green);
+    }
+
+    .difference__evidence span { font-weight: 700; }
+    .difference__evidence p { margin: 0; line-height: 1.55; color: var(--forge-muted); }
+
+    .product-tour {
+      padding: clamp(96px, 11vw, 160px) clamp(16px, 4vw, 64px) 80px;
+      background: rgb(var(--bg-deep));
+      color: rgb(var(--txt-primary));
+    }
+
+    .product-tour__intro {
+      justify-content: space-between;
+      gap: 32px;
+      max-width: 1320px;
+      margin: 0 auto clamp(36px, 5vw, 64px);
+    }
+
+    .product-tour__intro > div { max-width: 760px; }
+    .product-tour h2 {
+      max-width: 820px;
+      margin: 10px 0 0;
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.4rem, 5vw, 5.6rem);
+      line-height: 0.96;
+      letter-spacing: -0.035em;
+    }
+    .product-tour__intro p:not(.eyebrow) {
+      max-width: 68ch;
+      margin: 20px 0 0;
+      line-height: 1.65;
+      color: rgb(var(--txt-secondary));
+    }
+    .level-link { flex: none; color: rgb(var(--txt-primary)); border-color: rgb(var(--border-card)); }
+
+    .product-gallery {
+      max-width: 1320px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(54px, 8vw, 120px) clamp(24px, 4vw, 64px);
+      margin: 0 auto;
+    }
+
+    .product-shot {
+      min-width: 0;
+      margin: 0;
+    }
+
+    .product-shot--canvas { grid-column: 1 / -1; }
+
+    .product-shot__frame {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 1280 / 660;
+      padding: clamp(10px, 1.5vw, 22px);
+      background: #080d11;
+      border: 1px solid #26302d;
+      box-shadow: 20px 32px 80px rgb(0 0 0 / 0.24);
+    }
+
+    .product-shot__frame::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      box-shadow: inset 0 0 0 1px rgb(var(--txt-primary) / 0.04);
+    }
+
+    .product-shot img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      border: 1px solid #36423d;
+      transform: scale(1.002);
+      transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1), filter 700ms ease;
+    }
+
+    .product-shot:hover img { transform: scale(1.018); filter: contrast(1.02); }
+
+    .product-shot figcaption {
+      display: grid;
+      grid-template-columns: minmax(80px, 0.24fr) minmax(0, 0.76fr);
+      gap: 8px 22px;
+      padding-top: 18px;
+      border-top: 1px solid rgb(var(--border-card));
+    }
+
+    .product-shot figcaption span {
+      grid-row: 1 / span 2;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--forge-green);
+    }
+
+    .product-shot figcaption strong {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(1.2rem, 2vw, 1.8rem);
+      line-height: 1.1;
+    }
+
+    .product-shot figcaption p {
+      max-width: 58ch;
+      margin: 0;
+      font-size: 0.84rem;
+      line-height: 1.55;
+      color: rgb(var(--txt-secondary));
+    }
+
+    .product-tour__closing {
+      justify-content: space-between;
+      gap: 28px;
+      max-width: 1320px;
+      margin: clamp(64px, 8vw, 110px) auto 0;
+      padding-top: 28px;
+      border-top: 1px solid rgb(var(--border-card));
+    }
+
+    .product-tour__closing p {
+      max-width: 66ch;
+      margin: 0;
+      line-height: 1.6;
+      color: rgb(var(--txt-secondary));
+    }
+
+    .product-tour__actions {
+      display: flex;
+      flex: none;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .real-context {
+      display: grid;
+      grid-template-columns: minmax(420px, 1.15fr) minmax(320px, 0.85fr);
+      min-height: 720px;
+      border-top: 1px solid var(--forge-rule);
+      border-bottom: 1px solid var(--forge-rule);
+    }
+
+    .real-context figure {
+      position: relative;
+      min-height: 620px;
+      margin: 0;
+      overflow: hidden;
+      background: #18201d;
+    }
+
+    .real-context figure::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgb(6 10 12 / 0.12);
+      pointer-events: none;
+    }
+
+    .real-context img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      filter: saturate(0.72) contrast(1.06);
+      transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .real-context:hover img { transform: scale(1.025); }
+
+    .real-context figcaption {
+      position: absolute;
+      left: clamp(22px, 4vw, 58px);
+      bottom: 24px;
+      z-index: 2;
+      max-width: 420px;
+      font-size: 0.72rem;
+      color: #f1f4f2;
+      text-shadow: 0 2px 14px #000;
+    }
+
+    .real-context > div {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(60px, 8vw, 120px);
+      background: var(--forge-surface);
+    }
+
+    .real-context .secondary-action {
+      align-self: flex-start;
+      margin-top: 34px;
+    }
+
+    .final-pitch {
+      position: relative;
+      min-height: 82svh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 100px 20px;
+      text-align: center;
+      color: #f1f4f2;
+      background: #080d11;
+    }
+
+    .final-pitch h2 { max-width: 1040px; }
+    .final-pitch > p:not(.eyebrow) { max-width: 58ch; color: #a8b2ad; }
+    .final-pitch .actions { justify-content: center; }
+
+    .final-pitch__signal {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .final-pitch__signal::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 12%;
+      right: 12%;
+      border-top: 1px solid #2b3732;
+    }
+
+    .final-pitch__signal span {
+      position: absolute;
+      top: calc(50% - 5px);
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #46514d;
+      animation: final-signal 7s ease-in-out infinite;
+    }
+
+    .final-pitch__signal span:nth-child(1) { left: 12%; }
+    .final-pitch__signal span:nth-child(2) { left: 31%; animation-delay: -1.4s; }
+    .final-pitch__signal span:nth-child(3) { left: 50%; background: #48d994; animation-delay: -2.8s; }
+    .final-pitch__signal span:nth-child(4) { left: 69%; animation-delay: -4.2s; }
+    .final-pitch__signal span:nth-child(5) { right: 12%; background: #ff8c68; animation-delay: -5.6s; }
+
+    .final-pitch > *:not(.final-pitch__signal) { position: relative; z-index: 2; }
+
+    @keyframes signal-travel {
+      to { stroke-dashoffset: -180; }
+    }
+
+    @keyframes node-breathe {
+      from { transform: scale(0.82); opacity: 0.68; }
+      to { transform: scale(1.18); opacity: 1; }
+    }
+
+    @keyframes verdict-arrival {
+      from { opacity: 0; transform: translate3d(0, 28px, 0); filter: blur(8px); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+    }
+
+    @keyframes final-signal {
+      0%, 100% { transform: scale(0.72); opacity: 0.38; }
+      50% { transform: scale(1.22); opacity: 1; }
+    }
+
+    @media (max-width: 1100px) {
+      .launch-grid { grid-template-columns: minmax(300px, 0.85fr) minmax(480px, 1.15fr); }
+      .verdict-card { right: 24px; bottom: 68px; }
+      .authorship { display: none; }
+      .difference { grid-template-columns: 1fr; }
+      .difference__statement { max-width: 760px; }
+    }
+
+    @media (max-width: 767px) {
+      .product-header { align-items: flex-start; flex-wrap: wrap; padding: 14px 18px; }
+      .product-nav { width: 100%; align-items: center; justify-content: space-between; gap: 10px; }
+      .product-nav a { font-size: 0.7rem; text-align: right; }
+      .product-mark small { display: none; }
+      .launch-grid { grid-template-columns: 1fr; }
+      .thesis { padding: 66px 20px 48px; border-right: 0; }
+      .mobile-authorship { display: block; }
+      .thesis h1 { font-size: clamp(2.7rem, 12vw, 4.1rem); }
+      .promise { font-size: 1rem; }
+      .actions { align-items: stretch; flex-direction: column; }
+      .primary-action, .secondary-action { width: 100%; }
+      .product-proof { min-height: 330px; border-top: 1px solid var(--forge-rule); }
+      .product-proof > img { object-position: 66% center; }
+      .verdict-card { width: 220px; padding: 14px; right: 16px; bottom: 62px; }
+      .verdict-card__topline span:last-child,
+      .verdict-card dl { display: none; }
+      .verdict-card__score { margin: 14px 0 4px; }
+      .verdict-card__score strong { font-size: 3.2rem; }
+      .verdict-card > p { margin: 10px 0 0; font-size: 0.7rem; }
+      .product-proof figcaption { left: 20px; right: 20px; bottom: 18px; text-align: left; }
+      .proof-sequence { grid-template-columns: 1fr; padding: 0 20px; }
+      .proof-sequence li, .proof-sequence li:first-child { min-height: 0; padding: 22px 0; border-right: 0; border-bottom: 1px solid var(--forge-rule); }
+      .proof-sequence li:last-child { border-bottom: 0; }
+      .difference { grid-template-columns: 1fr; padding: 82px 20px; }
+      .difference__evidence > div { grid-template-columns: 78px 1fr; gap: 12px 18px; }
+      .difference__evidence p { grid-column: 2; }
+      .product-tour { padding: 72px 20px 40px; }
+      .product-tour__intro,
+      .product-tour__closing { align-items: flex-start; flex-direction: column; }
+      .product-gallery { grid-template-columns: 1fr; }
+      .product-shot--canvas { grid-column: auto; }
+      .product-shot figcaption { grid-template-columns: 1fr; }
+      .product-shot figcaption span { grid-row: auto; }
+      .level-link { width: 100%; }
+      .product-tour__actions { width: 100%; }
+      .product-tour__closing .primary-action,
+      .product-tour__closing .secondary-action { width: 100%; }
+      .real-context { grid-template-columns: 1fr; min-height: 0; }
+      .real-context figure { min-height: 440px; }
+      .real-context > div { padding: 72px 20px; }
+      .real-context .secondary-action { width: 100%; }
+      .final-pitch { min-height: 720px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .signal-path,
+      .signal-node,
+      .verdict-card,
+      .final-pitch__signal span { animation: none; }
+      .product-shot img,
+      .real-context img { transition: none; }
+      .primary-action, .secondary-action, .level-link, .product-nav a, .theme-control { transition: none; }
+    }
+  </style>
 </BaseLayout>

@@ -35,7 +35,9 @@ interface Props {
   // a property of this layout rather than a second layout on purpose. The two
   // theme token blocks and the script that decides the theme before the first
   // paint live here, and a copy of them is a copy that drifts.
-  chrome?: 'site' | 'app';
+  // 'app-landing' keeps La Forja's product-owned shell while allowing the
+  // introductory story and preserved free canvas to scroll as one page.
+  chrome?: 'site' | 'app' | 'app-landing';
 }
 
 const {
@@ -49,7 +51,8 @@ const {
   chrome = 'site',
 } = Astro.props;
 
-const app = chrome === 'app';
+const appChrome = chrome !== 'site';
+const workbenchApp = chrome === 'app';
 
 const ogImage = image || 'https://alafourca.dev/og-image.png';
 ---
@@ -177,16 +180,19 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
       // window's height and every rail scrolls inside itself. Below it the
       // page is a reading screen and has to scroll again, which is why the
       // lock is behind `md` rather than unconditional.
-      app && 'md:h-screen md:overflow-hidden',
+      workbenchApp && 'md:h-screen md:overflow-hidden',
     ]}
   >
-    {!app && <div id="scroll-progress" />}
+    {!appChrome && <div id="scroll-progress" />}
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-accent focus:text-bg-deep focus:rounded-lg focus:font-bold">
       Saltar al contenido
     </a>
     {
-      app ? (
-        <main id="main-content" class="md:flex md:h-full md:flex-col md:overflow-hidden">
+      appChrome ? (
+        <main
+          id="main-content"
+          class:list={[workbenchApp && 'md:flex md:h-full md:flex-col md:overflow-hidden']}
+        >
           <slot />
         </main>
       ) : (

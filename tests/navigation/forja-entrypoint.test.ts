@@ -21,8 +21,9 @@ import ForjaIndex from '../../src/pages/forja/index.astro'
 import { LEVELS } from '../../src/lib/forja/progression/levels'
 import { isPlayable } from '../../src/lib/forja/progression/types'
 
+const FORJA_HREF = '/forja'
 const LEVELS_HREF = '/forja/niveles'
-const LABEL = 'La Forja'
+const LABEL = 'Entrar a La Forja'
 const EXERCISES_DIR = join(__dirname, '../../src/content/forja/exercises')
 
 async function renderNavbar(
@@ -42,9 +43,9 @@ function anchorsTo(html: string, href: string): string[] {
 
 describe('main navigation — La Forja is reachable from every route', () => {
   for (const variant of ['home', 'blog'] as const) {
-    it(`the "${variant}" navbar links to the level map`, async () => {
+    it(`the "${variant}" navbar links to the product landing`, async () => {
       const html = await renderNavbar(variant)
-      expect(html).toContain(`href="${LEVELS_HREF}"`)
+      expect(html).toContain(`href="${FORJA_HREF}"`)
       expect(html).toContain(LABEL)
     })
   }
@@ -52,14 +53,14 @@ describe('main navigation — La Forja is reachable from every route', () => {
   it('offers the link in both the desktop bar and the mobile menu', async () => {
     // Two separate <nav> elements render the same link list; a link present in
     // only one of them is invisible to half the traffic.
-    expect(anchorsTo(await renderNavbar(), LEVELS_HREF)).toHaveLength(2)
+    expect(anchorsTo(await renderNavbar(), FORJA_HREF)).toHaveLength(2)
   })
 
   it('marks La Forja as the current section anywhere under /forja', async () => {
     // The product spans /forja, /forja/niveles, /forja/[level] and
     // /forja/[level]/[exercise]; the nav entry is the section, not one page.
     for (const pathname of ['/forja', '/forja/niveles', '/forja/4', '/forja/4/n4-core-el-pedido']) {
-      const anchors = anchorsTo(await renderNavbar('blog', pathname), LEVELS_HREF)
+      const anchors = anchorsTo(await renderNavbar('blog', pathname), FORJA_HREF)
       expect(anchors.length, pathname).toBeGreaterThan(0)
       expect(anchors[0], pathname).toContain('aria-current="page"')
     }
@@ -75,7 +76,7 @@ describe('main navigation — La Forja is reachable from every route', () => {
   })
 
   it('does not mark La Forja as current on unrelated routes', async () => {
-    const anchors = anchorsTo(await renderNavbar('blog', '/blog'), LEVELS_HREF)
+    const anchors = anchorsTo(await renderNavbar('blog', '/blog'), FORJA_HREF)
     expect(anchors[0]).not.toContain('aria-current')
   })
 })
@@ -107,6 +108,20 @@ function withoutNavigation(html: string): string {
 }
 
 describe('/forja — the shortest URL of the product is not a dead end', () => {
+  it('opens with the approved decision-led thesis and truthful product promise', async () => {
+    const body = withoutNavigation(await renderForjaIndex()).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
+    expect(body).toContain('No estudies arquitectura. Tomá decisiones.')
+    expect(body).toContain('qué se rompe y quién paga')
+    expect(body).toContain('Empezar el primer desafío')
+    expect(body).toContain('Ver cómo funciona')
+  })
+
+  it('keeps authorship and the way back to the publication visible', async () => {
+    const html = await renderForjaIndex()
+    expect(html).toContain('Creada por Alejandro Lafourcade')
+    expect(html).toContain('Volver a la publicación')
+  })
+
   it('offers a way into the level map from its own content, not only from the navbar', async () => {
     const body = withoutNavigation(await renderForjaIndex())
     expect(anchorsTo(body, LEVELS_HREF).length).toBeGreaterThan(0)
@@ -120,11 +135,12 @@ describe('/forja — the shortest URL of the product is not a dead end', () => {
     expect(html.replace(/\s+/g, ' ')).toContain(`${playableExerciseCount()} ejercicios jugables`)
   })
 
-  it('keeps the free canvas and its ranking on the same route', async () => {
-    // The route does not move (D5's containment and every shared link depend
-    // on it): the intro is added above the playground, never instead of it.
+  it('keeps the landing static and sends free exploration to its own product route', async () => {
     const html = await renderForjaIndex()
-    expect(html).toContain('ForjaCanvas')
-    expect(html).toContain('data-testid="ranking-strip"')
+    expect(html).not.toContain('ForjaCanvas')
+    expect(html).not.toContain('data-testid="ranking-strip"')
+    expect(html).toContain('href="/forja/lienzo"')
+    expect(html).toContain('/forja/product-canvas.webp')
+    expect(html).toContain('/forja/product-score.webp')
   })
 })

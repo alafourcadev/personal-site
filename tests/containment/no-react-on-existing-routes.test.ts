@@ -1,4 +1,5 @@
-// D5 containment test: `/forja` is the ONLY route that pays for React.
+// D5 containment test: `/forja/lienzo` is the ONLY static landing route that
+// pays for the free-play React island. The marketing route stays static.
 // Walks the real `npm run build` output (not source) — every other page's
 // HTML must reference neither the ForjaCanvas chunk nor an astro-island
 // hydration boundary. Requires `dist/` to exist; skips (not fails) when it
@@ -29,7 +30,7 @@ function collectHtmlFiles(dir: string): string[] {
   return files
 }
 
-describe.skipIf(!existsSync(DIST))('build output — no React outside /forja [D5]', () => {
+describe.skipIf(!existsSync(DIST))('build output — the marketing landing stays static [D5]', () => {
   const htmlFiles = existsSync(DIST) ? collectHtmlFiles(DIST) : []
   const nonForjaFiles = htmlFiles.filter((f) => !relative(DIST, f).startsWith(`forja${'/'}`))
 
@@ -37,13 +38,22 @@ describe.skipIf(!existsSync(DIST))('build output — no React outside /forja [D5
     expect(nonForjaFiles.length).toBeGreaterThan(10)
   })
 
-  it('/forja is present and does reference the React island (sanity check on the check itself)', () => {
-    const forjaFile = htmlFiles.find((f) => relative(DIST, f) === join('forja', 'index.html'))
-    expect(forjaFile).toBeTruthy()
-    expect(readFileSync(forjaFile!, 'utf-8')).toContain('ForjaCanvas')
+  it('/forja is present and contains product evidence without hydrating the canvas', () => {
+    const landingFile = htmlFiles.find((f) => relative(DIST, f) === join('forja', 'index.html'))
+    expect(landingFile).toBeTruthy()
+    const html = readFileSync(landingFile!, 'utf-8')
+    expect(html).toContain('/forja/product-canvas.webp')
+    expect(html).not.toContain('ForjaCanvas')
+    expect(html).not.toContain('<astro-island')
   })
 
-  it('no other route references the ForjaCanvas chunk or an astro-island hydration boundary', () => {
+  it('/forja/lienzo owns the free-play React island', () => {
+    const canvasFile = htmlFiles.find((f) => relative(DIST, f) === join('forja', 'lienzo', 'index.html'))
+    expect(canvasFile).toBeTruthy()
+    expect(readFileSync(canvasFile!, 'utf-8')).toContain('ForjaCanvas')
+  })
+
+  it('no non-forja route references the ForjaCanvas chunk or an astro-island hydration boundary', () => {
     const offenders = nonForjaFiles.filter((f) => {
       const html = readFileSync(f, 'utf-8')
       return html.includes('ForjaCanvas') || html.includes('<astro-island')

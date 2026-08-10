@@ -21,7 +21,7 @@ const EXERCISE = '/forja/4/n4-el-pago-que-espera-al-email'
 
 test.describe('La Forja — a node never prints its own name twice', () => {
   test('a component taken from the library says its name once, and its zone under it', async ({ page }) => {
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
     await createNode(page, 'database')
 
@@ -30,7 +30,7 @@ test.describe('La Forja — a node never prints its own name twice', () => {
   })
 
   test('a node the player named keeps BOTH its name and what kind of piece it is', async ({ page }) => {
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
     await createNode(page, 'database')
 
@@ -60,7 +60,7 @@ test.describe('La Forja — a node never prints its own name twice', () => {
   })
 
   test('the list view prints the same identity, without a third copy of the name', async ({ page }) => {
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
     await createNode(page, 'database')
     await page.getByTestId('view-list-tab').click()

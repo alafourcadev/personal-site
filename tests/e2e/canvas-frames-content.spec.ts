@@ -193,7 +193,7 @@ test.describe('La Forja canvas — the canvas frames its own content [R1-I]', ()
     // uses to make "off screen" deterministic — content stacking within a
     // single band (nextCreatePosition) overflows it quickly.
     await page.setViewportSize({ width: 1280, height: 500 })
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
 
     for (const type of ['worker', 'worker', 'worker', 'worker', 'worker']) {

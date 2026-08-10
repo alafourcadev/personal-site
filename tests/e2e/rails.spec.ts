@@ -179,7 +179,7 @@ test.describe('La Forja: the plecas', () => {
 // them to a rail they just put away.
 test.describe('La Forja: the empty canvas points somewhere real', () => {
   test('names the biblioteca while it is up, and the pleca once it is folded', async ({ page }) => {
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
 
     const hint = page.getByTestId('empty-canvas-hint')

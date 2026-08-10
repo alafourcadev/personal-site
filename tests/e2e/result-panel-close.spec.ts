@@ -7,7 +7,7 @@ import { createNode } from './helpers'
 
 test.describe('La Forja — result panel is dismissible', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await createNode(page, 'service')
     await page.getByTestId('submit-button').click()
     await expect(page.getByTestId('result-panel')).toBeVisible()

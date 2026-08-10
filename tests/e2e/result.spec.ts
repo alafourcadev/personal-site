@@ -10,7 +10,7 @@ import { createNode, nodeByLabel } from './helpers'
 
 test.describe('La Forja — result panel [RK1 refs, B3 blocker]', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
   })
 
@@ -155,7 +155,7 @@ test.describe('La Forja — result panel [RK1 refs, B3 blocker]', () => {
 // canvas had just been set to `display: none`. WCAG 4.1.3, level AA.
 test.describe('La Forja: the verdict says it out loud [WCAG 4.1.3]', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
   })
 

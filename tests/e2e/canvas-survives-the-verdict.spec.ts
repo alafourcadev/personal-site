@@ -62,7 +62,7 @@ test.describe('La Forja: the verdict never arrives without the design it is abou
   // components. This is that promise, checked rather than assumed.
   test('the components are still one gesture away with the verdict open', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
     await createNode(page, 'service')
     await page.getByTestId('submit-button').click()

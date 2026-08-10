@@ -10,9 +10,9 @@ const currentPath = Astro.url.pathname;
 
 const headerLinks = [
   { label: 'Empieza aquí', href: '/empieza-aqui' },
-  // Points at the level map, not at `/forja`: the map is where the product
-  // actually starts. `/forja` is the free canvas and stays reachable from it.
-  { label: 'La Forja', href: '/forja/niveles' },
+  // The shortest product URL now introduces La Forja before handing the
+  // visitor to the level map or the first playable decision.
+  { label: 'Entrar a La Forja', href: '/forja' },
   { label: 'Blog', href: '/blog' },
   { label: 'Sobre mí', href: '/sobre-mi' },
   { label: 'Newsletter', href: '/newsletter' },
@@ -30,7 +30,7 @@ function isActive(href: string): boolean {
   if (href === '/100-architecture-days') return currentPath === '/100-architecture-days';
   // La Forja is a section, not a page: the entry stays current across the
   // level map, a level and an exercise, so the player never loses their place.
-  if (href === '/forja/niveles') return currentPath === '/forja' || currentPath.startsWith('/forja/');
+  if (href === '/forja') return currentPath === '/forja' || currentPath.startsWith('/forja/');
   if (href === '/newsletter') return currentPath === '/newsletter';
   if (href === '/blog') return currentPath.startsWith('/blog');
   if (href === '/sobre-mi') return currentPath === '/sobre-mi';

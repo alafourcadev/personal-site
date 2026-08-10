@@ -10,7 +10,7 @@ import { connectByPointer, createNode, nodeByLabel } from './helpers'
 
 test.describe('La Forja canvas — R1-D2 polish', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
   })
 
@@ -73,10 +73,10 @@ test.describe('La Forja canvas — R1-D2 polish', () => {
     await expect(page.getByTestId('canvas-status')).toContainText('rechazada')
 
     const nav = page.getByRole('navigation', { name: 'Navegación principal' })
-    const blogLink = nav.getByRole('link', { name: 'Blog' })
-    await expect(blogLink).toBeVisible()
-    await blogLink.click()
-    await expect(page).toHaveURL(/\/blog/)
+    const publicationLink = nav.getByRole('link', { name: 'Blog: volver a la publicación', exact: true })
+    await expect(publicationLink).toBeVisible()
+    await publicationLink.click()
+    await expect(page).toHaveURL('/')
   })
 
   test('an open node context menu never covers the site navigation [PC17]', async ({ page }) => {
@@ -86,9 +86,9 @@ test.describe('La Forja canvas — R1-D2 polish', () => {
     await expect(page.getByTestId('context-menu')).toBeVisible()
 
     const nav = page.getByRole('navigation', { name: 'Navegación principal' })
-    const blogLink = nav.getByRole('link', { name: 'Blog' })
-    await expect(blogLink).toBeVisible()
-    await blogLink.click()
-    await expect(page).toHaveURL(/\/blog/)
+    const publicationLink = nav.getByRole('link', { name: 'Blog: volver a la publicación', exact: true })
+    await expect(publicationLink).toBeVisible()
+    await publicationLink.click()
+    await expect(page).toHaveURL('/')
   })
 })

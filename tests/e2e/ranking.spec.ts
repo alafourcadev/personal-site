@@ -11,7 +11,7 @@ test.describe('La Forja — ranking strip [RK1, RK5, RK7]', () => {
     // both read/write the same `forja:attempts:v1` key, so a prior test's
     // attempts would otherwise leak into this one's assertions.
     await page.addInitScript(() => localStorage.clear())
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
   })
 

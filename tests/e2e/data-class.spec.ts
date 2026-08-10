@@ -37,7 +37,7 @@ const edgeHitTarget = (page: Page) => page.locator('[data-edge-hit]').first()
 
 test.describe('La Forja canvas — declaring the data class of a connection', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/forja')
+    await page.goto('/forja/lienzo')
     await expect(page.getByTestId('forja-canvas')).toBeVisible()
   })
 

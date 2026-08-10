@@ -9,6 +9,8 @@ import { remarkEditorialBlocks } from './src/plugins/remark-editorial-blocks.mjs
 export default defineConfig({
   site: 'https://alafourca.dev',
   trailingSlash: 'never',
+  // The toolbar must not appear in product captures or visual review sessions.
+  devToolbar: { enabled: false },
   // /forja is unlinked and deliberately excluded from the sitemap while it
   // is in active development (design D5 — containment, revertible on its own).
   integrations: [sitemap({ filter: (page) => !page.includes('/forja') }), mdx(), react()],
