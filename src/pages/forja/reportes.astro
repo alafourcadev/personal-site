@@ -1,0 +1,137 @@
+---
+// The reports board. La Forja's feedback notice files issues on this very
+// repository, so the issues themselves already hold every report and the name
+// of whoever filed it. This page reads them back rather than storing a second
+// copy of the same knowledge somewhere else.
+//
+// The list is fetched in the browser, not at build time, on purpose: a board
+// that cannot show the report somebody filed a minute ago fails at the one
+// moment it exists for. The site stays static; only this list is live.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const REPO = 'alafourcadev/personal-site';
+const ISSUES_URL = `https://github.com/${REPO}/issues`;
+---
+
+<BaseLayout
+  title="Reportes | La Forja | Ingeniería sin filtros"
+  description="Lo que la gente reportó sobre La Forja, quién lo reportó y en qué estado está."
+  navVariant="blog"
+  footerVariant="simple"
+  noindex={true}
+>
+  <section class="mx-auto max-w-4xl px-4 py-8 md:px-6">
+    <header class="mb-7 max-w-3xl">
+      <a href="/forja" class="text-sm text-txt-secondary hover:text-txt-primary">&larr; La Forja</a>
+      <h1 class="mt-1 text-2xl font-heading font-bold text-txt-primary">Reportes</h1>
+      <p class="mt-2 text-sm leading-relaxed text-txt-secondary">
+        Todo lo que alguien reportó sobre La Forja, con su nombre y su estado. Nada se archiva en
+        silencio: si está roto, está acá hasta que deje de estarlo.
+      </p>
+      <a
+        href={`${ISSUES_URL}/new?labels=bug&title=${encodeURIComponent('La Forja: algo no funciona')}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mt-4 inline-flex items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-bg-deep transition-transform duration-200 hover:-translate-y-0.5"
+      >
+        Reportar algo roto
+      </a>
+    </header>
+
+    <p id="reports-status" class="text-sm text-txt-secondary">Cargando reportes…</p>
+
+    <ul id="reports-list" aria-label="Reportes" class="flex flex-col gap-3"></ul>
+  </section>
+</BaseLayout>
+
+<script is:inline define:vars={{ REPO, ISSUES_URL }}>
+  (function () {
+    var list = document.getElementById('reports-list');
+    var status = document.getElementById('reports-status');
+    if (!list || !status) return;
+
+    var dateFormat = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' });
+
+    // Everything below this line is written by strangers on the internet, so it
+    // is built as DOM nodes and never as concatenated HTML. A report titled
+    // with a quote character is a normal report, not an attack, and it must not
+    // be able to break out of the markup either way.
+    function el(tag, className, textContent) {
+      var node = document.createElement(tag);
+      if (className) node.className = className;
+      if (textContent !== undefined) node.textContent = textContent;
+      return node;
+    }
+
+    function render(reports) {
+      list.replaceChildren.apply(
+        list,
+        reports.map(function (report) {
+          var item = el('li', 'rounded-xl border border-border-card bg-bg-surface p-4');
+
+          var header = el('div', 'flex flex-wrap items-center gap-2');
+          var open = report.state === 'open';
+          header.append(
+            open
+              ? el('span', 'rounded-full bg-accent-dim px-2.5 py-1 text-[11px] font-semibold text-accent', 'Abierto')
+              : el(
+                  'span',
+                  'rounded-full border border-border-subtle px-2.5 py-1 text-[11px] font-semibold text-txt-secondary',
+                  'Resuelto',
+                ),
+            el('span', 'font-mono text-[11px] text-txt-muted', '#' + String(report.number)),
+          );
+
+          var title = el(
+            'a',
+            'mt-2 block font-semibold text-txt-primary underline-offset-2 hover:underline',
+            String(report.title || 'Reporte sin título'),
+          );
+          // Only http(s) links from the payload are followed. Anything else
+          // (javascript:, data:) points back at the issue list instead.
+          var href = String(report.html_url || '');
+          title.href = /^https?:\/\//.test(href) ? href : ISSUES_URL;
+          title.target = '_blank';
+          title.rel = 'noopener noreferrer';
+
+          var who = report.user && report.user.login ? String(report.user.login) : 'alguien';
+          var parsed = Date.parse(report.created_at);
+          var when = Number.isFinite(parsed) ? ' · ' + dateFormat.format(new Date(parsed)) : '';
+
+          item.append(header, title, el('p', 'mt-1 text-xs text-txt-secondary', 'Reportado por ' + who + when));
+          return item;
+        }),
+      );
+    }
+
+    fetch('https://api.github.com/repos/' + REPO + '/issues?labels=bug&state=all&per_page=30', {
+      headers: { Accept: 'application/vnd.github+json' },
+    })
+      .then(function (response) {
+        if (!response.ok) throw new Error('github-' + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        // GitHub returns pull requests from the issues endpoint. Listing one as
+        // somebody's complaint would misrepresent both the PR and the board.
+        var reports = (Array.isArray(payload) ? payload : []).filter(function (item) {
+          return item && !item.pull_request;
+        });
+        if (reports.length === 0) {
+          status.textContent = 'Todavía no hay reportes. Si algo se rompe, sos el primero.';
+          return;
+        }
+        status.hidden = true;
+        render(reports);
+      })
+      .catch(function () {
+        // Rate limits and outages are not the visitor's problem to solve, but
+        // a dead end is worse than an honest detour.
+        status.innerHTML =
+          'No pude traer los reportes ahora mismo. ' +
+          '<a class="text-accent underline underline-offset-2" href="' +
+          ISSUES_URL +
+          '" target="_blank" rel="noopener noreferrer">Verlos en GitHub</a>.';
+      });
+  })();
+</script>
