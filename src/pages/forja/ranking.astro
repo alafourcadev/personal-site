@@ -1,0 +1,421 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { isPlayable } from '../../lib/forja/progression/types';
+
+// Exercise titles are resolved at build time. A board row carries an id, and an
+// id is not something a player recognises: without this map the "learn" half
+// would be a list of slugs.
+const titles = Object.fromEntries(
+  (await getCollection('forjaExercises', ({ data }) => isPlayable(data.status))).map((entry) => [
+    entry.id,
+    entry.data.title,
+  ]),
+);
+---
+
+<BaseLayout
+  title="Ranking global | La Forja"
+  description="La tabla global de La Forja y los diseños que resolvieron cada desafío."
+  chrome="app-landing"
+  noindex={true}
+>
+  <section class="board" aria-labelledby="board-title" data-titles={JSON.stringify(titles)}>
+    <header class="board__header">
+      <a class="product-mark" href="/forja" aria-label="Volver a la presentación de La Forja">
+        <span aria-hidden="true">F</span>
+        <strong>La Forja</strong>
+      </a>
+      <nav aria-label="Navegación principal">
+        <a href="/forja">Presentación</a>
+        <a href="/forja/niveles">Mapa de niveles</a>
+        <a href="/forja/lienzo">Lienzo libre</a>
+      </nav>
+    </header>
+
+    <div class="board__intro">
+      <p class="eyebrow">Ranking global</p>
+      <h1 id="board-title">Quién resolvió qué, y cómo</h1>
+      <p>
+        Dos mitades. Arriba, quién acumuló más puntaje. Abajo, la que importa: el diseño que
+        sobrevivió a cada desafío, para cuando estés trabado y quieras ver otra salida.
+      </p>
+    </div>
+
+    <div class="board__grid">
+      <article class="panel" aria-labelledby="table-title">
+        <header>
+          <h2 id="table-title">Tabla global</h2>
+          <p>Puntaje acumulado por persona.</p>
+        </header>
+        <p class="state" data-state="leaderboard">Consultando el ranking global...</p>
+        <ol class="rows" data-rows="leaderboard" hidden></ol>
+      </article>
+
+      <article class="panel" aria-labelledby="best-title">
+        <header>
+          <h2 id="best-title">Mejores diseños</h2>
+          <p>El intento más alto de cada persona en cada desafío.</p>
+        </header>
+        <p class="state" data-state="best">Consultando los diseños...</p>
+        <ul class="rows" data-rows="best" hidden></ul>
+      </article>
+    </div>
+
+    <article class="panel panel--share" aria-labelledby="share-title">
+      <header>
+        <h2 id="share-title">Tus diseños</h2>
+        <p>
+          Tu puntaje entra en la tabla siempre. El diseño en sí no se publica salvo que lo digas
+          acá: es tu razonamiento, y publicarlo es tu decisión, no la nuestra.
+        </p>
+      </header>
+      <div class="share-actions">
+        <button type="button" data-share="on">Publicar mis diseños</button>
+        <button type="button" data-share="off">Volver a privados</button>
+      </div>
+      <p class="state" data-state="share" role="status"></p>
+    </article>
+  </section>
+
+  <script>
+    import { globalRanking } from '../../lib/forja/ranking/global-ranking'
+
+    const root = document.querySelector<HTMLElement>('.board')
+    if (root) {
+      const titles: Record<string, string> = JSON.parse(root.dataset.titles ?? '{}')
+      const ranking = globalRanking()
+
+      const state = (key: string, text: string) => {
+        const node = root.querySelector<HTMLElement>(`[data-state="${key}"]`)
+        if (node) {
+          node.textContent = text
+          node.hidden = text.length === 0
+        }
+      }
+      const list = (key: string) => root.querySelector<HTMLElement>(`[data-rows="${key}"]`)
+
+      // No credentials configured is not an error, it is R1: the game is local
+      // and there is no global board to show. Saying so beats an empty table.
+      if (!ranking) {
+        state('leaderboard', 'El ranking global no está configurado en este entorno.')
+        state('best', 'Sin ranking global, no hay diseños compartidos que mostrar.')
+        state('share', '')
+      } else {
+        void (async () => {
+          const board = await ranking.leaderboard()
+          const rows = list('leaderboard')
+          if (board.source === 'unavailable') {
+            state('leaderboard', 'No pudimos consultar el ranking global. Tu progreso local está intacto.')
+          } else if (board.rows.length === 0) {
+            state('leaderboard', 'Todavía nadie completó un desafío. Podés ser el primero.')
+          } else {
+            state('leaderboard', '')
+            if (rows) {
+              rows.hidden = false
+              rows.replaceChildren(
+                ...board.rows.map((row, index) => {
+                  const item = document.createElement('li')
+                  item.dataset.testid = `board-row-${index}`
+                  const who = document.createElement('span')
+                  who.className = 'who'
+                  who.textContent = `${index + 1}. ${row.displayName}`
+                  const solved = document.createElement('span')
+                  solved.className = 'meta'
+                  solved.textContent =
+                    row.exercisesSolved === 1 ? '1 desafío' : `${row.exercisesSolved} desafíos`
+                  const score = document.createElement('strong')
+                  score.textContent = String(row.totalScore)
+                  item.append(who, solved, score)
+                  return item
+                }),
+              )
+            }
+          }
+        })()
+
+        void (async () => {
+          const best = await ranking.bestDesigns()
+          const rows = list('best')
+          if (best.source === 'unavailable') {
+            state('best', 'No pudimos consultar los diseños.')
+          } else if (best.rows.length === 0) {
+            state('best', 'Todavía no hay desafíos resueltos.')
+          } else {
+            state('best', '')
+            if (rows) {
+              rows.hidden = false
+              rows.replaceChildren(
+                ...best.rows.map((row, index) => {
+                  const item = document.createElement('li')
+                  item.dataset.testid = `best-row-${index}`
+                  const head = document.createElement('div')
+                  head.className = 'best-head'
+                  const name = document.createElement('span')
+                  name.className = 'who'
+                  name.textContent = titles[row.exerciseId] ?? row.exerciseId
+                  const by = document.createElement('span')
+                  by.className = 'meta'
+                  by.textContent = `${row.displayName} · ${row.score}`
+                  head.append(name, by)
+                  item.append(head)
+
+                  // A shared design is the whole point of this panel, so it
+                  // renders as something readable, not as a JSON blob.
+                  const design = row.design as
+                    | { nodes?: { label?: string }[]; edges?: unknown[] }
+                    | null
+                  if (design?.nodes?.length) {
+                    const detail = document.createElement('details')
+                    const summary = document.createElement('summary')
+                    summary.textContent = `Ver el diseño (${design.nodes.length} componentes, ${design.edges?.length ?? 0} conexiones)`
+                    const parts = document.createElement('p')
+                    parts.className = 'meta'
+                    parts.textContent = design.nodes
+                      .map((node) => node.label)
+                      .filter(Boolean)
+                      .join(' · ')
+                    detail.append(summary, parts)
+                    item.append(detail)
+                  } else {
+                    const privateNote = document.createElement('p')
+                    privateNote.className = 'meta'
+                    privateNote.textContent = 'Diseño privado.'
+                    item.append(privateNote)
+                  }
+                  return item
+                }),
+              )
+            }
+          }
+        })()
+      }
+
+      for (const button of root.querySelectorAll<HTMLButtonElement>('[data-share]')) {
+        button.addEventListener('click', async () => {
+          if (!ranking) return
+          const shared = button.dataset.share === 'on'
+          state('share', 'Guardando...')
+          const outcome = await ranking.share(shared)
+          // Never report success on a failed write: a player told their design
+          // is private when it is public would be the worst lie here.
+          state(
+            'share',
+            outcome.ok
+              ? shared
+                ? 'Listo. Tus diseños resueltos ahora se pueden ver desde el ranking.'
+                : 'Listo. Tus diseños volvieron a ser privados.'
+              : 'No pudimos guardar el cambio. Tus diseños quedaron como estaban.',
+          )
+        })
+      }
+    }
+  </script>
+
+  <style>
+    .board {
+      min-height: 100vh;
+      padding: 0 clamp(16px, 3vw, 48px) 64px;
+      color: rgb(var(--txt-primary));
+      background: rgb(var(--bg-deep));
+    }
+
+    .board__header {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      border-bottom: 1px solid rgb(var(--border-card));
+    }
+
+    .product-mark,
+    .board__header nav {
+      display: flex;
+      align-items: center;
+    }
+
+    .product-mark {
+      gap: 10px;
+      color: rgb(var(--txt-primary));
+      text-decoration: none;
+    }
+
+    .product-mark span {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      color: rgb(var(--on-accent));
+      background: rgb(var(--accent));
+    }
+
+    .board__header nav { gap: 24px; }
+    .board__header nav a {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      color: rgb(var(--txt-primary));
+      text-decoration: none;
+      border-bottom: 1px solid rgb(var(--accent));
+    }
+
+    .board__intro {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: clamp(40px, 5vw, 72px) 0 32px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.66rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: rgb(var(--accent));
+    }
+
+    h1 {
+      margin: 8px 0 0;
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.2rem, 4.4vw, 4.2rem);
+      line-height: 1;
+      letter-spacing: -0.035em;
+    }
+
+    .board__intro p:not(.eyebrow) {
+      max-width: 68ch;
+      margin: 16px 0 0;
+      line-height: 1.65;
+      color: rgb(var(--txt-secondary));
+    }
+
+    .board__grid {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    .panel {
+      padding: 24px;
+      border: 1px solid rgb(var(--border-card));
+      background: rgb(var(--bg-card));
+    }
+
+    .panel--share {
+      max-width: 1180px;
+      margin: 24px auto 0;
+    }
+
+    .panel h2 {
+      margin: 0;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .panel header p,
+    .state {
+      margin: 6px 0 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: rgb(var(--txt-secondary));
+    }
+
+    .rows {
+      margin: 20px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 2px;
+    }
+
+    /* Every row below is built by the script, so it never carries the scope
+       attribute Astro stamps on markup. Without :global() these rules match
+       nothing and the row collapses into one run-on line. */
+    .rows :global(li) {
+      padding: 10px 12px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      background: rgb(var(--bg-deep));
+    }
+
+    [data-rows='best'] :global(li) {
+      display: block;
+    }
+
+    .rows :global(.best-head) {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .rows :global(.who) {
+      font-weight: 600;
+      /* The name is the row's subject: it takes the slack so the score stays
+         pinned to the right edge instead of drifting beside it. */
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .rows :global(.meta) {
+      margin: 0;
+      flex: 0 0 auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: rgb(var(--txt-secondary));
+      white-space: nowrap;
+    }
+
+    .rows :global(strong) {
+      flex: 0 0 auto;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    [data-rows='best'] :global(.meta) {
+      margin-top: 6px;
+      white-space: normal;
+    }
+
+    .rows :global(details summary) {
+      margin-top: 10px;
+      font-size: 0.82rem;
+      color: rgb(var(--accent));
+      cursor: pointer;
+    }
+
+    .share-actions {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .share-actions button {
+      min-height: 44px;
+      padding: 0 18px;
+      font: inherit;
+      color: rgb(var(--txt-primary));
+      background: transparent;
+      border: 1px solid rgb(var(--accent));
+      cursor: pointer;
+    }
+
+    .share-actions button:hover { background: rgb(var(--bg-deep)); }
+
+    @media (max-width: 767px) {
+      .board__header { align-items: flex-start; flex-direction: column; padding: 16px 0; }
+      .board__header nav { width: 100%; justify-content: space-between; gap: 12px; }
+    }
+  </style>
+</BaseLayout>

@@ -6,6 +6,11 @@ dist
 !public/
 .vercel
 
+# Credentials. `.env.example` is the tracked template; real values never are.
+.env
+.env.*
+!.env.example
+
 # Drafts (en Obsidian vault)
 content-drafts/
 

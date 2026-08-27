@@ -127,6 +127,7 @@ import {
   type CanvasResult,
 } from '../../../lib/forja/playground/result'
 import { localRankingAdapter } from '../../../lib/forja/ranking/local-adapter'
+import { globalRanking } from '../../../lib/forja/ranking/global-ranking'
 import type {
   StorageWriteStatus,
   SubmitAttemptResult,
@@ -1169,6 +1170,19 @@ function ForjaCanvasInner({
       })
       setMasteryAttempts((current) => [...current, savedAttempt])
       transferStorage = recordTransferForAttempt(savedAttempt)
+      // R3, design D6: the global write rides ALONGSIDE the local one that
+      // already won, never instead of it. Deliberately not awaited and
+      // deliberately not surfaced: the adapter never throws, a paused free
+      // project is the normal case, and the player owns the result they can
+      // already see. Only the explicit submit pushes, never the draft
+      // autosave above, which fires on every edit.
+      void globalRanking()?.push({
+        exerciseId: exercise.id,
+        design,
+        score: evaluation.status === 'scored' ? evaluation.score : null,
+        ceiling: evaluation.ceiling,
+        engineVersion: ENGINE_VERSION,
+      })
     } else {
       const legality = evaluateLegality(design)
       submitted = {
