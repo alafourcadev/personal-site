@@ -14,6 +14,7 @@ import Navbar from '../components/Navbar.astro';
 import TypewriterLogo from '../components/TypewriterLogo.astro';
 import FooterFull from '../components/FooterFull.astro';
 import FooterSimple from '../components/FooterSimple.astro';
+import ForjaFeedbackNotice from '../components/forja/ForjaFeedbackNotice.astro';
 
 interface Props {
   title: string;
@@ -50,6 +51,15 @@ const {
   noindex = false,
   chrome = 'site',
 } = Astro.props;
+
+// La Forja is the newest thing on the site, so it is the likeliest to break for
+// someone. Its launch-window feedback notice rides along on every page under
+// /forja and nowhere else. Delete both when it stops being new.
+// The reports board is the one exception: whoever is reading it has already
+// been told they can report, and the notice would cover the very answer they
+// came for.
+const path = Astro.url.pathname;
+const isForja = (path === '/forja' || path.startsWith('/forja/')) && path !== '/forja/reportes';
 
 const appChrome = chrome !== 'site';
 const workbenchApp = chrome === 'app';
@@ -213,6 +223,8 @@ const ogImage = image || 'https://alafourca.dev/og-image.png';
         </Fragment>
       )
     }
+
+    {isForja && <ForjaFeedbackNotice />}
 
     <script is:inline>
       // Reading Progress Bar. Absent in app chrome, where there is no page to

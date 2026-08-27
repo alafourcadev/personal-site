@@ -1,0 +1,128 @@
+---
+// A launch-window notice for La Forja. It appears once per visitor, asks them
+// to report anything broken, and then never shows again. When La Forja stops
+// being new, delete this component and its mount in BaseLayout.
+const ISSUE_URL = 'https://github.com/alafourcadev/personal-site/issues/new'
+const EMAIL = 'alafourcadev@gmail.com'
+const SUBJECT = 'La Forja: algo no funciona'
+
+const issueBody = [
+  '## Qué pasó',
+  '',
+  '## Cómo lo reproduzco',
+  '1. ',
+  '2. ',
+  '',
+  '## Qué esperaba que pasara',
+  '',
+].join('\n')
+
+const issueHref = `${ISSUE_URL}?labels=bug&title=${encodeURIComponent(SUBJECT)}&body=${encodeURIComponent(issueBody)}`
+const mailHref = `mailto:${EMAIL}?subject=${encodeURIComponent(SUBJECT)}`
+---
+
+<dialog
+  id="forja-feedback-notice"
+  aria-labelledby="forja-feedback-notice-title"
+  class="max-w-[30rem] w-[calc(100vw-2rem)] rounded-2xl border border-border-card bg-bg-surface p-0 text-txt-primary backdrop:bg-black/60 backdrop:backdrop-blur-sm"
+>
+  <div class="p-6 sm:p-7">
+    <p class="font-mono text-[11px] uppercase tracking-[0.15em] text-accent">Recién salido del horno</p>
+    <h2 id="forja-feedback-notice-title" class="mt-2 text-xl font-bold sm:text-2xl">
+      La Forja acaba de salir
+    </h2>
+    <p class="mt-3 text-sm leading-relaxed text-txt-secondary">
+      Es lo más nuevo del sitio, así que es donde es más probable que algo se rompa. Si algo no
+      anda como esperabas, o simplemente no se entiende, contámelo: cada reporte la mejora.
+    </p>
+
+    <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <a
+        id="forja-feedback-report"
+        href={issueHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-bg-deep transition-transform duration-200 hover:-translate-y-0.5"
+      >
+        Reportar algo roto
+      </a>
+      <button
+        id="forja-feedback-dismiss"
+        type="button"
+        class="inline-flex items-center justify-center rounded-full border border-border-subtle px-5 py-2.5 text-sm font-semibold text-txt-secondary transition-colors duration-200 hover:text-txt-primary"
+      >
+        Entendido
+      </button>
+    </div>
+
+    <p class="mt-4 text-xs text-txt-secondary">
+      ¿No usás GitHub? Podés <a
+        id="forja-feedback-mail"
+        href={mailHref}
+        class="text-accent underline underline-offset-2">escribirme por mail</a>. ¿Nada que decir
+      todavía? <a
+        id="forja-feedback-board"
+        href="/forja/reportes"
+        class="text-accent underline underline-offset-2">Ver lo ya reportado</a>.
+    </p>
+  </div>
+</dialog>
+
+<script is:inline>
+  (function () {
+    var SEEN_KEY = 'forja-feedback-notice-v1';
+    var notice = document.getElementById('forja-feedback-notice');
+    if (!notice) return;
+
+    var seen;
+    try {
+      seen = localStorage.getItem(SEEN_KEY);
+    } catch (error) {
+      // Private browsing can deny storage. A visitor who cannot be remembered
+      // is better served by never being interrupted than by being asked twice.
+      seen = '1';
+    }
+    if (seen) return;
+
+    // The page they were on is the single most useful line of a bug report, and
+    // the one a reporter is least likely to include on their own.
+    var report = document.getElementById('forja-feedback-report');
+    if (report) {
+      report.href = report.href + encodeURIComponent('\n\n---\nPágina: ' + location.pathname);
+    }
+
+    var remember = function () {
+      try {
+        localStorage.setItem(SEEN_KEY, '1');
+      } catch (error) {
+        // Nothing to do: the notice simply shows again next time.
+      }
+    };
+
+    // The dialog's own 'close' event is delivered asynchronously, so a visitor
+    // who dismisses this and immediately navigates can outrun the write and be
+    // interrupted a second time. Every deliberate dismissal records itself
+    // first and closes after; 'close' only backstops Escape and the rest.
+    var dismiss = function () {
+      remember();
+      notice.close();
+    };
+
+    notice.addEventListener('close', remember);
+    document.getElementById('forja-feedback-dismiss')?.addEventListener('click', dismiss);
+    // Reporting opens in a new tab, so this page stays exactly where it was.
+    // Whoever answered the ask has earned never being asked again.
+    report?.addEventListener('click', dismiss);
+    document.getElementById('forja-feedback-mail')?.addEventListener('click', dismiss);
+    // This one navigates in place, so the write has to land before the page
+    // goes. localStorage is synchronous, so recording here is enough.
+    document.getElementById('forja-feedback-board')?.addEventListener('click', remember);
+    // Clicking the backdrop lands on the dialog element itself, never on its
+    // content, so this closes on backdrop clicks without swallowing real ones.
+    notice.addEventListener('click', function (event) {
+      if (event.target === notice) dismiss();
+    });
+
+    notice.showModal();
+  })();
+</script>
